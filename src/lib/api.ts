@@ -68,13 +68,13 @@ export const API_ENDPOINTS = {
 }
 
 // Helper function to create form data for file uploads
-export function createFormData(file: File, additionalData?: Record<string, any>) {
+export function createFormData(file: File, additionalData?: Record<string, unknown>) {
   const formData = new FormData()
   formData.append('file', file)
   
   if (additionalData) {
     Object.entries(additionalData).forEach(([key, value]) => {
-      formData.append(key, value)
+      formData.append(key, String(value))
     })
   }
   
@@ -82,12 +82,15 @@ export function createFormData(file: File, additionalData?: Record<string, any>)
 }
 
 // Helper function to handle API errors
-export function handleApiError(error: any): string {
-  if (error.response?.data?.message) {
-    return error.response.data.message
+export function handleApiError(error: unknown): string {
+  if (error && typeof error === 'object' && 'response' in error) {
+    const axiosError = error as { response?: { data?: { message?: string } } }
+    if (axiosError.response?.data?.message) {
+      return axiosError.response.data.message
+    }
   }
-  if (error.message) {
-    return error.message
+  if (error && typeof error === 'object' && 'message' in error) {
+    return (error as { message: string }).message
   }
   return 'Đã xảy ra lỗi không xác định'
 }

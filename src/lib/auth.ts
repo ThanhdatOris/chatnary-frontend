@@ -55,7 +55,7 @@ export class AuthUtils {
 }
 
 // JWT Token utilities
-export function parseJWT(token: string): any {
+export function parseJWT(token: string): Record<string, unknown> | null {
   try {
     const base64Url = token.split('.')[1]
     const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
@@ -74,7 +74,7 @@ export function parseJWT(token: string): any {
 export function isTokenExpired(token: string): boolean {
   try {
     const decoded = parseJWT(token)
-    if (!decoded || !decoded.exp) return true
+    if (!decoded || typeof decoded.exp !== 'number') return true
     
     const currentTime = Date.now() / 1000
     return decoded.exp < currentTime
@@ -86,7 +86,7 @@ export function isTokenExpired(token: string): boolean {
 export function getTokenExpiry(token: string): Date | null {
   try {
     const decoded = parseJWT(token)
-    if (!decoded || !decoded.exp) return null
+    if (!decoded || typeof decoded.exp !== 'number') return null
     
     return new Date(decoded.exp * 1000)
   } catch {
