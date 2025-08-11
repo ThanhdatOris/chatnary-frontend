@@ -21,10 +21,10 @@ export interface LoginCredentials {
 }
 
 export interface RegisterData {
-  name: string
+  fullName: string
   email: string
   password: string
-  confirmPassword: string
+  confirmPassword?: string
 }
 
 // File & Document Types

@@ -1,0 +1,16 @@
+Tài liệu mẫu để test chức năng upload
+
+Đây là một tài liệu mẫu để kiểm tra chức năng upload file trong hệ thống Chatnary.
+
+Nội dung chính:
+1. Giới thiệu về hệ thống
+2. Hướng dẫn sử dụng
+3. Các tính năng chính
+
+Hệ thống Chatnary cho phép người dùng:
+- Upload tài liệu PDF, DOCX, TXT
+- Tìm kiếm nội dung trong tài liệu
+- Trò chuyện với AI về nội dung tài liệu
+- Quản lý thư viện tài liệu cá nhân
+
+Đây là một công cụ mạnh mẽ để làm việc với tài liệu và trích xuất thông tin một cách thông minh.

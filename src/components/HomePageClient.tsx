@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui'
 import Loading from '@/components/ui/Loading'
-import { useAuth } from '@/hooks/useAuthSimple'
+import { useAuth } from '@/hooks/useAuth'
 import { FileText, MessageSquare, Search, Shield, Upload, Zap } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'

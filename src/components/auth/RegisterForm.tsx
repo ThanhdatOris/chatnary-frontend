@@ -1,7 +1,7 @@
 'use client'
 
 import { Button, Card } from '@/components/ui'
-import { useAuth } from '@/hooks/useAuthSimple'
+import { useAuth } from '@/hooks/useAuth'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Eye, EyeOff, UserPlus } from 'lucide-react'
 import Link from 'next/link'
@@ -45,7 +45,11 @@ const RegisterForm: React.FC = () => {
     setError('')
 
     try {
-      const result = await authRegister(data.name, data.email, data.password)
+      const result = await authRegister({ 
+        fullName: data.name,
+        email: data.email, 
+        password: data.password
+      })
       
       if (result.success) {
         router.push('/dashboard')

@@ -1,7 +1,7 @@
 'use client'
 
 import { Button, Card } from '@/components/ui'
-import { useAuth } from '@/hooks/useAuthSimple'
+import { useAuth } from '@/hooks/useAuth'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Eye, EyeOff, LogIn } from 'lucide-react'
 import Link from 'next/link'
@@ -38,7 +38,7 @@ const LoginForm: React.FC = () => {
     setError('')
 
     try {
-      const result = await login(data.email, data.password)
+      const result = await login({ email: data.email, password: data.password })
       
       if (result.success) {
         router.push('/dashboard')
@@ -75,10 +75,12 @@ const LoginForm: React.FC = () => {
           </label>
           <input
             {...register('email')}
+            id="email"
+            name="email"
             type="email"
             placeholder="Enter your email"
             disabled={loading}
-            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 ${
               errors.email ? 'border-red-500' : 'border-gray-300'
             } ${loading ? 'bg-gray-100' : 'bg-white'}`}
           />
@@ -94,10 +96,12 @@ const LoginForm: React.FC = () => {
           <div className="relative">
             <input
               {...register('password')}
+              id="password"
+              name="password"
               type={showPassword ? 'text' : 'password'}
               placeholder="Enter your password"
               disabled={loading}
-              className={`w-full px-3 py-2 pr-10 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+              className={`w-full px-3 py-2 pr-10 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 ${
                 errors.password ? 'border-red-500' : 'border-gray-300'
               } ${loading ? 'bg-gray-100' : 'bg-white'}`}
             />

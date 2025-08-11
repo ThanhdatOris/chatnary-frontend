@@ -5,8 +5,7 @@ import {
     Library,
     MessageSquare,
     Search,
-    Settings,
-    Upload
+    Settings
 } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -22,8 +21,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
 
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: Home },
-    { name: 'Library', href: '/dashboard/library', icon: Library },
-    { name: 'Upload', href: '/dashboard/upload', icon: Upload },
+    { name: 'Files', href: '/dashboard/files', icon: Library },
     { name: 'Search', href: '/dashboard/search', icon: Search },
     { name: 'Chat', href: '/dashboard/chat', icon: MessageSquare },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
@@ -41,10 +39,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
 
       {/* Sidebar */}
       <div className={cn(
-        'fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0',
+        'fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-gray-200 transform transition-transform duration-300 ease-in-out lg:translate-x-0',
         isOpen ? 'translate-x-0' : '-translate-x-full'
       )}>
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col h-full min-h-screen">
           {/* Logo */}
           <div className="flex items-center h-16 px-6 border-b border-gray-200">
             <Link href="/dashboard" className="flex items-center space-x-2">
