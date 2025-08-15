@@ -1,8 +1,8 @@
 import axios from 'axios'
 import Cookies from 'js-cookie'
 
-// API Base URL
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+// API Base URL - Updated to match Python backend
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
 // Create axios instance
 export const api = axios.create({
@@ -35,20 +35,22 @@ api.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       // Token expired or invalid
-      Cookies.remove('token')
+      Cookies.remove('auth_token')
       window.location.href = '/login'
     }
     return Promise.reject(error)
   }
 )
 
-// API Endpoints (adapted to match current backend)
+// API Endpoints - Updated to match Python FastAPI backend
 export const API_ENDPOINTS = {
   auth: {
     register: '/api/auth/register',
     login: '/api/auth/login',
     profile: '/api/auth/profile',
     verify: '/api/auth/verify',
+    changePassword: '/api/auth/change-password',
+    forgotPassword: '/api/auth/forgot-password',
   },
   files: {
     upload: '/api/upload',
@@ -56,6 +58,7 @@ export const API_ENDPOINTS = {
     detail: (fileId: string) => `/api/files/${fileId}`,
     download: (fileId: string) => `/api/download/${fileId}`,
     delete: (fileId: string) => `/api/files/${fileId}`,
+    process: (fileId: string) => `/api/process-document/${fileId}`,
   },
   search: {
     search: '/api/search',
@@ -64,6 +67,8 @@ export const API_ENDPOINTS = {
   },
   chat: {
     send: '/api/chat',
+    models: '/api/chat/models',
+    history: '/api/chat/history',
   },
 }
 

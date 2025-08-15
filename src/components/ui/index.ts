@@ -4,6 +4,10 @@ export {
     CardTitle
 } from './Card'
 export { default as Input } from './Input'
+export { default as KeyboardShortcuts } from './KeyboardShortcuts'
 export { default as Loading, Spinner } from './Loading'
 export { default as Modal } from './Modal'
+export { default as SystemNotification } from './SystemNotification'
+export { default as TextArea } from './TextArea'
+export { default as TextInput } from './TextInput'
 

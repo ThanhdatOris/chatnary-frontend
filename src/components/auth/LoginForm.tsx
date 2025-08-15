@@ -131,7 +131,7 @@ const LoginForm: React.FC = () => {
             <span className="ml-2 text-gray-600">Remember me</span>
           </label>
           <Link href="/forgot-password" className="text-blue-600 hover:text-blue-500">
-            Forgot password?
+            Quên mật khẩu?
           </Link>
         </div>
 

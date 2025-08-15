@@ -2,7 +2,7 @@
 
 import { api, API_ENDPOINTS, handleApiError } from '@/lib/api'
 import { AuthUtils } from '@/lib/auth'
-import { AuthResponse, LoginCredentials, RegisterData, User } from '@/lib/types'
+import { LoginCredentials, RegisterData, User } from '@/lib/types'
 import { useRouter } from 'next/navigation'
 import { createContext, ReactNode, useContext, useEffect, useState } from 'react'
 
@@ -35,9 +35,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return
       }
 
-      // Verify token with backend
-      const response = await api.get(API_ENDPOINTS.auth.verify)
-      const userData = response.data.user
+      // Verify token with backend using profile endpoint
+      const response = await api.get(API_ENDPOINTS.auth.profile)
+      const userData = response.data.user || response.data
 
       if (userData) {
         setUser(userData)
@@ -55,13 +55,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (credentials: LoginCredentials) => {
     try {
-      const response = await api.post<AuthResponse>(API_ENDPOINTS.auth.login, credentials)
-      const { token, user: userData } = response.data
+      const response = await api.post(API_ENDPOINTS.auth.login, credentials)
+      const { success, token, user: userData, message } = response.data
 
-      AuthUtils.login(token, userData)
-      setUser(userData)
-
-      return { success: true }
+      if (success && token && userData) {
+        AuthUtils.login(token, userData)
+        setUser(userData)
+        return { success: true }
+      } else {
+        return { 
+          success: false, 
+          error: message || 'Đăng nhập thất bại' 
+        }
+      }
     } catch (error: any) {
       return { 
         success: false, 
@@ -72,13 +78,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = async (data: RegisterData) => {
     try {
-      const response = await api.post<AuthResponse>(API_ENDPOINTS.auth.register, data)
-      const { token, user: userData } = response.data
+      const response = await api.post(API_ENDPOINTS.auth.register, data)
+      const { success, token, user: userData, message } = response.data
 
-      AuthUtils.login(token, userData)
-      setUser(userData)
-
-      return { success: true }
+      if (success && token && userData) {
+        AuthUtils.login(token, userData)
+        setUser(userData)
+        return { success: true }
+      } else {
+        return { 
+          success: false, 
+          error: message || 'Đăng ký thất bại' 
+        }
+      }
     } catch (error: any) {
       return { 
         success: false, 

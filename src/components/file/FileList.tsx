@@ -4,17 +4,21 @@ import { Button } from '@/components/ui'
 import { useToast } from '@/contexts/ToastContext'
 import { api, API_ENDPOINTS } from '@/lib/api'
 import { formatDate, formatFileSize } from '@/lib/utils'
-import { Calendar, Download, File, FileText, MessageSquare, Trash2 } from 'lucide-react'
+import { Calendar, Download, File, FileText, MessageSquare, Trash2, Zap } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 
 interface FileItem {
-  _id: string
+  id?: string
+  _id?: string
   filename: string
   originalName: string
   size: number
-  mimeType?: string // Make optional to handle undefined values
-  uploadDate: string
-  processed: boolean
+  mimetype?: string
+  mimeType?: string
+  uploadTime?: string
+  uploadDate?: string
+  indexed?: boolean
+  processed?: boolean
   textContent?: string
   metadata?: {
     pages?: number
@@ -66,18 +70,18 @@ export default function FileList({ onFileSelect, refreshTrigger }: FileListProps
     fetchFiles()
   }, [refreshTrigger, fetchFiles])
 
-  // Auto-refresh every 30 seconds for processing status
-  useEffect(() => {
-    const interval = setInterval(() => {
-      // Only refresh if there are processing files
-      const hasProcessingFiles = files.some(file => !file.processed)
-      if (hasProcessingFiles && !loading) {
-        fetchFiles()
-      }
-    }, 30000) // 30 seconds
+        // Auto-refresh every 30 seconds for processing status
+      useEffect(() => {
+        const interval = setInterval(() => {
+          // Only refresh if there are processing files
+          const hasProcessingFiles = files.some(file => !(file.indexed || file.processed))
+          if (hasProcessingFiles && !loading) {
+            fetchFiles()
+          }
+        }, 30000) // 30 seconds
 
-    return () => clearInterval(interval)
-  }, [files, loading, fetchFiles])
+        return () => clearInterval(interval)
+      }, [files, loading, fetchFiles])
 
   const handleDelete = async (fileId: string, fileName: string) => {
     if (!confirm(`Bạn có chắc muốn xóa file "${fileName}"?`)) return
@@ -88,7 +92,7 @@ export default function FileList({ onFileSelect, refreshTrigger }: FileListProps
       await api.delete(API_ENDPOINTS.files.delete(fileId))
       
       // Optimistic update
-      setFiles(prev => prev.filter(f => f._id !== fileId))
+      setFiles(prev => prev.filter(f => (f._id || f.id) !== fileId))
       
       // Show success notification if available
       // Show success notification
@@ -108,11 +112,36 @@ export default function FileList({ onFileSelect, refreshTrigger }: FileListProps
     }
   }
 
-    const handleDownload = async (file: FileItem) => {
-    setActionLoading(prev => ({ ...prev, [`download-${file._id}`]: true }))
+  const handleReprocess = async (fileId: string, fileName: string) => {
+    setActionLoading(prev => ({ ...prev, [`reprocess-${fileId}`]: true }))
     
     try {
-      const response = await api.get(API_ENDPOINTS.files.download(file._id), {
+      await api.post(API_ENDPOINTS.files.process(fileId))
+      
+      showToast('Đang xử lý lại tài liệu...', 'info')
+      
+      // Refresh after a short delay to show processing status
+      setTimeout(() => {
+        fetchFiles()
+      }, 2000)
+    } catch (err) {
+      console.error('Error reprocessing file:', err)
+      showToast('Không thể xử lý lại file. Vui lòng thử lại.', 'error')
+    } finally {
+      setActionLoading(prev => {
+        const newState = { ...prev }
+        delete newState[`reprocess-${fileId}`]
+        return newState
+      })
+    }
+  }
+
+    const handleDownload = async (file: FileItem) => {
+    const fileId = file._id || file.id
+    setActionLoading(prev => ({ ...prev, [`download-${fileId}`]: true }))
+    
+    try {
+      const response = await api.get(API_ENDPOINTS.files.download(fileId), {
         responseType: 'blob'
       })
       
@@ -134,7 +163,7 @@ export default function FileList({ onFileSelect, refreshTrigger }: FileListProps
     } finally {
       setActionLoading(prev => {
         const newState = { ...prev }
-        delete newState[`download-${file._id}`]
+        delete newState[`download-${fileId}`]
         return newState
       })
     }
@@ -146,6 +175,11 @@ export default function FileList({ onFileSelect, refreshTrigger }: FileListProps
     if (mimeType.includes('word')) return <File className="w-8 h-8 text-blue-500" />
     return <File className="w-8 h-8 text-gray-500" />
   }
+
+  const getFileId = (file: FileItem) => file._id || file.id || ''
+  const getFileMimeType = (file: FileItem) => file.mimetype || file.mimeType || ''
+  const getFileUploadTime = (file: FileItem) => file.uploadTime || file.uploadDate || ''
+  const isFileProcessed = (file: FileItem) => file.indexed || file.processed || false
 
   if (loading) {
     return (
@@ -190,12 +224,12 @@ export default function FileList({ onFileSelect, refreshTrigger }: FileListProps
       <div className="grid gap-4">
         {Array.isArray(files) && files.map((file) => (
           <div
-            key={file._id}
+            key={getFileId(file)}
             className="border rounded-lg p-4 hover:shadow-md transition-shadow bg-white"
           >
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0">
-                {getFileIcon(file.mimeType)}
+                {getFileIcon(getFileMimeType(file))}
               </div>
 
               <div className="flex-1 min-w-0">
@@ -207,20 +241,20 @@ export default function FileList({ onFileSelect, refreshTrigger }: FileListProps
                   <span>{formatFileSize(file.size || 0)}</span>
                   <span className="flex items-center gap-1">
                     <Calendar className="w-4 h-4" />
-                    {file.uploadDate ? formatDate(file.uploadDate) : 'Unknown date'}
+                    {getFileUploadTime(file) ? formatDate(getFileUploadTime(file)) : 'Unknown date'}
                   </span>
                   
                   <span className={`
                     px-2 py-1 rounded text-xs font-medium flex items-center gap-1
-                    ${file.processed 
+                    ${isFileProcessed(file)
                       ? 'bg-green-100 text-green-800' 
                       : 'bg-yellow-100 text-yellow-800'
                     }
                   `}>
-                    {!file.processed && (
+                    {!isFileProcessed(file) && (
                       <div className="w-3 h-3 animate-spin rounded-full border border-yellow-600 border-t-transparent" />
                     )}
-                    {file.processed ? 'Processed' : 'Processing...'}
+                    {isFileProcessed(file) ? 'Processed' : 'Processing...'}
                   </span>
                 </div>
 
@@ -237,7 +271,7 @@ export default function FileList({ onFileSelect, refreshTrigger }: FileListProps
               </div>
 
               <div className="flex items-center gap-2 flex-shrink-0">
-                {file.processed && onFileSelect && (
+                {isFileProcessed(file) && onFileSelect && (
                   <Button
                     onClick={() => onFileSelect(file)}
                     variant="outline"
@@ -248,13 +282,29 @@ export default function FileList({ onFileSelect, refreshTrigger }: FileListProps
                   </Button>
                 )}
                 
+                {!isFileProcessed(file) && (
+                  <Button
+                    onClick={() => handleReprocess(getFileId(file), file.originalName || file.filename || 'Unknown file')}
+                    variant="outline"
+                    size="sm"
+                    disabled={actionLoading[`reprocess-${getFileId(file)}`]}
+                    className="text-blue-600 hover:text-blue-700 hover:border-blue-300"
+                  >
+                    {actionLoading[`reprocess-${getFileId(file)}`] ? (
+                      <div className="w-4 h-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+                    ) : (
+                      <Zap className="w-4 h-4" />
+                    )}
+                  </Button>
+                )}
+                
                 <Button
                   onClick={() => handleDownload(file)}
                   variant="outline"
                   size="sm"
-                  disabled={actionLoading[`download-${file._id}`]}
+                  disabled={actionLoading[`download-${getFileId(file)}`]}
                 >
-                  {actionLoading[`download-${file._id}`] ? (
+                  {actionLoading[`download-${getFileId(file)}`] ? (
                     <div className="w-4 h-4 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
                   ) : (
                     <Download className="w-4 h-4" />
@@ -262,13 +312,13 @@ export default function FileList({ onFileSelect, refreshTrigger }: FileListProps
                 </Button>
                 
                 <Button
-                  onClick={() => handleDelete(file._id, file.originalName || file.filename || 'Unknown file')}
+                  onClick={() => handleDelete(getFileId(file), file.originalName || file.filename || 'Unknown file')}
                   variant="outline"
                   size="sm"
-                  disabled={actionLoading[`delete-${file._id}`]}
+                  disabled={actionLoading[`delete-${getFileId(file)}`]}
                   className="text-red-600 hover:text-red-700 hover:border-red-300"
                 >
-                  {actionLoading[`delete-${file._id}`] ? (
+                  {actionLoading[`delete-${getFileId(file)}`] ? (
                     <div className="w-4 h-4 animate-spin rounded-full border-2 border-red-600 border-t-transparent" />
                   ) : (
                     <Trash2 className="w-4 h-4" />

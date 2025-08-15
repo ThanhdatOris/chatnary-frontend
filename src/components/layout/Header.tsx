@@ -1,8 +1,9 @@
-import { Button } from '@/components/ui'
+import { Button, KeyboardShortcuts } from '@/components/ui'
 import { AuthUtils } from '@/lib/auth'
 import { User as UserType } from '@/lib/types'
 import {
     FileText,
+    Keyboard,
     LogOut,
     Menu,
     MessageSquare,
@@ -28,6 +29,7 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
   const router = useRouter()
   const [isUserMenuOpen, setIsUserMenuOpen] = React.useState(false)
+  const [showShortcuts, setShowShortcuts] = React.useState(false)
 
   const handleLogout = () => {
     AuthUtils.logout()
@@ -74,6 +76,18 @@ const Header: React.FC<HeaderProps> = ({
 
           {/* User Menu */}
           <div className="flex items-center space-x-4">
+            {/* Keyboard Shortcuts Button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowShortcuts(true)}
+              className="hidden md:flex items-center space-x-2"
+              title="Keyboard Shortcuts"
+            >
+              <Keyboard className="w-4 h-4" />
+              <span className="hidden lg:inline">Shortcuts</span>
+            </Button>
+
             {user ? (
               <div className="relative">
                 <Button
@@ -163,6 +177,12 @@ const Header: React.FC<HeaderProps> = ({
           onClick={() => setIsUserMenuOpen(false)}
         />
       )}
+
+      {/* Keyboard Shortcuts Modal */}
+      <KeyboardShortcuts 
+        isOpen={showShortcuts} 
+        onClose={() => setShowShortcuts(false)} 
+      />
     </header>
   )
 }

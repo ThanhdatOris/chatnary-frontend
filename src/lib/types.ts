@@ -1,11 +1,12 @@
-// User & Authentication Types
+// User & Authentication Types - Updated to match backend
 export interface User {
   id: string
   email: string
-  name: string
+  fullName: string
   role: 'user' | 'admin'
+  isActive: boolean
   createdAt: string
-  updatedAt: string
+  lastLogin?: string | null
 }
 
 export interface AuthResponse {

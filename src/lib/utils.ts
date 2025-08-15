@@ -16,13 +16,23 @@ export function formatFileSize(bytes: number): string {
 }
 
 export function formatDate(date: string | Date): string {
-  return new Intl.DateTimeFormat('vi-VN', {
-    year: 'numeric',
-    month: 'short', 
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  }).format(new Date(date))
+  try {
+    if (!date) return 'Unknown date'
+    
+    const dateObj = new Date(date)
+    if (isNaN(dateObj.getTime())) return 'Unknown date'
+    
+    return new Intl.DateTimeFormat('vi-VN', {
+      year: 'numeric',
+      month: 'short', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    }).format(dateObj)
+  } catch (error) {
+    console.error('Error formatting date:', error, date)
+    return 'Unknown date'
+  }
 }
 
 export function truncateText(text: string, maxLength: number): string {

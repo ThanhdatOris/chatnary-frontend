@@ -1,6 +1,7 @@
 'use client'
 
 import { Button } from '@/components/ui'
+import { useToast } from '@/contexts/ToastContext'
 import { api, API_ENDPOINTS } from '@/lib/api'
 import { AlertCircle, CheckCircle, File, Upload, X } from 'lucide-react'
 import { useCallback, useState } from 'react'
@@ -29,6 +30,7 @@ export default function FileUpload({
 }: FileUploadProps) {
   const [uploadFiles, setUploadFiles] = useState<UploadFile[]>([])
   const [isUploading, setIsUploading] = useState(false)
+  const { showToast } = useToast()
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const newFiles: UploadFile[] = acceptedFiles.map(file => ({
@@ -94,6 +96,15 @@ export default function FileUpload({
 
       if (onUploadSuccess) {
         onUploadSuccess(response.data)
+      }
+
+      // Show AI processing notification if mentioned in response
+      if (response.data.message && response.data.message.includes('Xử lý AI')) {
+        if (response.data.message.includes('success')) {
+          showToast('Tài liệu đã được xử lý AI thành công!', 'success')
+        } else if (response.data.message.includes('failed')) {
+          showToast('Tài liệu đã upload nhưng xử lý AI thất bại. Bạn có thể thử lại sau.', 'warning')
+        }
       }
     } catch (error: unknown) {
       const errorMessage = error && typeof error === 'object' && 'response' in error 
