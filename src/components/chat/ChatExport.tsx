@@ -18,11 +18,10 @@ interface ChatMessage {
 
 interface ChatExportProps {
   messages: ChatMessage[]
-  onExport: () => void
   isExporting?: boolean
 }
 
-export default function ChatExport({ messages, onExport, isExporting = false }: ChatExportProps) {
+export default function ChatExport({ messages, isExporting = false }: ChatExportProps) {
   const exportToText = () => {
     const chatContent = messages.map(message => {
       const timestamp = format(message.timestamp, 'dd/MM/yyyy HH:mm:ss', { locale: vi })

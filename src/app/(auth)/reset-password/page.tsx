@@ -5,9 +5,9 @@ import { useToast } from '@/contexts/ToastContext'
 import { api } from '@/lib/api'
 import { CheckCircle, Lock } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 
-export default function ResetPasswordPage() {
+function ResetPasswordForm() {
   const params = useSearchParams()
   const router = useRouter()
   const token = params.get('token') || ''
@@ -38,8 +38,16 @@ export default function ResetPasswordPage() {
       setDone(true)
       showToast('Đặt lại mật khẩu thành công', 'success')
       setTimeout(() => router.push('/login'), 1500)
-    } catch (error: any) {
-      const msg = error?.response?.data?.detail || 'Không thể đặt lại mật khẩu'
+    } catch (error: unknown) {
+      let msg = 'Không thể đặt lại mật khẩu'
+      
+      if (error && typeof error === 'object' && 'response' in error) {
+        const response = (error as { response?: { data?: { detail?: string } } }).response
+        if (response?.data?.detail) {
+          msg = response.data.detail
+        }
+      }
+      
       showToast(msg, 'error')
     } finally {
       setLoading(false)
@@ -101,5 +109,17 @@ export default function ResetPasswordPage() {
         </Card>
       </div>
     </div>
+  )
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center px-4">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    }>
+      <ResetPasswordForm />
+    </Suspense>
   )
 }

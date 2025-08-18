@@ -43,8 +43,15 @@ export function useStats(): UseStatsReturn {
       } else {
         setError(response.data.message || 'Failed to fetch stats')
       }
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to fetch stats')
+    } catch (err: unknown) {
+      let errorMessage = 'Failed to fetch stats'
+      if (err && typeof err === 'object' && 'response' in err) {
+        const response = (err as { response?: { data?: { message?: string } } }).response
+        if (response?.data?.message) {
+          errorMessage = response.data.message
+        }
+      }
+      setError(errorMessage)
       // Set default stats on error
       setStats({
         totalFiles: 0,

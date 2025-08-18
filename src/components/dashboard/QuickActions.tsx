@@ -12,7 +12,7 @@ export default function QuickActions() {
   const { showToast } = useToast()
   const router = useRouter()
 
-  const handleUploadSuccess = (file: any) => {
+  const handleUploadSuccess = () => {
     showToast('Tải lên thành công!', 'success')
     setIsUploadModalOpen(false)
     // Refresh the page to show new file

@@ -34,8 +34,7 @@ const RegisterForm: React.FC = () => {
   const {
     register,
     handleSubmit,
-    formState: { errors },
-    watch
+    formState: { errors }
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema)
   })

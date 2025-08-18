@@ -46,7 +46,7 @@ export default function SearchInterface() {
     if (saved) {
       try {
         setRecentSearches(JSON.parse(saved))
-      } catch (e) {
+      } catch {
         // Ignore parse errors
       }
     }
@@ -89,7 +89,7 @@ export default function SearchInterface() {
         setResults([])
         setSearchStats(null)
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Search error:', err)
       showToast('Không thể thực hiện tìm kiếm', 'error')
       setResults([])
@@ -257,7 +257,7 @@ export default function SearchInterface() {
             <Search className="w-16 h-16 mx-auto mb-4 text-gray-300" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">Không tìm thấy kết quả</h3>
             <p className="text-gray-500 mb-4">
-              Không có tài liệu nào chứa từ khóa "{query}"
+              Không có tài liệu nào chứa từ khóa &ldquo;{query}&rdquo;
             </p>
             <div className="text-sm text-gray-400">
               <p>Gợi ý:</p>

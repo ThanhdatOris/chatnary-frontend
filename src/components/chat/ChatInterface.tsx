@@ -60,7 +60,7 @@ export default function ChatInterface() {
         timestamp: new Date()
       }])
     }
-  }, [])
+  }, [messages.length])
 
   const handleSendMessage = async () => {
     if (!input.trim() || loading) return
@@ -102,13 +102,21 @@ export default function ChatInterface() {
       } else {
         throw new Error('Chat request failed')
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Chat error:', err)
+      
+      let errorText = 'Có lỗi xảy ra khi gửi tin nhắn'
+      if (err && typeof err === 'object' && 'response' in err) {
+        const response = (err as { response?: { data?: { detail?: string } } }).response
+        if (response?.data?.detail) {
+          errorText = response.data.detail
+        }
+      }
       
       const errorMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         type: 'assistant',
-        content: 'Xin lỗi, tôi gặp vấn đề khi xử lý yêu cầu của bạn. Vui lòng thử lại sau.',
+        content: errorText,
         timestamp: new Date()
       }
       
@@ -182,7 +190,6 @@ export default function ChatInterface() {
             {/* Export Chat */}
             <ChatExport 
               messages={messages}
-              onExport={() => {}}
               isExporting={loading}
             />
           </div>

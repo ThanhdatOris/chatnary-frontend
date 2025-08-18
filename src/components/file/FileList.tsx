@@ -112,7 +112,7 @@ export default function FileList({ onFileSelect, refreshTrigger }: FileListProps
     }
   }
 
-  const handleReprocess = async (fileId: string, fileName: string) => {
+  const handleReprocess = async (fileId: string) => {
     setActionLoading(prev => ({ ...prev, [`reprocess-${fileId}`]: true }))
     
     try {
@@ -138,6 +138,11 @@ export default function FileList({ onFileSelect, refreshTrigger }: FileListProps
 
     const handleDownload = async (file: FileItem) => {
     const fileId = file._id || file.id
+    if (!fileId) {
+      showToast('Không thể download file: thiếu ID', 'error')
+      return
+    }
+    
     setActionLoading(prev => ({ ...prev, [`download-${fileId}`]: true }))
     
     try {
@@ -284,7 +289,7 @@ export default function FileList({ onFileSelect, refreshTrigger }: FileListProps
                 
                 {!isFileProcessed(file) && (
                   <Button
-                    onClick={() => handleReprocess(getFileId(file), file.originalName || file.filename || 'Unknown file')}
+                    onClick={() => handleReprocess(getFileId(file))}
                     variant="outline"
                     size="sm"
                     disabled={actionLoading[`reprocess-${getFileId(file)}`]}

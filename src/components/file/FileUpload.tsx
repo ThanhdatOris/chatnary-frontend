@@ -103,7 +103,7 @@ export default function FileUpload({
         if (response.data.message.includes('success')) {
           showToast('Tài liệu đã được xử lý AI thành công!', 'success')
         } else if (response.data.message.includes('failed')) {
-          showToast('Tài liệu đã upload nhưng xử lý AI thất bại. Bạn có thể thử lại sau.', 'warning')
+          showToast('Tài liệu đã upload nhưng xử lý AI thất bại. Bạn có thể thử lại sau.', 'info')
         }
       }
     } catch (error: unknown) {
@@ -146,11 +146,9 @@ export default function FileUpload({
 
   const ProgressBar = ({ progress }: { progress: number }) => (
     <div className="w-full bg-gray-200 rounded-full h-2">
-      {/* Dynamic width is necessary for progress bar functionality */}
-      {/* eslint-disable-next-line */}
       <div
         className={`bg-blue-600 h-2 rounded-full transition-all`}
-        style={{ width: `${progress}%` } as React.CSSProperties}
+        style={{ width: `${progress}%` }}
       />
     </div>
   )

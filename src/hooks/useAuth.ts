@@ -68,7 +68,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           error: message || 'Đăng nhập thất bại' 
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       return { 
         success: false, 
         error: handleApiError(error) 
@@ -91,7 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           error: message || 'Đăng ký thất bại' 
         }
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       return { 
         success: false, 
         error: handleApiError(error) 

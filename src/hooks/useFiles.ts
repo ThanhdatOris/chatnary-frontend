@@ -2,7 +2,7 @@
 
 import { api, API_ENDPOINTS } from '@/lib/api'
 import { FileMetadata } from '@/lib/types'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 interface FileListResponse {
   success: boolean
@@ -57,7 +57,7 @@ export function useFiles(options: UseFilesOptions = {}): UseFilesReturn {
     sortOrder = 'desc'
   } = options
 
-  const fetchFiles = async () => {
+  const fetchFiles = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
@@ -77,14 +77,21 @@ export function useFiles(options: UseFilesOptions = {}): UseFilesReturn {
       } else {
         setError(response.data.message || 'Failed to fetch files')
       }
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to fetch files')
+    } catch (err: unknown) {
+      let errorMessage = 'Failed to fetch files'
+      if (err && typeof err === 'object' && 'response' in err) {
+        const response = (err as { response?: { data?: { message?: string } } }).response
+        if (response?.data?.message) {
+          errorMessage = response.data.message
+        }
+      }
+      setError(errorMessage)
       setFiles([])
       setPagination(null)
     } finally {
       setLoading(false)
     }
-  }
+  }, [page, limit, sortBy, sortOrder])
 
   const deleteFile = async (fileId: string): Promise<boolean> => {
     try {
@@ -98,15 +105,22 @@ export function useFiles(options: UseFilesOptions = {}): UseFilesReturn {
         setError(response.data.message || 'Failed to delete file')
         return false
       }
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Failed to delete file')
+    } catch (err: unknown) {
+      let errorMessage = 'Failed to delete file'
+      if (err && typeof err === 'object' && 'response' in err) {
+        const response = (err as { response?: { data?: { message?: string } } }).response
+        if (response?.data?.message) {
+          errorMessage = response.data.message
+        }
+      }
+      setError(errorMessage)
       return false
     }
   }
 
   useEffect(() => {
     fetchFiles()
-  }, [page, limit, sortBy, sortOrder])
+  }, [fetchFiles])
 
   return {
     files,

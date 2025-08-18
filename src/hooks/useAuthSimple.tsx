@@ -34,7 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // TODO: Implement actual login
       console.log('Login attempt:', email, password)
       return { success: true }
-    } catch (error) {
+    } catch {
       return { 
         success: false, 
         error: 'Login failed' 
@@ -47,7 +47,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       // TODO: Implement actual register
       console.log('Register attempt:', name, email, password)
       return { success: true }
-    } catch (error) {
+    } catch {
       return { 
         success: false, 
         error: 'Registration failed' 

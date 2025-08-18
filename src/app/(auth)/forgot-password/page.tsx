@@ -26,7 +26,7 @@ export default function ForgotPasswordPage() {
       await api.post(API_ENDPOINTS.auth.forgotPassword, { email: email.trim() })
       setSent(true)
       showToast('Email đã được gửi thành công', 'success')
-    } catch (error) {
+    } catch {
       showToast('Không thể gửi email. Vui lòng thử lại.', 'error')
     } finally {
       setLoading(false)

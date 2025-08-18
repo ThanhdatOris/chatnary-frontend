@@ -1,4 +1,3 @@
-import DevTools from "@/components/DevTools";
 import { ToastProvider } from "@/contexts/ToastContext";
 import { AuthProvider } from "@/hooks/useAuth";
 import type { Metadata } from "next";
@@ -36,7 +35,6 @@ export default function RootLayout({
         <AuthProvider>
           <ToastProvider>
             {children}
-            <DevTools />
           </ToastProvider>
         </AuthProvider>
       </body>

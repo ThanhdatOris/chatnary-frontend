@@ -97,7 +97,7 @@ const Header: React.FC<HeaderProps> = ({
                   className="flex items-center space-x-2"
                 >
                   <User className="w-4 h-4" />
-                  <span className="hidden sm:inline">{user.name}</span>
+                  <span className="hidden sm:inline">{user.fullName}</span>
                 </Button>
 
                 {/* User Dropdown Menu */}

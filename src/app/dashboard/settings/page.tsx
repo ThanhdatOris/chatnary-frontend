@@ -8,15 +8,15 @@ import { useToast } from '@/contexts/ToastContext'
 import { useAuth } from '@/hooks/useAuth'
 import { api, API_ENDPOINTS } from '@/lib/api'
 import {
-    Bell,
-    Eye,
-    EyeOff,
-    Globe,
-    Lock,
-    Moon,
-    Save,
-    Sun,
-    User
+  Bell,
+  Eye,
+  EyeOff,
+  Globe,
+  Lock,
+  Moon,
+  Save,
+  Sun,
+  User
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
@@ -71,8 +71,14 @@ export default function SettingsPage() {
         fullName: formData.fullName.trim()
       })
       showToast('Thông tin đã được cập nhật thành công', 'success')
-    } catch (error: any) {
-      const errorMessage = error?.response?.data?.detail || 'Không thể cập nhật thông tin'
+    } catch (error: unknown) {
+      let errorMessage = 'Không thể cập nhật thông tin'
+      if (error && typeof error === 'object' && 'response' in error) {
+        const response = (error as { response?: { data?: { detail?: string } } }).response
+        if (response?.data?.detail) {
+          errorMessage = response.data.detail
+        }
+      }
       showToast(errorMessage, 'error')
     } finally {
       setIsSaving(false)
@@ -113,8 +119,14 @@ export default function SettingsPage() {
         newPassword: '',
         confirmPassword: ''
       }))
-    } catch (error: any) {
-      const errorMessage = error?.response?.data?.detail || 'Không thể thay đổi mật khẩu'
+    } catch (error: unknown) {
+      let errorMessage = 'Không thể thay đổi mật khẩu'
+      if (error && typeof error === 'object' && 'response' in error) {
+        const response = (error as { response?: { data?: { detail?: string } } }).response
+        if (response?.data?.detail) {
+          errorMessage = response.data.detail
+        }
+      }
       showToast(errorMessage, 'error')
     } finally {
       setIsSaving(false)
