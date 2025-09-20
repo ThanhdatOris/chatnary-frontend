@@ -56,10 +56,10 @@ export default function FileDetailPage() {
     <div className="max-w-2xl mx-auto py-8">
       <Card className="p-8">
         <h2 className="text-2xl font-bold mb-4">{file.originalName || file.filename}</h2>
-        <div className="mb-2 text-gray-600">Loại: {file.mimetype}</div>
-        <div className="mb-2 text-gray-600">Kích thước: {file.size} bytes</div>
-        <div className="mb-2 text-gray-600">Trạng thái AI: {file.aiStatus}</div>
-        <div className="mb-2 text-gray-600">Lịch sử xử lý:</div>
+        <div className="mb-2 text-muted-foreground">Loại: {file.mimetype}</div>
+        <div className="mb-2 text-muted-foreground">Kích thước: {file.size} bytes</div>
+        <div className="mb-2 text-muted-foreground">Trạng thái AI: {file.aiStatus}</div>
+        <div className="mb-2 text-muted-foreground">Lịch sử xử lý:</div>
         <ul className="list-disc ml-6 mb-4">
           {(file.history || []).map((h: string, idx: number) => (
             <li key={idx}>{h}</li>

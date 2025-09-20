@@ -135,7 +135,7 @@ export default function ChatHistory({ onSelectChat }: ChatHistoryProps) {
       case 'openai':
         return <Zap className="w-4 h-4 text-green-500" />
       default:
-        return <MessageCircle className="w-4 h-4 text-gray-500" />
+        return <MessageCircle className="w-4 h-4 text-muted-foreground" />
     }
   }
 
@@ -167,11 +167,11 @@ export default function ChatHistory({ onSelectChat }: ChatHistoryProps) {
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
               <MessageCircle className="w-6 h-6 text-blue-500" />
               Lịch sử Chat
             </h1>
-            <p className="text-gray-600 mt-1">
+            <p className="text-muted-foreground mt-1">
               Quản lý và xem lại các cuộc hội thoại với AI
             </p>
           </div>
@@ -179,13 +179,13 @@ export default function ChatHistory({ onSelectChat }: ChatHistoryProps) {
 
         {/* Search */}
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
           <input
             type="text"
             placeholder="Tìm kiếm trong lịch sử chat..."
             value={searchQuery}
             onChange={(e) => handleSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full pl-10 pr-4 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
       </div>
@@ -196,7 +196,7 @@ export default function ChatHistory({ onSelectChat }: ChatHistoryProps) {
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-              <p className="text-gray-600">Đang tải lịch sử chat...</p>
+              <p className="text-muted-foreground">Đang tải lịch sử chat...</p>
             </div>
           </div>
         ) : error ? (
@@ -204,7 +204,7 @@ export default function ChatHistory({ onSelectChat }: ChatHistoryProps) {
             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <MessageCircle className="w-8 h-8 text-red-500" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
+            <h3 className="text-lg font-medium text-foreground mb-2">
               Không thể tải lịch sử
             </h3>
             <p className="text-red-600 mb-4">{error}</p>
@@ -214,13 +214,13 @@ export default function ChatHistory({ onSelectChat }: ChatHistoryProps) {
           </Card>
         ) : chats.length === 0 ? (
           <Card className="p-8 text-center">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <MessageCircle className="w-8 h-8 text-gray-400" />
+            <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+              <MessageCircle className="w-8 h-8 text-muted-foreground" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
+            <h3 className="text-lg font-medium text-foreground mb-2">
               Chưa có cuộc hội thoại nào
             </h3>
-            <p className="text-gray-500">
+            <p className="text-muted-foreground">
               Bắt đầu chat với tài liệu để xem lịch sử tại đây
             </p>
           </Card>
@@ -242,16 +242,16 @@ export default function ChatHistory({ onSelectChat }: ChatHistoryProps) {
                   <div className="flex-1 min-w-0">
                     {/* Question */}
                     <div className="mb-3">
-                      <p className="font-medium text-gray-900 mb-1">
+                      <p className="font-medium text-foreground mb-1">
                         {truncateText(chat.query, 150)}
                       </p>
-                      <p className="text-gray-600 text-sm leading-relaxed">
+                      <p className="text-muted-foreground text-sm leading-relaxed">
                         {truncateText(chat.answer, 200)}
                       </p>
                     </div>
 
                     {/* Metadata */}
-                    <div className="flex items-center gap-4 text-sm text-gray-500">
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       <span className="flex items-center gap-1">
                         <Clock className="w-3 h-3" />
                         {formatTimestamp(chat.timestamp)}
@@ -283,7 +283,7 @@ export default function ChatHistory({ onSelectChat }: ChatHistoryProps) {
                             </span>
                           ))}
                           {chat.sources.length > 3 && (
-                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600">
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-muted text-muted-foreground">
                               +{chat.sources.length - 3} khác
                             </span>
                           )}

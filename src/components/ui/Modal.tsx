@@ -52,15 +52,15 @@ const Modal: React.FC<ModalProps> = ({
     >
       <div 
         className={cn(
-          'relative w-full rounded-lg bg-white shadow-xl',
+          'relative w-full rounded-lg bg-background shadow-xl',
           sizes[size],
           'mx-4 my-8 max-h-[90vh] overflow-hidden'
         )}
       >
         {/* Header */}
         {title && (
-          <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4">
-            <h2 className="text-lg font-semibold text-gray-900">
+          <div className="flex items-center justify-between border-b border-border px-6 py-4">
+            <h2 className="text-lg font-semibold text-foreground">
               {title}
             </h2>
             <Button
@@ -69,7 +69,7 @@ const Modal: React.FC<ModalProps> = ({
               onClick={onClose}
               className="h-6 w-6 p-0"
             >
-              <X className="h-4 w-4" />
+              <X className="w-4 h-4" />
             </Button>
           </div>
         )}

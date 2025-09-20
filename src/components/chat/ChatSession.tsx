@@ -47,7 +47,7 @@ export default function ChatSession({ chat, isOpen, onClose }: ChatSessionProps)
       case 'openai':
         return <Zap className="w-5 h-5 text-green-500" />
       default:
-        return <Brain className="w-5 h-5 text-gray-500" />
+        return <Brain className="w-5 h-5 text-muted-foreground" />
     }
   }
 
@@ -175,10 +175,10 @@ Xuất bởi Chatnary - ${new Date().toLocaleString('vi-VN')}
             <div className="flex items-center gap-3">
               {getModelIcon(chat.model_used)}
               <div>
-                <h2 className="text-xl font-semibold text-gray-900">
+                <h2 className="text-xl font-semibold text-foreground">
                   Chi tiết cuộc hội thoại
                 </h2>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   {getModelName(chat.model_used)} • {date} lúc {time}
                 </p>
               </div>
@@ -232,8 +232,8 @@ Xuất bởi Chatnary - ${new Date().toLocaleString('vi-VN')}
                 <span className="text-white text-sm font-medium">Q</span>
               </div>
               <div className="flex-1">
-                <h3 className="font-medium text-gray-900 mb-2">Câu hỏi</h3>
-                <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                <h3 className="font-medium text-foreground mb-2">Câu hỏi</h3>
+                <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
                   {chat.query}
                 </p>
               </div>
@@ -248,14 +248,14 @@ Xuất bởi Chatnary - ${new Date().toLocaleString('vi-VN')}
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
-                  <h3 className="font-medium text-gray-900">Trả lời</h3>
-                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-600">
+                  <h3 className="font-medium text-foreground">Trả lời</h3>
+                  <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs bg-muted text-muted-foreground">
                     {getModelIcon(chat.model_used)}
                     {getModelName(chat.model_used)}
                   </span>
                 </div>
                 <div className="prose prose-sm max-w-none">
-                  <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                  <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
                     {chat.answer}
                   </p>
                 </div>
@@ -271,7 +271,7 @@ Xuất bởi Chatnary - ${new Date().toLocaleString('vi-VN')}
                   <FileText className="w-4 h-4 text-blue-600" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-medium text-gray-900 mb-4">
+                  <h3 className="font-medium text-foreground mb-4">
                     Nguồn tham khảo ({chat.sources.length})
                   </h3>
                   <div className="space-y-4">
@@ -285,10 +285,10 @@ Xuất bởi Chatnary - ${new Date().toLocaleString('vi-VN')}
                             {index + 1}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h4 className="font-medium text-gray-800 mb-2">
+                            <h4 className="font-medium text-foreground mb-2">
                               {source.file_name}
                             </h4>
-                            <p className="text-sm text-gray-600 mb-3">
+                            <p className="text-sm text-muted-foreground mb-3">
                               {source.chunk_count} đoạn văn được tham khảo
                             </p>
                             
@@ -296,14 +296,14 @@ Xuất bởi Chatnary - ${new Date().toLocaleString('vi-VN')}
                             {source.chunks.length > 0 && (
                               <div className="space-y-2">
                                 {source.chunks.slice(0, 2).map((chunk, chunkIndex) => (
-                                  <div key={chunkIndex} className="bg-white rounded border p-3">
-                                    <p className="text-sm text-gray-700 leading-relaxed">
+                                  <div key={chunkIndex} className="bg-background rounded border p-3">
+                                    <p className="text-sm text-muted-foreground leading-relaxed">
                                       &quot;{(chunk.content || chunk.text || 'Nội dung không khả dụng').substring(0, 200)}...&quot;
                                     </p>
                                   </div>
                                 ))}
                                 {source.chunks.length > 2 && (
-                                  <p className="text-xs text-gray-500 italic">
+                                  <p className="text-xs text-muted-foreground italic">
                                     +{source.chunks.length - 2} đoạn khác
                                   </p>
                                 )}
@@ -320,31 +320,31 @@ Xuất bởi Chatnary - ${new Date().toLocaleString('vi-VN')}
           )}
 
           {/* Metadata */}
-          <Card className="p-6 bg-gray-50">
-            <h3 className="font-medium text-gray-900 mb-4">Thông tin chi tiết</h3>
+          <Card className="p-6 bg-muted">
+            <h3 className="font-medium text-foreground mb-4">Thông tin chi tiết</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
               <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-gray-400" />
-                <span className="text-gray-600">Thời gian:</span>
+                <Clock className="w-4 h-4 text-muted-foreground" />
+                <span className="text-muted-foreground">Thời gian:</span>
                 <span className="font-medium">{date} lúc {time}</span>
               </div>
               
               <div className="flex items-center gap-2">
                 {getModelIcon(chat.model_used)}
-                <span className="text-gray-600">AI Model:</span>
+                <span className="text-muted-foreground">AI Model:</span>
                 <span className="font-medium">{getModelName(chat.model_used)}</span>
               </div>
               
               <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-gray-400" />
-                <span className="text-gray-600">Nguồn tham khảo:</span>
+                <FileText className="w-4 h-4 text-muted-foreground" />
+                <span className="text-muted-foreground">Nguồn tham khảo:</span>
                 <span className="font-medium">{chat.sources.length} file</span>
               </div>
               
               <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-gray-400" />
-                <span className="text-gray-600">ID cuộc hội thoại:</span>
-                <span className="font-mono text-xs bg-gray-200 px-2 py-1 rounded">
+                <Calendar className="w-4 h-4 text-muted-foreground" />
+                <span className="text-muted-foreground">ID cuộc hội thoại:</span>
+                <span className="font-mono text-xs bg-muted px-2 py-1 rounded">
                   {chat.id}
                 </span>
               </div>

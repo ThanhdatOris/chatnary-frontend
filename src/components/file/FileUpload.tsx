@@ -145,7 +145,7 @@ export default function FileUpload({
   }
 
   const ProgressBar = ({ progress }: { progress: number }) => (
-    <div className="w-full bg-gray-200 rounded-full h-2">
+    <div className="w-full bg-muted rounded-full h-2">
       <div
         className={`bg-blue-600 h-2 rounded-full transition-all`}
         style={{ width: `${progress}%` }}
@@ -170,20 +170,20 @@ export default function FileUpload({
           border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors
           ${isDragActive 
             ? 'border-blue-500 bg-blue-50' 
-            : 'border-gray-300 hover:border-blue-400'
+            : 'border-border hover:border-blue-400'
           }
         `}
       >
         <input {...getInputProps()} />
-        <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+        <Upload className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
         {isDragActive ? (
           <p className="text-blue-600 font-medium">Drop files here...</p>
         ) : (
           <div>
-            <p className="text-gray-600 font-medium mb-2">
+            <p className="text-muted-foreground font-medium mb-2">
               Drag & drop files here, or click to select
             </p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-muted-foreground">
               Supports PDF, DOCX, TXT files up to {formatFileSize(maxSize)}
             </p>
           </div>
@@ -194,7 +194,7 @@ export default function FileUpload({
       {uploadFiles.length > 0 && (
         <div className="mt-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-medium text-gray-900">
+            <h3 className="font-medium text-foreground">
               Files ({uploadFiles.length})
             </h3>
             <div className="flex gap-2">
@@ -220,15 +220,15 @@ export default function FileUpload({
             {uploadFiles.map((uploadFile) => (
               <div
                 key={uploadFile.id}
-                className="flex items-center gap-4 p-4 border rounded-lg bg-white"
+                className="flex items-center gap-4 p-4 border rounded-lg bg-background"
               >
                 <File className="w-8 h-8 text-blue-500 flex-shrink-0" />
                 
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-gray-900 truncate">
+                  <p className="font-medium text-foreground truncate">
                     {uploadFile.file.name}
                   </p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-muted-foreground">
                     {formatFileSize(uploadFile.file.size)}
                   </p>
                   
@@ -259,11 +259,11 @@ export default function FileUpload({
                   
                   <button
                     onClick={() => removeFile(uploadFile.id)}
-                    className="p-1 hover:bg-gray-100 rounded"
+                    className="p-1 hover:bg-muted rounded"
                     title="Remove file"
                     aria-label="Remove file"
                   >
-                    <X className="w-4 h-4 text-gray-500" />
+                    <X className="w-4 h-4 text-muted-foreground" />
                   </button>
                 </div>
               </div>

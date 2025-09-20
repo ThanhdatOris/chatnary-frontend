@@ -27,6 +27,12 @@ module.exports = {
         input: 'var(--input)',
         ring: 'var(--ring)',
       },
+      backgroundImage: {
+        'gradient-primary': 'var(--gradient-primary)',
+        'gradient-secondary': 'var(--gradient-secondary)', 
+        'gradient-accent': 'var(--gradient-accent)',
+        'gradient-bg': 'var(--gradient-bg)',
+      },
       fontFamily: {
         sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
       },

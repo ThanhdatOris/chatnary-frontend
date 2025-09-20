@@ -37,10 +37,10 @@ export default function DashboardPage() {
         <main className="flex-1 p-6 lg:p-8 overflow-y-auto">
           <div className="max-w-7xl mx-auto">
             <div className="mb-8">
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              <h1 className="text-2xl font-bold text-foreground mb-2">
                 Chào mừng trở lại, {user?.fullName || user?.email}!
               </h1>
-              <p className="text-gray-800 dark:text-gray-300">
+              <p className="text-foreground">
                 Quản lý tài liệu và trò chuyện với AI một cách dễ dàng.
               </p>
             </div>

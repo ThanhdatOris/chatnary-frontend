@@ -55,24 +55,24 @@ function ResetPasswordForm() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-bg flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <Card className="p-8">
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
               {done ? <CheckCircle className="w-8 h-8 text-green-600" /> : <Lock className="w-8 h-8 text-blue-600" />}
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            <h1 className="text-2xl font-bold text-foreground mb-2">
               Đặt lại mật khẩu
             </h1>
-            <p className="text-gray-600">
+            <p className="text-muted-foreground">
               Nhập mật khẩu mới của bạn để tiếp tục
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Mật khẩu mới
               </label>
               <TextInput
@@ -85,7 +85,7 @@ function ResetPasswordForm() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-muted-foreground mb-1">
                 Xác nhận mật khẩu
               </label>
               <TextInput
@@ -115,7 +115,7 @@ function ResetPasswordForm() {
 export default function ResetPasswordPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center px-4">
+      <div className="min-h-screen bg-gradient-bg flex items-center justify-center px-4">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
       </div>
     }>

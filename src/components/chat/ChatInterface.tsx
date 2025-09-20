@@ -143,8 +143,8 @@ export default function ChatInterface({ onNewMessage }: ChatInterfaceProps) {
               <Bot className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">Chatnary AI</h2>
-              <p className="text-sm text-gray-500">Chat với tài liệu của bạn</p>
+              <h2 className="text-lg font-semibold text-foreground">Chatnary AI</h2>
+              <p className="text-sm text-muted-foreground">Chat với tài liệu của bạn</p>
             </div>
           </div>
           
@@ -154,7 +154,7 @@ export default function ChatInterface({ onNewMessage }: ChatInterfaceProps) {
               <select
                 value={selectedModel}
                 onChange={(e) => setSelectedModel(e.target.value as 'openai' | 'gemini')}
-                className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-10 text-sm font-medium text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed min-w-[140px]"
+                className="appearance-none bg-background border border-border rounded-lg px-4 py-2 pr-10 text-sm font-medium text-muted-foreground hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 disabled:bg-muted disabled:cursor-not-allowed min-w-[140px]"
                 disabled={loading}
                 title="Chọn AI model"
               >
@@ -162,7 +162,7 @@ export default function ChatInterface({ onNewMessage }: ChatInterfaceProps) {
                 <option value="openai">⚡ OpenAI GPT</option>
               </select>
               <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <ChevronDown className="w-4 h-4 text-gray-400" />
+                <ChevronDown className="w-4 h-4 text-muted-foreground" />
               </div>
             </div>
             
@@ -212,16 +212,16 @@ export default function ChatInterface({ onNewMessage }: ChatInterfaceProps) {
                 <div className={`rounded-lg p-3 ${
                   message.type === 'user'
                     ? 'bg-blue-500 text-white'
-                    : 'bg-gray-100 text-gray-900'
+                    : 'bg-muted text-foreground'
                 }`}>
                   <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                   
                   {/* Sources - Tối ưu hiển thị trích dẫn */}
                   {message.sources && message.sources.length > 0 && (
-                    <div className="mt-4 pt-3 border-t border-gray-300/50">
+                    <div className="mt-4 pt-3 border-t border-border/50">
                       <div className="flex items-center gap-2 mb-3">
-                        <FileText className="w-4 h-4 text-gray-500" />
-                        <span className="text-sm font-medium text-gray-700">
+                        <FileText className="w-4 h-4 text-muted-foreground" />
+                        <span className="text-sm font-medium text-muted-foreground">
                           Nguồn tham khảo ({message.sources.length})
                         </span>
                       </div>
@@ -234,10 +234,10 @@ export default function ChatInterface({ onNewMessage }: ChatInterfaceProps) {
                             <div className="flex items-start gap-2">
                               <div className="w-2 h-2 rounded-full bg-blue-400 mt-2 flex-shrink-0"></div>
                               <div className="flex-1 min-w-0">
-                                <p className="font-medium text-gray-800 text-sm truncate" title={source.filename}>
+                                <p className="font-medium text-foreground text-sm truncate" title={source.filename}>
                                   {source.filename}
                                 </p>
-                                <p className="text-gray-700 text-sm mt-1 leading-relaxed">
+                                <p className="text-muted-foreground text-sm mt-1 leading-relaxed">
                                   &quot;{source.snippet}&quot;
                                 </p>
                               </div>
@@ -262,8 +262,8 @@ export default function ChatInterface({ onNewMessage }: ChatInterfaceProps) {
                 <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
                   <Sparkles className="w-4 h-4 text-white" />
                 </div>
-                <div className="bg-gray-100 rounded-lg p-3">
-                  <div className="flex items-center gap-2 text-gray-600">
+                <div className="bg-muted rounded-lg p-3">
+                  <div className="flex items-center gap-2 text-muted-foreground">
                     <div className="animate-spin w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full"></div>
                     <span className="text-sm">AI đang suy nghĩ...</span>
                   </div>
@@ -304,7 +304,7 @@ export default function ChatInterface({ onNewMessage }: ChatInterfaceProps) {
           </Button>
         </div>
         
-        <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+        <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
           <span className="flex items-center gap-1">
             {selectedModel === 'gemini' ? (
               <>

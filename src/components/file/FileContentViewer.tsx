@@ -110,10 +110,10 @@ export default function FileContentViewer({
           <div className="flex items-center gap-3">
             <FileText className="w-6 h-6 text-blue-500" />
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">
+              <h2 className="text-xl font-semibold text-foreground">
                 Nội dung tài liệu
               </h2>
-              <p className="text-sm text-gray-500">{fileName}</p>
+              <p className="text-sm text-muted-foreground">{fileName}</p>
             </div>
           </div>
           
@@ -159,7 +159,7 @@ export default function FileContentViewer({
             <div className="flex items-center justify-center h-full">
               <div className="text-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                <p className="text-gray-600">Đang tải nội dung...</p>
+                <p className="text-muted-foreground">Đang tải nội dung...</p>
               </div>
             </div>
           )}
@@ -170,7 +170,7 @@ export default function FileContentViewer({
                 <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <FileText className="w-8 h-8 text-red-500" />
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                <h3 className="text-lg font-medium text-foreground mb-2">
                   Không thể tải nội dung
                 </h3>
                 <p className="text-red-600 mb-4">{error}</p>
@@ -184,8 +184,8 @@ export default function FileContentViewer({
           {content && (
             <div className="h-full flex flex-col">
               {/* Content Stats */}
-              <div className="px-6 py-3 bg-gray-50 border-b">
-                <div className="flex items-center gap-6 text-sm text-gray-600">
+              <div className="px-6 py-3 bg-muted border-b">
+                <div className="flex items-center gap-6 text-sm text-muted-foreground">
                   <span className="flex items-center gap-1">
                     {getFileTypeIcon(content.mimetype)} {content.mimetype}
                   </span>
@@ -200,7 +200,7 @@ export default function FileContentViewer({
 
               {/* Text Content */}
               <div className="flex-1 overflow-auto p-6">
-                <div className="bg-white border rounded-lg">
+                <div className="bg-background border rounded-lg">
                   <pre className="whitespace-pre-wrap font-mono text-sm leading-relaxed p-4 max-w-none overflow-auto">
                     {content.content}
                   </pre>

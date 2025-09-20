@@ -34,17 +34,17 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-gradient-bg flex items-center justify-center px-4">
       <div className="w-full max-w-md">
         <Card className="p-8">
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <Mail className="w-8 h-8 text-blue-600" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            <h1 className="text-2xl font-bold text-foreground mb-2">
               Quên mật khẩu
             </h1>
-            <p className="text-gray-600">
+            <p className="text-muted-foreground">
               Nhập email của bạn để nhận hướng dẫn đặt lại mật khẩu
             </p>
           </div>
@@ -52,7 +52,7 @@ export default function ForgotPasswordPage() {
           {!sent ? (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="email" className="block text-sm font-medium text-muted-foreground mb-1">
                   Email
                 </label>
                 <TextInput
@@ -80,10 +80,10 @@ export default function ForgotPasswordPage() {
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto">
                 <Mail className="w-8 h-8 text-green-600" />
               </div>
-              <h2 className="text-xl font-semibold text-gray-900">
+              <h2 className="text-xl font-semibold text-foreground">
                 Email đã được gửi!
               </h2>
-              <p className="text-gray-600">
+              <p className="text-muted-foreground">
                 Vui lòng kiểm tra hộp thư email của bạn và làm theo hướng dẫn để đặt lại mật khẩu.
               </p>
               <Button

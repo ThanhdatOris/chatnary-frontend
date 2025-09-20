@@ -13,7 +13,7 @@ interface StatCardProps {
 
 function StatCard({ title, value, icon, color, isLoading }: StatCardProps) {
   return (
-    <div className="glass-card p-6 float-glass">
+    <div className="glass-card-hover p-6">
       <div className="flex items-center">
         <div className="flex-shrink-0">
           <div className={`w-10 h-10 ${color} rounded-xl flex items-center justify-center shadow-glass`}>
@@ -21,10 +21,10 @@ function StatCard({ title, value, icon, color, isLoading }: StatCardProps) {
           </div>
         </div>
         <div className="ml-4">
-          <p className="text-sm font-medium text-gray-900 dark:text-gray-300">{title}</p>
-          <p className="text-2xl font-semibold text-gray-900 dark:text-white">
+          <p className="text-sm font-medium text-muted-foreground">{title}</p>
+          <p className="text-2xl font-semibold text-foreground">
             {isLoading ? (
-              <div className="animate-pulse bg-gray-200 dark:bg-gray-700 h-8 w-12 rounded"></div>
+              <div className="animate-pulse bg-muted h-8 w-12 rounded"></div>
             ) : (
               value
             )}
@@ -113,16 +113,16 @@ export default function DashboardStats() {
       {/* Storage Details */}
       {stats && (
         <div className="col-span-full mt-4">
-          <div className="glass-card p-4 float-glass">
+          <div className="glass-card-light p-4">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium text-gray-900 dark:text-gray-200">
+              <span className="text-sm font-medium text-foreground">
                 Chi tiết lưu trữ
               </span>
-              <span className="text-sm text-gray-800 dark:text-gray-300">
+              <span className="text-sm text-muted-foreground">
                 {formatBytes(stats.storageUsed)} / {formatBytes(stats.maxStorage)}
               </span>
             </div>
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+            <div className="w-full bg-muted rounded-full h-2">
               <div
                 className={`h-2 rounded-full transition-all ${
                   storagePercentage > 90 

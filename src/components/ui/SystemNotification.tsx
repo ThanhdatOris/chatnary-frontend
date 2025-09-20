@@ -66,13 +66,13 @@ const getBgColor = (type: Notification['type']) => {
 const getTextColor = (type: Notification['type']) => {
   switch (type) {
     case 'info':
-      return 'text-blue-800'
+      return 'text-blue-700 dark:text-blue-300'
     case 'success':
-      return 'text-green-800'
+      return 'text-green-700 dark:text-green-300'
     case 'warning':
-      return 'text-yellow-800'
+      return 'text-yellow-700 dark:text-yellow-300'
     case 'error':
-      return 'text-red-800'
+      return 'text-red-700 dark:text-red-300'
   }
 }
 
@@ -109,10 +109,10 @@ export default function SystemNotification({
                   <h4 className={`text-sm font-medium ${getTextColor(notification.type)}`}>
                     {notification.title}
                   </h4>
-                  <p className="text-sm text-gray-800 dark:text-gray-300 mt-1">
+                  <p className="text-sm text-foreground mt-1">
                     {notification.message}
                   </p>
-                  <p className="text-xs text-gray-700 dark:text-gray-400 mt-2">
+                  <p className="text-xs text-muted-foreground mt-2">
                     {notification.timestamp.toLocaleString('vi-VN')}
                   </p>
                 </div>
@@ -121,7 +121,7 @@ export default function SystemNotification({
               {notification.dismissible && (
                 <button
                   onClick={() => handleDismiss(notification.id)}
-                  className="flex-shrink-0 ml-3 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
+                  className="flex-shrink-0 ml-3 text-muted-foreground hover:text-foreground dark:text-muted-foreground dark:hover:text-foreground"
                   title="Đóng thông báo"
                 >
                   <X className="w-4 h-4" />

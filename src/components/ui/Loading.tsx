@@ -31,7 +31,7 @@ const Loading: React.FC<LoadingProps> = ({
     <div className={cn('flex flex-col items-center justify-center', className)}>
       <Loader2 className={cn('animate-spin text-blue-600', sizes[size])} />
       {text && (
-        <p className={cn('mt-2 text-gray-600', textSizes[size])}>
+        <p className={cn('mt-2 text-muted-foreground', textSizes[size])}>
           {text}
         </p>
       )}
@@ -40,7 +40,7 @@ const Loading: React.FC<LoadingProps> = ({
 
   if (fullScreen) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/80 backdrop-blur-sm">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
         <LoadingContent />
       </div>
     )

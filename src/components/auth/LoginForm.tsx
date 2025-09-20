@@ -58,8 +58,8 @@ const LoginForm: React.FC = () => {
         <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center mx-auto mb-4">
           <LogIn className="w-6 h-6 text-white" />
         </div>
-        <h1 className="text-2xl font-bold text-gray-900">Welcome back</h1>
-        <p className="text-gray-600 mt-2">Sign in to your Chatnary account</p>
+        <h1 className="text-2xl font-bold text-foreground">Welcome back</h1>
+        <p className="text-muted-foreground mt-2">Sign in to your Chatnary account</p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -70,7 +70,7 @@ const LoginForm: React.FC = () => {
         )}
 
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="email" className="block text-sm font-medium text-foreground mb-1">
             Email Address
           </label>
           <input
@@ -80,9 +80,9 @@ const LoginForm: React.FC = () => {
             type="email"
             placeholder="Enter your email"
             disabled={loading}
-            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 ${
-              errors.email ? 'border-red-500' : 'border-gray-300'
-            } ${loading ? 'bg-gray-100' : 'bg-white'}`}
+            className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-foreground bg-background ${
+              errors.email ? 'border-red-500' : 'border-border'
+            } ${loading ? 'opacity-50' : ''}`}
           />
           {errors.email && (
             <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
@@ -90,7 +90,7 @@ const LoginForm: React.FC = () => {
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="password" className="block text-sm font-medium text-foreground mb-1">
             Password
           </label>
           <div className="relative">
@@ -101,14 +101,14 @@ const LoginForm: React.FC = () => {
               type={showPassword ? 'text' : 'password'}
               placeholder="Enter your password"
               disabled={loading}
-              className={`w-full px-3 py-2 pr-10 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 ${
-                errors.password ? 'border-red-500' : 'border-gray-300'
-              } ${loading ? 'bg-gray-100' : 'bg-white'}`}
+              className={`w-full px-3 py-2 pr-10 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-foreground bg-background ${
+                errors.password ? 'border-red-500' : 'border-border'
+              } ${loading ? 'opacity-50' : ''}`}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
             >
               {showPassword ? (
                 <EyeOff className="w-4 h-4" />
@@ -126,9 +126,9 @@ const LoginForm: React.FC = () => {
           <label className="flex items-center">
             <input
               type="checkbox"
-              className="rounded border-gray-300 text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+              className="rounded border-border text-blue-600 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
             />
-            <span className="ml-2 text-gray-600">Remember me</span>
+            <span className="ml-2 text-muted-foreground">Remember me</span>
           </label>
           <Link href="/forgot-password" className="text-blue-600 hover:text-blue-500">
             Quên mật khẩu?
@@ -146,7 +146,7 @@ const LoginForm: React.FC = () => {
       </form>
 
       <div className="mt-6 text-center">
-        <p className="text-gray-600">
+        <p className="text-muted-foreground">
           Don&apos;t have an account?{' '}
           <Link href="/register" className="text-blue-600 hover:text-blue-500 font-medium">
             Sign up for free

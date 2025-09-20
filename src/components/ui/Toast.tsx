@@ -31,14 +31,14 @@ export default function Toast({ message, type = 'info', duration = 5000, onClose
   }[type]
 
   return (
-    <div className={`fixed top-4 right-4 ${bgColor} text-white px-4 py-3 rounded-lg shadow-lg z-50 max-w-md flex items-center gap-3`}>
+    <div className={`fixed top-4 right-4 ${bgColor} text-foreground px-4 py-3 rounded-lg shadow-lg z-50 max-w-md flex items-center gap-3`}>
       <span className="flex-1">{message}</span>
       <button
         onClick={() => {
           setIsVisible(false)
           onClose?.()
         }}
-        className="text-white hover:text-gray-200 transition-colors"
+        className="text-foreground hover:text-muted-foreground transition-colors"
         aria-label="Close notification"
       >
         <X className="w-4 h-4" />

@@ -70,16 +70,16 @@ export default function HomePageClient() {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+    <div className="min-h-screen bg-gradient-bg">
       {/* Header */}
       <header className="relative">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 gradient-primary rounded-lg flex items-center justify-center">
                 <FileText className="w-5 h-5 text-white" />
               </div>
-              <span className="text-2xl font-bold text-gray-900">Chatnary</span>
+              <span className="text-2xl font-bold text-foreground">Chatnary</span>
             </div>
             <div className="flex items-center space-x-4">
               <Link href="/login">
@@ -97,11 +97,11 @@ export default function HomePageClient() {
       <section className="relative py-20 lg:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h1 className="text-4xl lg:text-6xl font-bold text-gray-900 mb-6">
+            <h1 className="text-4xl lg:text-6xl font-bold text-foreground mb-6">
               Chat with Your{' '}
-              <span className="text-blue-600">Documents</span>
+              <span className="gradient-text">Documents</span>
             </h1>
-            <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+            <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
               Upload your documents and start chatting with them using AI. 
               Search, ask questions, and get instant answers from your own knowledge base.
             </p>
@@ -120,13 +120,13 @@ export default function HomePageClient() {
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-background">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
               Everything you need to manage documents
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Powerful features designed to make document management and interaction effortless.
             </p>
           </div>
@@ -135,14 +135,14 @@ export default function HomePageClient() {
             {features.map((feature, index) => {
               const IconComponent = feature.icon
               return (
-                <div key={index} className="p-6 rounded-lg border border-gray-200 hover:border-blue-300 transition-colors">
+                <div key={index} className="p-6 rounded-lg border border-border hover:border-blue-300 transition-colors">
                   <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
                     <IconComponent className="w-6 h-6 text-blue-600" />
                   </div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  <h3 className="text-xl font-semibold text-foreground mb-2">
                     {feature.title}
                   </h3>
-                  <p className="text-gray-600">
+                  <p className="text-muted-foreground">
                     {feature.description}
                   </p>
                 </div>
@@ -162,7 +162,7 @@ export default function HomePageClient() {
             Join thousands of users who are already chatting with their documents.
           </p>
           <Link href="/register">
-            <Button size="lg" variant="outline" className="bg-white text-blue-600 hover:bg-gray-50 px-8 py-3">
+            <Button size="lg" variant="outline" className="bg-background text-blue-600 hover:bg-muted px-8 py-3">
               Bắt đầu ngay hôm nay
             </Button>
           </Link>
@@ -179,7 +179,7 @@ export default function HomePageClient() {
               </div>
               <span className="text-xl font-bold">Chatnary</span>
             </div>
-            <div className="text-gray-400 text-sm">
+            <div className="text-muted-foreground text-sm">
               © 2025 Chatnary. All rights reserved.
             </div>
           </div>

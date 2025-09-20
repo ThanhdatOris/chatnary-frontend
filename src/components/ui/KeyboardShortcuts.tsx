@@ -61,22 +61,22 @@ export default function KeyboardShortcuts({ isOpen, onClose }: KeyboardShortcuts
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Keyboard Shortcuts">
       <div className="space-y-4">
-        <p className="text-sm text-gray-600 mb-6">
+        <p className="text-sm text-muted-foreground mb-6">
           Sử dụng các phím tắt để điều hướng nhanh hơn trong ứng dụng.
         </p>
         
         <div className="grid gap-3">
           {shortcuts.map((shortcut, index) => (
-            <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <div key={index} className="flex items-center justify-between p-3 bg-muted rounded-lg">
               <div className="flex items-center space-x-3">
-                <div className="text-gray-600">
+                <div className="text-muted-foreground">
                   {shortcut.icon}
                 </div>
-                <span className="text-sm font-medium text-gray-900">
+                <span className="text-sm font-medium text-foreground">
                   {shortcut.description}
                 </span>
               </div>
-              <kbd className="px-2 py-1 text-xs font-semibold text-gray-800 bg-white border border-gray-300 rounded shadow-sm">
+              <kbd className="px-2 py-1 text-xs font-semibold text-foreground bg-background border border-border rounded shadow-sm">
                 {formatKey(shortcut.key)}
               </kbd>
             </div>

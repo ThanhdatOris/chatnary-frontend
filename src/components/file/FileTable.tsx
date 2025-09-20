@@ -81,11 +81,11 @@ export default function FileTable() {
           placeholder="Tìm kiếm tài liệu..."
           className="border px-3 py-2 rounded w-64"
         />
-        <span className="text-gray-500">Tổng số: {total}</span>
+        <span className="text-muted-foreground">Tổng số: {total}</span>
       </div>
-      <table className="min-w-full border rounded-lg bg-white">
+      <table className="min-w-full border rounded-lg bg-background">
         <thead>
-          <tr className="bg-gray-100">
+          <tr className="bg-muted">
             <th className="px-4 py-2 text-left">Tên file</th>
             <th className="px-4 py-2 text-left">Kích thước</th>
             <th className="px-4 py-2 text-left">Ngày upload</th>

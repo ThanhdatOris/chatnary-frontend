@@ -23,7 +23,7 @@ const Card: React.FC<CardProps> = ({
 }) => {
   const baseStyles = glass 
     ? 'glass-card theme-transition shadow-glass' 
-    : 'rounded-lg bg-white dark:bg-gray-800 shadow-sm theme-transition'
+    : 'rounded-lg bg-background shadow-sm theme-transition'
   
   const paddingStyles = {
     sm: 'p-3',
@@ -31,7 +31,7 @@ const Card: React.FC<CardProps> = ({
     lg: 'p-6'
   }
 
-  const borderStyles = border && !glass ? 'border border-gray-200 dark:border-gray-700' : ''
+  const borderStyles = border && !glass ? 'border border-border dark:border-gray-700' : ''
   const hoverStyles = hover ? 'hover:shadow-md transition-all duration-300' : ''
   const floatStyles = float ? 'float-glass' : ''
 
@@ -74,7 +74,7 @@ const CardDescription: React.FC<{ children: React.ReactNode; className?: string 
   children,
   className
 }) => (
-  <p className={cn('text-sm text-gray-800 dark:text-gray-300', className)}>
+  <p className={cn('text-sm text-muted-foreground', className)}>
     {children}
   </p>
 )

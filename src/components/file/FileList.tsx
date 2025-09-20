@@ -177,10 +177,10 @@ export default function FileList({ onFileSelect, refreshTrigger }: FileListProps
   }
 
   const getFileIcon = (mimeType?: string) => {
-    if (!mimeType) return <File className="w-8 h-8 text-gray-500" />
+    if (!mimeType) return <File className="w-8 h-8 text-muted-foreground" />
     if (mimeType.includes('pdf')) return <FileText className="w-8 h-8 text-red-500" />
     if (mimeType.includes('word')) return <File className="w-8 h-8 text-blue-500" />
-    return <File className="w-8 h-8 text-gray-500" />
+    return <File className="w-8 h-8 text-muted-foreground" />
   }
 
   const getFileId = (file: FileItem) => file._id || file.id || ''
@@ -225,9 +225,9 @@ export default function FileList({ onFileSelect, refreshTrigger }: FileListProps
   if (files.length === 0) {
     return (
       <div className="text-center py-12">
-        <FileText className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-        <h3 className="text-lg font-medium text-gray-900 mb-2">No files uploaded yet</h3>
-        <p className="text-gray-500">Upload your first document to get started</p>
+        <FileText className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+        <h3 className="text-lg font-medium text-foreground mb-2">No files uploaded yet</h3>
+        <p className="text-muted-foreground">Upload your first document to get started</p>
       </div>
     )
   }
@@ -235,7 +235,7 @@ export default function FileList({ onFileSelect, refreshTrigger }: FileListProps
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-gray-900">
+        <h2 className="text-lg font-semibold text-foreground">
           My Documents ({files.length})
         </h2>
         <Button onClick={fetchFiles} variant="outline" size="sm">
@@ -247,7 +247,7 @@ export default function FileList({ onFileSelect, refreshTrigger }: FileListProps
         {Array.isArray(files) && files.map((file) => (
           <div
             key={getFileId(file)}
-            className="border rounded-lg p-4 hover:shadow-md transition-shadow bg-white"
+            className="border rounded-lg p-4 hover:shadow-md transition-shadow bg-background"
           >
             <div className="flex items-start gap-4">
               <div className="flex-shrink-0">
@@ -255,11 +255,11 @@ export default function FileList({ onFileSelect, refreshTrigger }: FileListProps
               </div>
 
               <div className="flex-1 min-w-0">
-                <h3 className="font-medium text-gray-900 truncate">
+                <h3 className="font-medium text-foreground truncate">
                   {file.originalName || file.filename || 'Unknown file'}
                 </h3>
                 
-                <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
+                <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
                   <span>{formatFileSize(file.size || 0)}</span>
                   <span className="flex items-center gap-1">
                     <Calendar className="w-4 h-4" />
@@ -281,7 +281,7 @@ export default function FileList({ onFileSelect, refreshTrigger }: FileListProps
                 </div>
 
                 {file.metadata && (
-                  <div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
+                  <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
                     {file.metadata.pages && (
                       <span>{file.metadata.pages} pages</span>
                     )}

@@ -26,7 +26,7 @@ export default function FilesPage() {
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-600">Please log in to access files.</p>
+        <p className="text-muted-foreground">Please log in to access files.</p>
       </div>
     )
   }
@@ -59,8 +59,8 @@ export default function FilesPage() {
           <div className="max-w-7xl mx-auto">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">My Files</h1>
-                <p className="text-gray-800 dark:text-gray-300 mt-1">
+                <h1 className="text-2xl font-bold text-foreground">My Files</h1>
+                <p className="text-foreground mt-1">
                   Upload and manage your documents
                 </p>
               </div>
@@ -76,7 +76,7 @@ export default function FilesPage() {
 
             {showUpload && (
               <div className="glass-card float-glass p-6 mb-6">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Upload Documents</h2>
+                <h2 className="text-lg font-semibold text-foreground mb-4">Upload Documents</h2>
                 <FileUpload
                   onUploadSuccess={handleUploadSuccess}
                   onUploadError={(error) => {

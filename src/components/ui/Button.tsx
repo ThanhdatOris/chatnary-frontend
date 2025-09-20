@@ -18,9 +18,9 @@ const Button: React.FC<ButtonProps & React.ButtonHTMLAttributes<HTMLButtonElemen
   
   const variants = {
     primary: 'bg-blue-600 text-white hover:bg-blue-700 focus-visible:ring-blue-500',
-    secondary: 'bg-gray-100 text-gray-900 hover:bg-gray-200 focus-visible:ring-gray-500',
-    outline: 'border border-gray-300 bg-transparent text-gray-700 hover:bg-gray-50 focus-visible:ring-gray-500',
-    ghost: 'text-gray-700 hover:bg-gray-100 focus-visible:ring-gray-500',
+    secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80 focus-visible:ring-ring',
+    outline: 'border border-border bg-transparent text-foreground hover:bg-muted focus-visible:ring-ring',
+    ghost: 'text-foreground hover:bg-muted focus-visible:ring-ring',
     destructive: 'bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-500'
   }
 

@@ -38,14 +38,14 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({
           'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
           'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
           'glass-card border-0',
-          theme === 'dark' ? 'bg-blue-600' : 'bg-gray-200',
+          theme === 'dark' ? 'bg-blue-600' : 'bg-muted',
           className
         )}
         aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} theme`}
       >
         <span
           className={cn(
-            'inline-block h-4 w-4 transform rounded-full bg-white transition-transform flex items-center justify-center',
+            'inline-block h-4 w-4 transform rounded-full bg-background transition-transform flex items-center justify-center',
             theme === 'dark' ? 'translate-x-6' : 'translate-x-1'
           )}
         >
@@ -66,7 +66,7 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({
         'glass-card border-0 rounded-full flex items-center justify-center',
         'hover:scale-105 active:scale-95 transition-all duration-200',
         'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
-        'text-gray-700 dark:text-gray-300',
+        'text-foreground',
         sizeClasses[size],
         className
       )}

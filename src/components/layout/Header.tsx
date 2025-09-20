@@ -2,15 +2,15 @@ import { Button, KeyboardShortcuts, ThemeToggle } from '@/components/ui'
 import { AuthUtils } from '@/lib/auth'
 import { User as UserType } from '@/lib/types'
 import {
-    FileText,
-    Keyboard,
-    LogOut,
-    Menu,
-    MessageSquare,
-    Search,
-    Upload,
-    User,
-    X
+  FileText,
+  Keyboard,
+  LogOut,
+  Menu,
+  MessageSquare,
+  Search,
+  Upload,
+  User,
+  X
 } from 'lucide-react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -53,7 +53,7 @@ const Header: React.FC<HeaderProps> = ({
               <div className="w-8 h-8 gradient-primary rounded-xl flex items-center justify-center shadow-glass">
                 <FileText className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-bold text-gray-900 dark:text-white">Chatnary</span>
+              <span className="text-xl font-bold text-foreground">Chatnary</span>
             </Link>
           </div>
 
@@ -65,7 +65,7 @@ const Header: React.FC<HeaderProps> = ({
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="flex items-center space-x-1 text-gray-800 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 hover:bg-white/20 dark:hover:bg-white/10"
+                  className="flex items-center space-x-1 text-foreground hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 hover:bg-background/20 dark:hover:bg-background/10"
                 >
                   <Icon className="w-4 h-4" />
                   <span>{item.name}</span>
@@ -108,7 +108,7 @@ const Header: React.FC<HeaderProps> = ({
                   <div className="absolute right-0 mt-2 w-48 glass-card py-1 z-50">
                     <Link
                       href="/dashboard/profile"
-                      className="flex items-center px-4 py-2 text-sm text-gray-800 dark:text-gray-300 hover:bg-white/20 dark:hover:bg-white/10 rounded-lg mx-1 transition-colors"
+                      className="flex items-center px-4 py-2 text-sm text-foreground hover:bg-background/20 dark:hover:bg-background/10 rounded-lg mx-1 transition-colors"
                       onClick={() => setIsUserMenuOpen(false)}
                     >
                       <User className="w-4 h-4 mr-2" />
@@ -116,7 +116,7 @@ const Header: React.FC<HeaderProps> = ({
                     </Link>
                     <button
                       onClick={handleLogout}
-                      className="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-gray-300 hover:bg-white/20 dark:hover:bg-white/10 rounded-lg mx-1 transition-colors"
+                      className="flex items-center w-full px-4 py-2 text-sm text-foreground hover:bg-background/20 dark:hover:bg-background/10 rounded-lg mx-1 transition-colors"
                     >
                       <LogOut className="w-4 h-4 mr-2" />
                       Logout
@@ -161,7 +161,7 @@ const Header: React.FC<HeaderProps> = ({
                   <Link
                     key={item.name}
                     href={item.href}
-                    className="flex items-center space-x-2 text-gray-800 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 hover:bg-white/20 dark:hover:bg-white/10"
+                    className="flex items-center space-x-2 text-foreground hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 hover:bg-background/20 dark:hover:bg-background/10"
                   >
                     <Icon className="w-4 h-4" />
                     <span>{item.name}</span>

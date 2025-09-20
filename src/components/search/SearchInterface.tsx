@@ -128,21 +128,21 @@ export default function SearchInterface() {
       <Card className="p-6">
         <div className="text-center mb-6">
           <Search className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Tìm kiếm tài liệu</h1>
-          <p className="text-gray-600">Tìm kiếm nội dung trong tất cả tài liệu của bạn</p>
+          <h1 className="text-2xl font-bold text-foreground mb-2">Tìm kiếm tài liệu</h1>
+          <p className="text-muted-foreground">Tìm kiếm nội dung trong tất cả tài liệu của bạn</p>
         </div>
 
         {/* Search Form */}
         <form onSubmit={(e) => { e.preventDefault(); handleSearch(); }} className="space-y-4">
           <div className="flex gap-2">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
               <input
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Nhập từ khóa tìm kiếm..."
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
+                className="w-full pl-10 pr-4 py-3 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-foreground placeholder:text-muted-foreground"
                 disabled={loading}
               />
             </div>
@@ -163,7 +163,7 @@ export default function SearchInterface() {
         {/* Recent Searches */}
         {recentSearches.length > 0 && (
           <div className="mt-4">
-            <p className="text-sm text-gray-600 mb-2 flex items-center gap-1">
+            <p className="text-sm text-muted-foreground mb-2 flex items-center gap-1">
               <Clock className="w-4 h-4" />
               Tìm kiếm gần đây:
             </p>
@@ -175,7 +175,7 @@ export default function SearchInterface() {
                     setQuery(search)
                     handleSearch(search)
                   }}
-                  className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-full text-gray-700 transition-colors"
+                  className="px-3 py-1 text-sm bg-muted hover:bg-muted/80 rounded-full text-muted-foreground transition-colors"
                 >
                   {search}
                 </button>
@@ -187,7 +187,7 @@ export default function SearchInterface() {
 
       {/* Search Stats */}
       {searchStats && (
-        <div className="flex items-center justify-between text-sm text-gray-600 px-2">
+        <div className="flex items-center justify-between text-sm text-muted-foreground px-2">
           <span>
             Tìm thấy {searchStats.total} kết quả
           </span>
@@ -211,11 +211,11 @@ export default function SearchInterface() {
                 </div>
                 
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-gray-900 mb-1 truncate">
+                  <h3 className="font-medium text-foreground mb-1 truncate">
                     {result.file.originalName}
                   </h3>
                   
-                  <div className="flex items-center gap-4 text-sm text-gray-500 mb-2">
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
                     <span>{formatFileSize(result.file.size)}</span>
                     <span>{formatDate(result.file.uploadTime)}</span>
                     <span className="flex items-center gap-1">
@@ -225,7 +225,7 @@ export default function SearchInterface() {
                   </div>
                   
                   {result.snippet && (
-                    <p className="text-sm text-gray-700 bg-yellow-50 p-2 rounded border-l-2 border-yellow-400">
+                    <p className="text-sm text-muted-foreground bg-yellow-50 p-2 rounded border-l-2 border-yellow-400">
                       {result.snippet}
                     </p>
                   )}
@@ -253,13 +253,13 @@ export default function SearchInterface() {
       {/* Empty State */}
       {results.length === 0 && searchStats && (
         <Card className="p-8">
-          <div className="text-center text-gray-500">
-            <Search className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Không tìm thấy kết quả</h3>
-            <p className="text-gray-500 mb-4">
+          <div className="text-center text-muted-foreground">
+            <Search className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+            <h3 className="text-lg font-medium text-foreground mb-2">Không tìm thấy kết quả</h3>
+            <p className="text-muted-foreground mb-4">
               Không có tài liệu nào chứa từ khóa &ldquo;{query}&rdquo;
             </p>
-            <div className="text-sm text-gray-400">
+            <div className="text-sm text-muted-foreground">
               <p>Gợi ý:</p>
               <ul className="text-left inline-block mt-2">
                 <li>• Kiểm tra chính tả từ khóa</li>
