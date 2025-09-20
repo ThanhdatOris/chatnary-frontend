@@ -149,7 +149,7 @@ export default function ChatLayout({ className }: ChatLayoutProps) {
   }
 
   return (
-    <div className={cn('flex h-full gradient-bg overflow-hidden', className)}>
+    <div className={cn('chat-layout flex gradient-bg overflow-hidden', className)}>
       {/* Chat History Sidebar */}
       <div className={cn(
         'glass-sidebar border-r border-glass-border flex flex-col transition-all duration-300 flex-shrink-0',
@@ -227,7 +227,7 @@ export default function ChatLayout({ className }: ChatLayoutProps) {
                     <div
                       key={chat.id}
                       onClick={() => handleSelectChat(chat)}
-                      className="group p-3 rounded-lg hover:bg-muted cursor-pointer transition-colors border border-transparent hover:border-border"
+                      className="chat-history-item group p-3 cursor-pointer transition-all duration-200"
                     >
                       <div className="flex items-start gap-2">
                         <div className="flex-shrink-0 mt-1">

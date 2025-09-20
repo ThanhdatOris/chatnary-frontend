@@ -31,7 +31,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
       {/* Mobile backdrop */}
       {isOpen && (
         <div 
-          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          className="fixed inset-0 z-40 bg-overlay lg:hidden"
           onClick={onClose}
         />
       )}
@@ -54,15 +54,15 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
                   href={item.href}
                   onClick={onClose}
                   className={cn(
-                    'flex items-center px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200 float-glass',
+                    'group flex items-center px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200 float-glass',
                     isActive
                       ? 'glass-card text-blue-600 border-r-2 border-blue-600'
-                      : 'text-foreground hover:bg-background/20 dark:hover:bg-background/10 hover:text-foreground'
+                      : 'text-foreground hover:bg-background/20 dark:hover:bg-background/10 hover:text-blue-600'
                   )}
                 >
                   <Icon className={cn(
-                    'mr-3 h-5 w-5',
-                    isActive ? 'text-blue-600' : 'text-muted-foreground'
+                    'mr-3 h-5 w-5 transition-colors duration-200',
+                    isActive ? 'text-blue-600' : 'text-muted-foreground group-hover:text-blue-600'
                   )} />
                   {item.name}
                 </Link>

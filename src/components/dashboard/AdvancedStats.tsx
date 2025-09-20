@@ -46,7 +46,7 @@ export default function AdvancedStats() {
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-foreground">Sử dụng lưu trữ</h3>
-            <BarChart3 className="w-5 h-5 text-blue-600" />
+            <BarChart3 className="w-5 h-5 icon-blue" />
           </div>
           
           <div className="space-y-4">
@@ -85,17 +85,17 @@ export default function AdvancedStats() {
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-foreground">Hoạt động gần đây</h3>
-            <TrendingUp className="w-5 h-5 text-green-600" />
+            <TrendingUp className="w-5 h-5 icon-green" />
           </div>
           
           <div className="space-y-3">
             {recentActivity.map((activity, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg border border-border/20">
+              <div key={index} className="activity-item p-3 cursor-pointer">
                 <div className="flex items-center space-x-3">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    activity.type === 'upload' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' :
-                    activity.type === 'chat' ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' :
-                    'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400'
+                    activity.type === 'upload' ? 'stat-bg-blue' :
+                    activity.type === 'chat' ? 'stat-bg-green' :
+                    'stat-bg-yellow'
                   }`}>
                     {activity.type === 'upload' && <FileText className="w-4 h-4" />}
                     {activity.type === 'chat' && <MessageCircle className="w-4 h-4" />}
@@ -120,30 +120,30 @@ export default function AdvancedStats() {
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-foreground">Thống kê sử dụng</h3>
-            <Calendar className="w-5 h-5 text-purple-600" />
+            <Calendar className="w-5 h-5 icon-purple" />
           </div>
           
           <div className="grid grid-cols-2 gap-4">
-            <div className="text-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.totalFiles}</div>
-              <div className="text-sm text-blue-800 dark:text-blue-300">Tài liệu</div>
+            <div className="text-center p-4 stat-bg-blue rounded-lg">
+              <div className="text-2xl font-bold">{stats.totalFiles}</div>
+              <div className="text-sm opacity-80">Tài liệu</div>
             </div>
             
-            <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-              <div className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.totalChats}</div>
-              <div className="text-sm text-green-800 dark:text-green-300">Cuộc trò chuyện</div>
+            <div className="text-center p-4 stat-bg-green rounded-lg">
+              <div className="text-2xl font-bold">{stats.totalChats}</div>
+              <div className="text-sm opacity-80">Cuộc trò chuyện</div>
             </div>
             
-            <div className="text-center p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
-              <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{stats.totalSearches}</div>
-              <div className="text-sm text-yellow-800 dark:text-yellow-300">Lần tìm kiếm</div>
+            <div className="text-center p-4 stat-bg-yellow rounded-lg">
+              <div className="text-2xl font-bold">{stats.totalSearches}</div>
+              <div className="text-sm opacity-80">Lần tìm kiếm</div>
             </div>
             
-            <div className="text-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
-              <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
+            <div className="text-center p-4 stat-bg-purple rounded-lg">
+              <div className="text-2xl font-bold">
                 {Math.round((stats.storageUsed / stats.maxStorage) * 100)}%
               </div>
-              <div className="text-sm text-purple-800 dark:text-purple-300">Lưu trữ</div>
+              <div className="text-sm opacity-80">Lưu trữ</div>
             </div>
           </div>
         </div>
@@ -154,7 +154,7 @@ export default function AdvancedStats() {
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-foreground">Hiệu suất hệ thống</h3>
-            <TrendingUp className="w-5 h-5 text-indigo-600" />
+            <TrendingUp className="w-5 h-5 icon-blue" />
           </div>
           
           <div className="space-y-4">
@@ -170,17 +170,17 @@ export default function AdvancedStats() {
             
             <div className="flex justify-between items-center">
               <span className="text-sm text-muted-foreground">Tỷ lệ thành công</span>
-              <span className="text-sm font-medium text-green-600 dark:text-green-400">99.8%</span>
+              <span className="text-sm font-medium icon-green">99.8%</span>
             </div>
             
             <div className="flex justify-between items-center">
               <span className="text-sm text-muted-foreground">Uptime</span>
-              <span className="text-sm font-medium text-green-600 dark:text-green-400">99.9%</span>
+              <span className="text-sm font-medium icon-green">99.9%</span>
             </div>
           </div>
           
-          <div className="mt-4 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg">
-            <p className="text-sm text-green-800 dark:text-green-300">
+          <div className="mt-4 p-3 stat-bg-green rounded-lg">
+            <p className="text-sm">
               ✅ Hệ thống hoạt động ổn định và hiệu quả
             </p>
           </div>

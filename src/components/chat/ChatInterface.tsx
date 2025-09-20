@@ -1,6 +1,6 @@
 'use client'
 
-import { Button, Card, TextArea } from '@/components/ui'
+import { Button, TextArea } from '@/components/ui'
 import { useToast } from '@/contexts/ToastContext'
 import ChatService from '@/lib/chatService'
 import { MockChatMessage } from '@/lib/mockData'
@@ -134,9 +134,9 @@ export default function ChatInterface({ onNewMessage }: ChatInterfaceProps) {
   }
 
   return (
-    <div className="max-w-4xl mx-auto h-[600px] flex flex-col">
+    <div className="chat-interface m-4">
       {/* Chat Header */}
-      <Card className="p-4 border-b rounded-b-none">
+      <div className= "border-glass-border p-4 bg-transparent">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
@@ -182,12 +182,11 @@ export default function ChatInterface({ onNewMessage }: ChatInterfaceProps) {
             />
           </div>
         </div>
-      </Card>
+      </div>
 
       {/* Messages Area */}
-      <Card className="flex-1 rounded-t-none rounded-b-none border-t-0 border-b-0 overflow-hidden">
-        <div className="h-full overflow-y-auto p-4 space-y-4">
-          {messages.map((message) => (
+      <div className="chat-messages space-y-4">
+        {messages.map((message) => (
             <div
               key={message.id}
               className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
@@ -211,8 +210,8 @@ export default function ChatInterface({ onNewMessage }: ChatInterfaceProps) {
                 {/* Message Content */}
                 <div className={`rounded-lg p-3 ${
                   message.type === 'user'
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-muted text-foreground'
+                    ? 'message-bubble-user text-white'
+                    : 'message-bubble-assistant text-foreground'
                 }`}>
                   <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                   
@@ -273,11 +272,10 @@ export default function ChatInterface({ onNewMessage }: ChatInterfaceProps) {
           )}
           
           <div ref={messagesEndRef} />
-        </div>
-      </Card>
+      </div>
 
       {/* Input Area */}
-      <Card className="p-4 rounded-t-none">
+      <div className="chat-input-area">
         <div className="flex gap-3">
           <div className="flex-1">
             <TextArea
@@ -320,7 +318,7 @@ export default function ChatInterface({ onNewMessage }: ChatInterfaceProps) {
           </span>
           <span>Press Enter để gửi, Shift+Enter để xuống dòng</span>
         </div>
-      </Card>
+      </div>
     </div>
   )
 }

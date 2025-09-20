@@ -6,9 +6,6 @@ import {
   Keyboard,
   LogOut,
   Menu,
-  MessageSquare,
-  Search,
-  Upload,
   User,
   X
 } from 'lucide-react'
@@ -36,13 +33,6 @@ const Header: React.FC<HeaderProps> = ({
     router.push('/login')
   }
 
-  const navigation = [
-    { name: 'Dashboard', href: '/dashboard', icon: FileText },
-    { name: 'Upload', href: '/dashboard/upload', icon: Upload },
-    { name: 'Search', href: '/dashboard/search', icon: Search },
-    { name: 'Chat', href: '/dashboard/chat', icon: MessageSquare },
-  ]
-
   return (
     <header className="glass-header border-b border-glass-border theme-transition">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -56,23 +46,6 @@ const Header: React.FC<HeaderProps> = ({
               <span className="text-xl font-bold text-foreground">Chatnary</span>
             </Link>
           </div>
-
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
-            {navigation.map((item) => {
-              const Icon = item.icon
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className="flex items-center space-x-1 text-foreground hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 hover:bg-background/20 dark:hover:bg-background/10"
-                >
-                  <Icon className="w-4 h-4" />
-                  <span>{item.name}</span>
-                </Link>
-              )
-            })}
-          </nav>
 
           {/* User Menu */}
           <div className="flex items-center space-x-4">
@@ -150,27 +123,6 @@ const Header: React.FC<HeaderProps> = ({
             </Button>
           </div>
         </div>
-
-        {/* Mobile Navigation */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-glass-border">
-            <nav className="flex flex-col space-y-2">
-              {navigation.map((item) => {
-                const Icon = item.icon
-                return (
-                  <Link
-                    key={item.name}
-                    href={item.href}
-                    className="flex items-center space-x-2 text-foreground hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 hover:bg-background/20 dark:hover:bg-background/10"
-                  >
-                    <Icon className="w-4 h-4" />
-                    <span>{item.name}</span>
-                  </Link>
-                )
-              })}
-            </nav>
-          </div>
-        )}
       </div>
 
       {/* Click outside to close user menu */}

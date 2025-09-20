@@ -2,7 +2,6 @@
 
 import AdvancedStats from '@/components/dashboard/AdvancedStats';
 import DashboardStats from '@/components/dashboard/DashboardStats';
-import QuickActions from '@/components/dashboard/QuickActions';
 import Header from '@/components/layout/Header';
 import Sidebar from '@/components/layout/Sidebar';
 import { SystemNotification } from '@/components/ui';
@@ -53,9 +52,6 @@ export default function DashboardPage() {
 
             {/* Advanced Stats */}
             <AdvancedStats />
-
-            {/* Quick Actions */}
-            <QuickActions />
           </div>
         </main>
       </div>
