@@ -157,7 +157,10 @@ export default function ChatLayout({ className }: ChatLayoutProps) {
       )}>
         {/* Sidebar Header */}
         <div className="p-4 border-glass-border">
-          <div className="flex items-center justify-between">
+          <div className={cn(
+            "flex items-center",
+            isHistoryCollapsed ? "justify-center" : "justify-between"
+          )}>
             {!isHistoryCollapsed && (
               <div className="flex items-center gap-2">
                 <History className="w-5 h-5 text-blue-500" />

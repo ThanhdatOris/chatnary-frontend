@@ -6,11 +6,11 @@ import { api, API_ENDPOINTS } from '@/lib/api'
 import { mockFiles } from '@/lib/mockData'
 import { cn } from '@/lib/utils'
 import {
-  Clock,
-  FileText,
-  Search,
-  X,
-  Zap
+    Clock,
+    FileText,
+    Search,
+    X,
+    Zap
 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 

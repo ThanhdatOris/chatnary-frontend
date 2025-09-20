@@ -23,7 +23,7 @@
   
   /* Background opacity variables */
   --bg-overlay: rgba(0, 0, 0, 0.3);
-  --bg-modal: rgba(0, 0, 0, 0.4);
+  --bg-modal: rgba(0, 0, 0, 0.6);
   --bg-glass: rgba(255, 255, 255, 0.85);
   --bg-glass-hover: rgba(255, 255, 255, 0.6);
   
@@ -63,7 +63,7 @@
   
   /* Background opacity variables for dark mode */
   --bg-overlay: rgba(0, 0, 0, 0.6);
-  --bg-modal: rgba(0, 0, 0, 0.7);
+  --bg-modal: rgba(0, 0, 0, 0.8);
   --bg-glass: rgba(15, 23, 42, 0.8);
   --bg-glass-hover: rgba(30, 41, 59, 0.6);
   

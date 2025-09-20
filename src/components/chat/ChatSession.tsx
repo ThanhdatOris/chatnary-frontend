@@ -3,7 +3,7 @@
 import { Button, Card, Modal } from '@/components/ui'
 import { useToast } from '@/contexts/ToastContext'
 import { formatDate } from '@/lib/utils'
-import { ArrowLeft, Brain, Calendar, Clock, Copy, Download, FileText, Share2, Zap } from 'lucide-react'
+import { ArrowLeft, Brain, Copy, Download, FileText, Share2, Zap } from 'lucide-react'
 import { useState } from 'react'
 
 type ChatChunk = {
@@ -161,7 +161,7 @@ Xuất bởi Chatnary - ${new Date().toLocaleString('vi-VN')}
     <Modal isOpen={isOpen} onClose={onClose} size="xl">
       <div className="flex flex-col h-[85vh]">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b">
+        <div className="flex items-center justify-between p-6">
           <div className="flex items-center gap-3">
             <Button
               onClick={onClose}
@@ -174,13 +174,28 @@ Xuất bởi Chatnary - ${new Date().toLocaleString('vi-VN')}
             
             <div className="flex items-center gap-3">
               {getModelIcon(chat.model_used)}
-              <div>
-                <h2 className="text-xl font-semibold text-foreground">
+              <div className="flex-1">
+                <h2 className="text-xl font-semibold text-foreground mb-1">
                   Chi tiết cuộc hội thoại
                 </h2>
-                <p className="text-sm text-muted-foreground">
-                  {getModelName(chat.model_used)} • {date} lúc {time}
-                </p>
+                <div className="space-y-1 text-sm">
+                  <div className="flex items-center gap-4">
+                    <span className="font-medium text-foreground">{getModelName(chat.model_used)}</span>
+                    <span className="text-muted-foreground">•</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-muted-foreground">Nguồn:</span>
+                      <span className="font-medium text-foreground">{chat.sources.length} tài liệu</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <span className="font-medium text-foreground">{date} lúc {time}</span>
+                    <span className="text-muted-foreground">•</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-muted-foreground">ID:</span>
+                      <span className="font-mono text-xs bg-muted px-2 py-1 rounded text-foreground">{chat.id}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -318,40 +333,6 @@ Xuất bởi Chatnary - ${new Date().toLocaleString('vi-VN')}
               </div>
             </Card>
           )}
-
-          {/* Metadata */}
-          <Card className="metadata-card">
-            <div className="p-6">
-              <h3 className="font-medium text-foreground mb-4">Thông tin chi tiết</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">Thời gian:</span>
-                  <span className="font-medium">{date} lúc {time}</span>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  {getModelIcon(chat.model_used)}
-                  <span className="text-muted-foreground">AI Model:</span>
-                  <span className="font-medium">{getModelName(chat.model_used)}</span>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">Nguồn tham khảo:</span>
-                  <span className="font-medium">{chat.sources.length} file</span>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">ID cuộc hội thoại:</span>
-                  <span className="font-mono text-xs bg-muted px-2 py-1 rounded">
-                    {chat.id}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </Card>
         </div>
       </div>
     </Modal>

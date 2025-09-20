@@ -1,13 +1,10 @@
 import { ModalProps } from '@/lib/types'
 import { cn } from '@/lib/utils'
-import { X } from 'lucide-react'
 import React from 'react'
-import Button from './Button'
 
 const Modal: React.FC<ModalProps> = ({
   isOpen,
   onClose,
-  title,
   children,
   size = 'md',
 }) => {
@@ -47,37 +44,17 @@ const Modal: React.FC<ModalProps> = ({
 
   return (
     <div 
-      className="fixed inset-0 z-[55] flex items-center justify-center bg-modal backdrop-blur-sm"
+      className="fixed inset-0 z-[55] flex items-center justify-center bg-modal backdrop-blur-md"
       onClick={handleBackdropClick}
     >
       <div 
         className={cn(
-          'relative w-full rounded-lg bg-background shadow-xl',
+          'relative w-full rounded-lg glass-card shadow-2xl border border-border/20 overflow-y-auto',
           sizes[size],
-          'mx-4 my-8 max-h-[90vh] overflow-hidden'
+          'mx-4 my-8'
         )}
       >
-        {/* Header */}
-        {title && (
-          <div className="flex items-center justify-between border-b border-border px-6 py-4">
-            <h2 className="text-lg font-semibold text-foreground">
-              {title}
-            </h2>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="h-6 w-6 p-0"
-            >
-              <X className="w-4 h-4" />
-            </Button>
-          </div>
-        )}
-
-        {/* Content */}
-        <div className="max-h-[calc(90vh-8rem)] overflow-y-auto p-6">
-          {children}
-        </div>
+        {children}
       </div>
     </div>
   )
