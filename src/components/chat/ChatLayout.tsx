@@ -6,16 +6,16 @@ import ChatService from '@/lib/chatService'
 import { MockChatHistoryItem } from '@/lib/mockData'
 import { cn } from '@/lib/utils'
 import {
-    Brain,
-    Calendar,
-    ChevronLeft,
-    ChevronRight,
-    Clock,
-    History,
-    MessageSquare,
-    Search,
-    Trash2,
-    Zap
+  Brain,
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  History,
+  MessageSquare,
+  Search,
+  Trash2,
+  Zap
 } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import ChatInterface from './ChatInterface'
@@ -156,7 +156,7 @@ export default function ChatLayout({ className }: ChatLayoutProps) {
         isHistoryCollapsed ? 'w-12' : 'w-80'
       )}>
         {/* Sidebar Header */}
-        <div className="p-4 border-b border-glass-border">
+        <div className="p-4 border-glass-border">
           <div className="flex items-center justify-between">
             {!isHistoryCollapsed && (
               <div className="flex items-center gap-2">
@@ -253,7 +253,7 @@ export default function ChatLayout({ className }: ChatLayoutProps) {
                               variant="ghost"
                               size="sm"
                               disabled={deletingIds.has(chat.id)}
-                              className="opacity-0 group-hover:opacity-100 p-1 h-6 w-6 text-red-600 hover:text-red-700 hover:bg-red-50"
+                              className="opacity-0 group-hover:opacity-100 p-1 h-6 w-6 text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/30"
                             >
                               {deletingIds.has(chat.id) ? (
                                 <div className="w-3 h-3 animate-spin rounded-full border border-red-600 border-t-transparent" />

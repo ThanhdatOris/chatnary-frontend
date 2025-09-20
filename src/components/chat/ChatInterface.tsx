@@ -228,10 +228,10 @@ export default function ChatInterface({ onNewMessage }: ChatInterfaceProps) {
                         {message.sources.map((source, index) => (
                           <div 
                             key={index} 
-                            className="bg-blue-50/80 border border-blue-200/60 rounded-lg p-3 hover:bg-blue-50 transition-colors"
+                            className="source-reference"
                           >
-                            <div className="flex items-start gap-2">
-                              <div className="w-2 h-2 rounded-full bg-blue-400 mt-2 flex-shrink-0"></div>
+                            <div className="flex items-start gap-2 p-3">
+                              <div className="w-2 h-2 rounded-full bg-blue-400 dark:bg-blue-500 mt-2 flex-shrink-0"></div>
                               <div className="flex-1 min-w-0">
                                 <p className="font-medium text-foreground text-sm truncate" title={source.filename}>
                                   {source.filename}

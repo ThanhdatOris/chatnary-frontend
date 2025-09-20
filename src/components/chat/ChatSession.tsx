@@ -224,10 +224,10 @@ Xuất bởi Chatnary - ${new Date().toLocaleString('vi-VN')}
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto p-6 space-y-6 chat-session-modal">
           {/* Question */}
-          <Card className="p-6">
-            <div className="flex items-start gap-4">
+          <Card className="chat-session-card user-message">
+            <div className="flex items-start gap-4 p-6">
               <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center flex-shrink-0">
                 <span className="text-white text-sm font-medium">Q</span>
               </div>
@@ -241,8 +241,8 @@ Xuất bởi Chatnary - ${new Date().toLocaleString('vi-VN')}
           </Card>
 
           {/* Answer */}
-          <Card className="p-6">
-            <div className="flex items-start gap-4">
+          <Card className="chat-session-card ai-message">
+            <div className="flex items-start gap-4 p-6">
               <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
                 <span className="text-white text-sm font-medium">A</span>
               </div>
@@ -265,8 +265,8 @@ Xuất bởi Chatnary - ${new Date().toLocaleString('vi-VN')}
 
           {/* Sources */}
           {chat.sources.length > 0 && (
-            <Card className="p-6">
-              <div className="flex items-start gap-4">
+            <Card className="chat-session-card">
+              <div className="flex items-start gap-4 p-6">
                 <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
                   <FileText className="w-4 h-4 text-blue-600" />
                 </div>
@@ -278,9 +278,9 @@ Xuất bởi Chatnary - ${new Date().toLocaleString('vi-VN')}
                     {chat.sources.map((source, index) => (
                       <div
                         key={index}
-                        className="bg-blue-50/80 border border-blue-200/60 rounded-lg p-4"
+                        className="source-reference"
                       >
-                        <div className="flex items-start gap-3">
+                        <div className="flex items-start gap-3 p-4">
                           <div className="w-6 h-6 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center flex-shrink-0 mt-0.5">
                             {index + 1}
                           </div>
@@ -320,33 +320,35 @@ Xuất bởi Chatnary - ${new Date().toLocaleString('vi-VN')}
           )}
 
           {/* Metadata */}
-          <Card className="p-6 bg-muted">
-            <h3 className="font-medium text-foreground mb-4">Thông tin chi tiết</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-muted-foreground" />
-                <span className="text-muted-foreground">Thời gian:</span>
-                <span className="font-medium">{date} lúc {time}</span>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                {getModelIcon(chat.model_used)}
-                <span className="text-muted-foreground">AI Model:</span>
-                <span className="font-medium">{getModelName(chat.model_used)}</span>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <FileText className="w-4 h-4 text-muted-foreground" />
-                <span className="text-muted-foreground">Nguồn tham khảo:</span>
-                <span className="font-medium">{chat.sources.length} file</span>
-              </div>
-              
-              <div className="flex items-center gap-2">
-                <Calendar className="w-4 h-4 text-muted-foreground" />
-                <span className="text-muted-foreground">ID cuộc hội thoại:</span>
-                <span className="font-mono text-xs bg-muted px-2 py-1 rounded">
-                  {chat.id}
-                </span>
+          <Card className="metadata-card">
+            <div className="p-6">
+              <h3 className="font-medium text-foreground mb-4">Thông tin chi tiết</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">Thời gian:</span>
+                  <span className="font-medium">{date} lúc {time}</span>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  {getModelIcon(chat.model_used)}
+                  <span className="text-muted-foreground">AI Model:</span>
+                  <span className="font-medium">{getModelName(chat.model_used)}</span>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <FileText className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">Nguồn tham khảo:</span>
+                  <span className="font-medium">{chat.sources.length} file</span>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">ID cuộc hội thoại:</span>
+                  <span className="font-mono text-xs bg-muted px-2 py-1 rounded">
+                    {chat.id}
+                  </span>
+                </div>
               </div>
             </div>
           </Card>
