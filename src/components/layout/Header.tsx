@@ -1,11 +1,11 @@
-import { Button, KeyboardShortcuts, ThemeToggle } from '@/components/ui'
+import { Button, Modal, NavbarSearch, ThemeToggle } from '@/components/ui'
 import { AuthUtils } from '@/lib/auth'
 import { User as UserType } from '@/lib/types'
 import {
   FileText,
-  Keyboard,
   LogOut,
   Menu,
+  Search,
   User,
   X
 } from 'lucide-react'
@@ -26,7 +26,7 @@ const Header: React.FC<HeaderProps> = ({
 }) => {
   const router = useRouter()
   const [isUserMenuOpen, setIsUserMenuOpen] = React.useState(false)
-  const [showShortcuts, setShowShortcuts] = React.useState(false)
+  const [showMobileSearch, setShowMobileSearch] = React.useState(false)
 
   const handleLogout = () => {
     AuthUtils.logout()
@@ -47,22 +47,26 @@ const Header: React.FC<HeaderProps> = ({
             </Link>
           </div>
 
+          {/* Search Bar - Hidden on mobile */}
+          <div className="flex-1 max-w-md mx-6 hidden md:flex md:items-center">
+            <NavbarSearch />
+          </div>
+
           {/* User Menu */}
           <div className="flex items-center space-x-4">
-            {/* Theme Toggle */}
-            <ThemeToggle size="sm" />
-            
-            {/* Keyboard Shortcuts Button */}
+            {/* Mobile Search Button */}
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setShowShortcuts(true)}
-              className="hidden md:flex items-center space-x-2"
-              title="Keyboard Shortcuts"
+              onClick={() => setShowMobileSearch(true)}
+              className="md:hidden"
+              title="Tìm kiếm"
             >
-              <Keyboard className="w-4 h-4" />
-              <span className="hidden lg:inline">Shortcuts</span>
+              <Search className="w-5 h-5" />
             </Button>
+
+            {/* Theme Toggle */}
+            <ThemeToggle size="sm" />
 
             {user ? (
               <div className="relative">
@@ -78,7 +82,7 @@ const Header: React.FC<HeaderProps> = ({
 
                 {/* User Dropdown Menu */}
                 {isUserMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 glass-card py-1 z-50">
+                  <div className="absolute right-0 mt-2 w-48 glass-card py-1 z-[52]">
                     <Link
                       href="/dashboard/profile"
                       className="flex items-center px-4 py-2 text-sm text-foreground hover:bg-background/20 dark:hover:bg-background/10 rounded-lg mx-1 transition-colors"
@@ -128,16 +132,21 @@ const Header: React.FC<HeaderProps> = ({
       {/* Click outside to close user menu */}
       {isUserMenuOpen && (
         <div 
-          className="fixed inset-0 z-40" 
+          className="fixed inset-0 z-[51]" 
           onClick={() => setIsUserMenuOpen(false)}
         />
       )}
 
-      {/* Keyboard Shortcuts Modal */}
-      <KeyboardShortcuts 
-        isOpen={showShortcuts} 
-        onClose={() => setShowShortcuts(false)} 
-      />
+      {/* Mobile Search Modal */}
+      <Modal
+        isOpen={showMobileSearch}
+        onClose={() => setShowMobileSearch(false)}
+        title="Tìm kiếm tài liệu"
+      >
+        <div className="p-4">
+          <NavbarSearch className="w-full" />
+        </div>
+      </Modal>
     </header>
   )
 }

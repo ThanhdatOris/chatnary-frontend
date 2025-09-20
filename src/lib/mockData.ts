@@ -42,6 +42,28 @@ export interface MockFile {
   userId: string
 }
 
+export interface MockSearchResult {
+  file: {
+    id: string
+    originalName: string
+    size: number
+    uploadTime: string
+    mimetype: string
+  }
+  score: number
+  snippet?: string
+}
+
+export interface MockSearchResponse {
+  success: boolean
+  data: {
+    results: MockSearchResult[]
+    hitsCount: number
+    processingTimeMs: number
+    query: string
+  }
+}
+
 // Mock chat history data
 export const mockChatHistory: MockChatHistoryItem[] = [
   {
@@ -224,7 +246,7 @@ export const getMockDelay = (min = 500, max = 1500): number => {
 }
 
 // Mock API response wrapper
-export const createMockResponse = <T>(data: T, success = true, message = ''): Promise<{ data: T }> => {
+export const createMockResponse = <T>(data: T): Promise<{ data: T }> => {
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve({
@@ -232,4 +254,47 @@ export const createMockResponse = <T>(data: T, success = true, message = ''): Pr
       })
     }, getMockDelay())
   })
+}
+
+// Mock search function
+export const createMockSearchResponse = (query: string, files = mockFiles): MockSearchResponse => {
+  if (!query.trim()) {
+    return {
+      success: true,
+      data: {
+        results: [],
+        hitsCount: 0,
+        processingTimeMs: 0,
+        query
+      }
+    }
+  }
+
+  const results = files
+    .filter(file => 
+      file.originalName.toLowerCase().includes(query.toLowerCase()) ||
+      file.mimetype.toLowerCase().includes(query.toLowerCase())
+    )
+    .slice(0, 20)
+    .map(file => ({
+      file: {
+        id: file.id,
+        originalName: file.originalName,
+        size: file.size,
+        uploadTime: file.uploadTime,
+        mimetype: file.mimetype
+      },
+      score: Math.random() * 0.3 + 0.7, // Random score between 0.7-1.0
+      snippet: `Tìm thấy từ khóa "${query}" trong tài liệu ${file.originalName}. Nội dung liên quan bao gồm các thông tin quan trọng về chủ đề được tìm kiếm...`
+    }))
+
+  return {
+    success: true,
+    data: {
+      results,
+      hitsCount: results.length,
+      processingTimeMs: Math.floor(Math.random() * 100) + 50,
+      query
+    }
+  }
 }

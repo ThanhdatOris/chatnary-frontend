@@ -3,6 +3,7 @@
 import { Button, Card } from '@/components/ui'
 import { useToast } from '@/contexts/ToastContext'
 import { api, API_ENDPOINTS } from '@/lib/api'
+import { createMockSearchResponse, mockFiles } from '@/lib/mockData'
 import { Clock, FileText, Search, Zap } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
@@ -28,8 +29,12 @@ interface SearchResponse {
   }
 }
 
-export default function SearchInterface() {
-  const [query, setQuery] = useState('')
+interface SearchInterfaceProps {
+  initialQuery?: string
+}
+
+export default function SearchInterface({ initialQuery = '' }: SearchInterfaceProps) {
+  const [query, setQuery] = useState(initialQuery)
   const [results, setResults] = useState<SearchResult[]>([])
   const [loading, setLoading] = useState(false)
   const [searchStats, setSearchStats] = useState<{
@@ -52,6 +57,14 @@ export default function SearchInterface() {
     }
   }, [])
 
+  // Auto search if initialQuery is provided
+  useEffect(() => {
+    if (initialQuery.trim()) {
+      handleSearch(initialQuery)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialQuery])
+
   const saveRecentSearch = (searchQuery: string) => {
     if (!searchQuery.trim()) return
     
@@ -69,25 +82,44 @@ export default function SearchInterface() {
 
     setLoading(true)
     try {
-      const response = await api.get<SearchResponse>(
-        `${API_ENDPOINTS.search.search}?query=${encodeURIComponent(q)}&limit=20`
-      )
-
-      if (response.data.success) {
-        setResults(response.data.data.results)
+      // Use mock data in development or bypass mode
+      if (process.env.NEXT_PUBLIC_BYPASS_AUTH === '1') {
+        // Simulate API delay
+        await new Promise(resolve => setTimeout(resolve, 500))
+        
+        const mockResponse = createMockSearchResponse(q, mockFiles)
+        setResults(mockResponse.data.results)
         setSearchStats({
-          total: response.data.data.hitsCount,
-          processingTime: response.data.data.processingTimeMs
+          total: mockResponse.data.hitsCount,
+          processingTime: mockResponse.data.processingTimeMs
         })
         saveRecentSearch(q)
         
-        if (response.data.data.results.length === 0) {
+        if (mockResponse.data.results.length === 0) {
           showToast('Không tìm thấy kết quả nào', 'info')
         }
       } else {
-        showToast('Lỗi tìm kiếm', 'error')
-        setResults([])
-        setSearchStats(null)
+        // Real API call
+        const response = await api.get<SearchResponse>(
+          `${API_ENDPOINTS.search.search}?query=${encodeURIComponent(q)}&limit=20`
+        )
+
+        if (response.data.success) {
+          setResults(response.data.data.results)
+          setSearchStats({
+            total: response.data.data.hitsCount,
+            processingTime: response.data.data.processingTimeMs
+          })
+          saveRecentSearch(q)
+          
+          if (response.data.data.results.length === 0) {
+            showToast('Không tìm thấy kết quả nào', 'info')
+          }
+        } else {
+          showToast('Lỗi tìm kiếm', 'error')
+          setResults([])
+          setSearchStats(null)
+        }
       }
     } catch (err: unknown) {
       console.error('Search error:', err)

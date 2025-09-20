@@ -3,7 +3,6 @@ import {
   Home,
   Library,
   MessageSquare,
-  Search,
   Settings
 } from 'lucide-react'
 import Link from 'next/link'
@@ -21,7 +20,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: Home },
     { name: 'Files', href: '/dashboard/files', icon: Library },
-    { name: 'Search', href: '/dashboard/search', icon: Search },
     { name: 'Chat', href: '/dashboard/chat', icon: MessageSquare },
     { name: 'Settings', href: '/dashboard/settings', icon: Settings },
   ]
