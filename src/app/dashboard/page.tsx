@@ -23,24 +23,24 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen gradient-bg">
       <Header 
         user={user}
         onMobileMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         isMobileMenuOpen={isMobileMenuOpen}
       />
-      <div className="flex min-h-screen">
+      <div className="flex h-[calc(100vh-4rem)]">
         <Sidebar 
           isOpen={isMobileMenuOpen}
           onClose={() => setIsMobileMenuOpen(false)}
         />
-        <main className="flex-1 lg:ml-64 p-6 lg:p-8">
+        <main className="flex-1 p-6 lg:p-8 overflow-y-auto">
           <div className="max-w-7xl mx-auto">
             <div className="mb-8">
               <h1 className="text-2xl font-bold text-gray-900 mb-2">
                 Chào mừng trở lại, {user?.fullName || user?.email}!
               </h1>
-              <p className="text-gray-600">
+              <p className="text-gray-800 dark:text-gray-300">
                 Quản lý tài liệu và trò chuyện với AI một cách dễ dàng.
               </p>
             </div>

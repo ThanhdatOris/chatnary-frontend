@@ -56,9 +56,9 @@ export default function QuickActions() {
 
   return (
     <>
-      <div className="bg-white rounded-lg shadow">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-medium text-gray-900">Hành động nhanh</h2>
+      <div className="glass-card float-glass">
+        <div className="px-6 py-4 border-b border-glass-border">
+          <h2 className="text-lg font-medium text-gray-900 dark:text-white">Hành động nhanh</h2>
         </div>
         <div className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -66,16 +66,16 @@ export default function QuickActions() {
               <button
                 key={index}
                 onClick={action.onClick}
-                className="group relative p-6 bg-white border-2 border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-md transition-all duration-200"
+                className="group relative p-6 glass-card border-2 border-glass-border hover:border-white/30 dark:hover:border-white/20 hover:shadow-glass transition-all duration-200 float-glass"
               >
                 <div className="text-center">
                   <div className={`mx-auto w-12 h-12 ${action.color} rounded-lg flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform duration-200`}>
                     {action.icon}
                   </div>
-                  <h3 className="text-sm font-medium text-gray-900 mb-2">
+                  <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-2">
                     {action.title}
                   </h3>
-                  <p className="text-xs text-gray-500 leading-relaxed">
+                  <p className="text-xs text-gray-700 dark:text-gray-400 leading-relaxed">
                     {action.description}
                   </p>
                 </div>
@@ -100,7 +100,7 @@ export default function QuickActions() {
             multiple={true}
           />
         </div>
-        <div className="flex justify-end gap-3 px-6 py-4 bg-gray-50 border-t">
+        <div className="flex justify-end gap-3 px-6 py-4 bg-gray-50/50 dark:bg-gray-800/50 border-t border-glass-border">
           <Button
             variant="outline"
             onClick={() => setIsUploadModalOpen(false)}

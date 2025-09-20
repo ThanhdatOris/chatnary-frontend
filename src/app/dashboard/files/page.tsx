@@ -42,25 +42,25 @@ export default function FilesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen gradient-bg">
       <Header 
         user={user}
         onMobileMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         isMobileMenuOpen={isMobileMenuOpen}
       />
       
-      <div className="flex min-h-screen">
+      <div className="flex h-[calc(100vh-4rem)]">
         <Sidebar 
           isOpen={isMobileMenuOpen}
           onClose={() => setIsMobileMenuOpen(false)}
         />
         
-        <main className="flex-1 lg:ml-64 p-6 lg:p-8">
-          <div className="max-w-6xl mx-auto">
+        <main className="flex-1 p-6 lg:p-8 overflow-y-auto">
+          <div className="max-w-7xl mx-auto">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">My Files</h1>
-                <p className="text-gray-600 mt-1">
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">My Files</h1>
+                <p className="text-gray-800 dark:text-gray-300 mt-1">
                   Upload and manage your documents
                 </p>
               </div>
@@ -75,8 +75,8 @@ export default function FilesPage() {
             </div>
 
             {showUpload && (
-              <div className="bg-white rounded-lg shadow-sm border p-6 mb-6">
-                <h2 className="text-lg font-semibold mb-4">Upload Documents</h2>
+              <div className="glass-card float-glass p-6 mb-6">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Upload Documents</h2>
                 <FileUpload
                   onUploadSuccess={handleUploadSuccess}
                   onUploadError={(error) => {
@@ -87,7 +87,7 @@ export default function FilesPage() {
               </div>
             )}
 
-            <div className="bg-white rounded-lg shadow-sm border p-6">
+            <div className="glass-card float-glass p-6">
               <FileList
                 onFileSelect={handleFileSelect}
                 refreshTrigger={refreshTrigger}

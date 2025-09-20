@@ -1,4 +1,4 @@
-import { Button, KeyboardShortcuts } from '@/components/ui'
+import { Button, KeyboardShortcuts, ThemeToggle } from '@/components/ui'
 import { AuthUtils } from '@/lib/auth'
 import { User as UserType } from '@/lib/types'
 import {
@@ -44,16 +44,16 @@ const Header: React.FC<HeaderProps> = ({
   ]
 
   return (
-    <header className="bg-white border-b border-gray-200 shadow-sm">
+    <header className="glass-header border-b border-glass-border theme-transition">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           {/* Logo and Brand */}
           <div className="flex items-center">
             <Link href="/dashboard" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 gradient-primary rounded-xl flex items-center justify-center shadow-glass">
                 <FileText className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-bold text-gray-900">Chatnary</span>
+              <span className="text-xl font-bold text-gray-900 dark:text-white">Chatnary</span>
             </Link>
           </div>
 
@@ -65,7 +65,7 @@ const Header: React.FC<HeaderProps> = ({
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="flex items-center space-x-1 text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                  className="flex items-center space-x-1 text-gray-800 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 hover:bg-white/20 dark:hover:bg-white/10"
                 >
                   <Icon className="w-4 h-4" />
                   <span>{item.name}</span>
@@ -76,6 +76,9 @@ const Header: React.FC<HeaderProps> = ({
 
           {/* User Menu */}
           <div className="flex items-center space-x-4">
+            {/* Theme Toggle */}
+            <ThemeToggle size="sm" />
+            
             {/* Keyboard Shortcuts Button */}
             <Button
               variant="ghost"
@@ -102,10 +105,10 @@ const Header: React.FC<HeaderProps> = ({
 
                 {/* User Dropdown Menu */}
                 {isUserMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 border border-gray-200 z-50">
+                  <div className="absolute right-0 mt-2 w-48 glass-card py-1 z-50">
                     <Link
                       href="/dashboard/profile"
-                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className="flex items-center px-4 py-2 text-sm text-gray-800 dark:text-gray-300 hover:bg-white/20 dark:hover:bg-white/10 rounded-lg mx-1 transition-colors"
                       onClick={() => setIsUserMenuOpen(false)}
                     >
                       <User className="w-4 h-4 mr-2" />
@@ -113,7 +116,7 @@ const Header: React.FC<HeaderProps> = ({
                     </Link>
                     <button
                       onClick={handleLogout}
-                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      className="flex items-center w-full px-4 py-2 text-sm text-gray-800 dark:text-gray-300 hover:bg-white/20 dark:hover:bg-white/10 rounded-lg mx-1 transition-colors"
                     >
                       <LogOut className="w-4 h-4 mr-2" />
                       Logout
@@ -150,7 +153,7 @@ const Header: React.FC<HeaderProps> = ({
 
         {/* Mobile Navigation */}
         {isMobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-gray-200">
+          <div className="md:hidden py-4 border-t border-glass-border">
             <nav className="flex flex-col space-y-2">
               {navigation.map((item) => {
                 const Icon = item.icon
@@ -158,7 +161,7 @@ const Header: React.FC<HeaderProps> = ({
                   <Link
                     key={item.name}
                     href={item.href}
-                    className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium"
+                    className="flex items-center space-x-2 text-gray-800 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 px-3 py-2 rounded-xl text-sm font-medium transition-all duration-200 hover:bg-white/20 dark:hover:bg-white/10"
                   >
                     <Icon className="w-4 h-4" />
                     <span>{item.name}</span>

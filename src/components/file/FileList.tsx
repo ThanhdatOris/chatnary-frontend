@@ -4,8 +4,9 @@ import { Button } from '@/components/ui'
 import { useToast } from '@/contexts/ToastContext'
 import { api, API_ENDPOINTS } from '@/lib/api'
 import { formatDate, formatFileSize } from '@/lib/utils'
-import { Calendar, Download, File, FileText, MessageSquare, Trash2, Zap } from 'lucide-react'
+import { Calendar, Download, Eye, File, FileText, MessageSquare, Trash2, Zap } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
+import FileContentViewer from './FileContentViewer'
 
 interface FileItem {
   id?: string
@@ -36,6 +37,7 @@ export default function FileList({ onFileSelect, refreshTrigger }: FileListProps
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [actionLoading, setActionLoading] = useState<{ [key: string]: boolean }>({})
+  const [viewingFile, setViewingFile] = useState<{ id: string; name: string } | null>(null)
   const { showToast } = useToast()
 
   const fetchFiles = useCallback(async () => {
@@ -186,6 +188,21 @@ export default function FileList({ onFileSelect, refreshTrigger }: FileListProps
   const getFileUploadTime = (file: FileItem) => file.uploadTime || file.uploadDate || ''
   const isFileProcessed = (file: FileItem) => file.indexed || file.processed || false
 
+  const handleViewContent = (file: FileItem) => {
+    const fileId = getFileId(file)
+    const fileName = file.originalName || file.filename || 'Unknown file'
+    setViewingFile({ id: fileId, name: fileName })
+  }
+
+  const canViewContent = (file: FileItem) => {
+    const mimeType = getFileMimeType(file)
+    return isFileProcessed(file) && (
+      mimeType.includes('pdf') || 
+      mimeType.includes('text') || 
+      mimeType.includes('markdown')
+    )
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -276,6 +293,18 @@ export default function FileList({ onFileSelect, refreshTrigger }: FileListProps
               </div>
 
               <div className="flex items-center gap-2 flex-shrink-0">
+                {canViewContent(file) && (
+                  <Button
+                    onClick={() => handleViewContent(file)}
+                    variant="outline"
+                    size="sm"
+                    title="Xem nội dung file"
+                  >
+                    <Eye className="w-4 h-4 mr-1" />
+                    Xem
+                  </Button>
+                )}
+
                 {isFileProcessed(file) && onFileSelect && (
                   <Button
                     onClick={() => onFileSelect(file)}
@@ -334,6 +363,16 @@ export default function FileList({ onFileSelect, refreshTrigger }: FileListProps
           </div>
         ))}
       </div>
+
+      {/* File Content Viewer Modal */}
+      {viewingFile && (
+        <FileContentViewer
+          fileId={viewingFile.id}
+          fileName={viewingFile.name}
+          isOpen={!!viewingFile}
+          onClose={() => setViewingFile(null)}
+        />
+      )}
     </div>
   )
 }

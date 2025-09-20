@@ -42,10 +42,10 @@ export default function AdvancedStats() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
       {/* Storage Usage */}
-      <Card>
+      <Card glass float>
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Sử dụng lưu trữ</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Sử dụng lưu trữ</h3>
             <BarChart3 className="w-5 h-5 text-blue-600" />
           </div>
           
@@ -81,16 +81,16 @@ export default function AdvancedStats() {
       </Card>
 
       {/* Activity Overview */}
-      <Card>
+      <Card glass float>
         <div className="p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Hoạt động gần đây</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Hoạt động gần đây</h3>
             <TrendingUp className="w-5 h-5 text-green-600" />
           </div>
           
           <div className="space-y-3">
             {recentActivity.map((activity, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div key={index} className="flex items-center justify-between p-3 bg-white/10 dark:bg-white/5 rounded-lg border border-white/20">
                 <div className="flex items-center space-x-3">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
                     activity.type === 'upload' ? 'bg-blue-100 text-blue-600' :
@@ -102,8 +102,8 @@ export default function AdvancedStats() {
                     {activity.type === 'search' && <Search className="w-4 h-4" />}
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-gray-900">{activity.text}</p>
-                    <p className="text-xs text-gray-500 flex items-center gap-1">
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">{activity.text}</p>
+                    <p className="text-xs text-gray-700 dark:text-gray-400 flex items-center gap-1">
                       <Clock className="w-3 h-3" />
                       {activity.time}
                     </p>

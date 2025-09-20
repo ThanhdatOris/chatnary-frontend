@@ -10,4 +10,5 @@ export { default as Modal } from './Modal'
 export { default as SystemNotification } from './SystemNotification'
 export { default as TextArea } from './TextArea'
 export { default as TextInput } from './TextInput'
+export { default as ThemeToggle } from './ThemeToggle'
 

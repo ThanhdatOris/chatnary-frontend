@@ -9,6 +9,7 @@ const guestOnlyRoutes = ['/login', '/register']
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
+  const BYPASS = process.env.NEXT_PUBLIC_BYPASS_AUTH === '1'
   
   // Lấy token từ cookie
   const token = request.cookies.get('auth_token')?.value
@@ -23,15 +24,15 @@ export function middleware(request: NextRequest) {
     pathname === route
   )
 
-  // Nếu truy cập route được bảo vệ mà không có token
-  if (isProtectedRoute && !token) {
+  // Nếu truy cập route được bảo vệ mà không có token (trừ khi bypass)
+  if (isProtectedRoute && !token && !BYPASS) {
     const loginUrl = new URL('/login', request.url)
     loginUrl.searchParams.set('redirect', pathname)
     return NextResponse.redirect(loginUrl)
   }
 
   // Nếu đã đăng nhập mà truy cập trang login/register
-  if (isGuestOnlyRoute && token) {
+  if (isGuestOnlyRoute && (token || BYPASS)) {
     return NextResponse.redirect(new URL('/dashboard', request.url))
   }
 

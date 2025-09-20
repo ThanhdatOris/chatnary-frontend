@@ -30,12 +30,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const initializeAuth = async () => {
     try {
       const token = AuthUtils.getToken()
+      const BYPASS = process.env.NEXT_PUBLIC_BYPASS_AUTH === '1'
+
+      // Nếu chưa có token và bật bypass: gọi dev-login để nhận token và user
+      if (!token && BYPASS) {
+        try {
+          const resp = await api.post(API_ENDPOINTS.auth.devLogin)
+          const { token: devToken, user: devUser } = resp.data || {}
+          if (devToken && devUser) {
+            AuthUtils.login(devToken, devUser)
+            setUser(devUser)
+            setLoading(false)
+            return
+          }
+        } catch {
+          // Nếu dev-login lỗi thì tiếp tục flow bình thường
+        }
+      }
+
       if (!token) {
         setLoading(false)
         return
       }
 
-      // Verify token with backend
+      // Verify token với backend
       const response = await api.get(API_ENDPOINTS.auth.verify)
       const userData = response.data.user
 

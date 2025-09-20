@@ -1,13 +1,13 @@
 'use client'
 
+import ChatHistoryManager from '@/components/chat/ChatHistoryManager'
 import Header from '@/components/layout/Header'
 import Sidebar from '@/components/layout/Sidebar'
-import SearchInterface from '@/components/search/SearchInterface'
 import Loading from '@/components/ui/Loading'
 import { useAuth } from '@/hooks/useAuth'
 import { useState } from 'react'
 
-export default function SearchPage() {
+export default function ChatHistoryPage() {
   const { user, loading } = useAuth()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
@@ -32,7 +32,7 @@ export default function SearchPage() {
           onClose={() => setIsMobileMenuOpen(false)}
         />
         <main className="flex-1 p-6 lg:p-8 overflow-y-auto">
-          <SearchInterface />
+          <ChatHistoryManager />
         </main>
       </div>
     </div>

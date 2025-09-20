@@ -13,18 +13,18 @@ interface StatCardProps {
 
 function StatCard({ title, value, icon, color, isLoading }: StatCardProps) {
   return (
-    <div className="bg-white rounded-lg shadow p-6">
+    <div className="glass-card p-6 float-glass">
       <div className="flex items-center">
         <div className="flex-shrink-0">
-          <div className={`w-8 h-8 ${color} rounded-lg flex items-center justify-center`}>
+          <div className={`w-10 h-10 ${color} rounded-xl flex items-center justify-center shadow-glass`}>
             {icon}
           </div>
         </div>
         <div className="ml-4">
-          <p className="text-sm font-medium text-gray-500">{title}</p>
-          <p className="text-2xl font-semibold text-gray-900">
+          <p className="text-sm font-medium text-gray-900 dark:text-gray-300">{title}</p>
+          <p className="text-2xl font-semibold text-gray-900 dark:text-white">
             {isLoading ? (
-              <div className="animate-pulse bg-gray-200 h-8 w-12 rounded"></div>
+              <div className="animate-pulse bg-gray-200 dark:bg-gray-700 h-8 w-12 rounded"></div>
             ) : (
               value
             )}
@@ -48,7 +48,7 @@ export default function DashboardStats() {
 
   if (error) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-8">
+      <div className="glass-card border border-red-200/30 p-4 mb-8 bg-red-50/20 dark:bg-red-900/20">
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <div className="text-red-400 mr-3">
@@ -56,7 +56,7 @@ export default function DashboardStats() {
                 <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
               </svg>
             </div>
-            <p className="text-red-800 text-sm">
+            <p className="text-red-800 text-sm font-medium">
               Không thể tải thống kê: {error}
             </p>
           </div>
@@ -113,16 +113,16 @@ export default function DashboardStats() {
       {/* Storage Details */}
       {stats && (
         <div className="col-span-full mt-4">
-          <div className="bg-white rounded-lg shadow p-4">
+          <div className="glass-card p-4 float-glass">
             <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium text-gray-700">
+              <span className="text-sm font-medium text-gray-900 dark:text-gray-200">
                 Chi tiết lưu trữ
               </span>
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-gray-800 dark:text-gray-300">
                 {formatBytes(stats.storageUsed)} / {formatBytes(stats.maxStorage)}
               </span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
               <div
                 className={`h-2 rounded-full transition-all ${
                   storagePercentage > 90 

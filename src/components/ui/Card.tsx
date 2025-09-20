@@ -1,12 +1,14 @@
 import { cn } from '@/lib/utils'
-import React from 'react'
+import React, { HTMLAttributes } from 'react'
 
-interface CardProps {
+interface CardProps extends HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode
   className?: string
   padding?: 'sm' | 'md' | 'lg'
   hover?: boolean
   border?: boolean
+  glass?: boolean
+  float?: boolean
 }
 
 const Card: React.FC<CardProps> = ({
@@ -15,9 +17,13 @@ const Card: React.FC<CardProps> = ({
   padding = 'md',
   hover = false,
   border = true,
+  glass = false,
+  float = false,
   ...props
 }) => {
-  const baseStyles = 'rounded-lg bg-white shadow-sm'
+  const baseStyles = glass 
+    ? 'glass-card theme-transition shadow-glass' 
+    : 'rounded-lg bg-white dark:bg-gray-800 shadow-sm theme-transition'
   
   const paddingStyles = {
     sm: 'p-3',
@@ -25,8 +31,9 @@ const Card: React.FC<CardProps> = ({
     lg: 'p-6'
   }
 
-  const borderStyles = border ? 'border border-gray-200' : ''
-  const hoverStyles = hover ? 'hover:shadow-md transition-shadow duration-200' : ''
+  const borderStyles = border && !glass ? 'border border-gray-200 dark:border-gray-700' : ''
+  const hoverStyles = hover ? 'hover:shadow-md transition-all duration-300' : ''
+  const floatStyles = float ? 'float-glass' : ''
 
   return (
     <div
@@ -35,6 +42,7 @@ const Card: React.FC<CardProps> = ({
         paddingStyles[padding],
         borderStyles,
         hoverStyles,
+        floatStyles,
         className
       )}
       {...props}
@@ -66,7 +74,7 @@ const CardDescription: React.FC<{ children: React.ReactNode; className?: string 
   children,
   className
 }) => (
-  <p className={cn('text-sm text-gray-600', className)}>
+  <p className={cn('text-sm text-gray-800 dark:text-gray-300', className)}>
     {children}
   </p>
 )

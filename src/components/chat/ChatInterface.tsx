@@ -2,42 +2,18 @@
 
 import { Button, Card, TextArea } from '@/components/ui'
 import { useToast } from '@/contexts/ToastContext'
-import { api, API_ENDPOINTS } from '@/lib/api'
-import { Bot, FileText, MessageCircle, Send, Sparkles, User } from 'lucide-react'
+import ChatService from '@/lib/chatService'
+import { MockChatMessage } from '@/lib/mockData'
+import { Bot, Brain, ChevronDown, FileText, Send, Sparkles, User, Zap } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import ChatExport from './ChatExport'
 
-interface ChatMessage {
-  id: string
-  type: 'user' | 'assistant'
-  content: string
-  timestamp: Date
-  sources?: Array<{
-    filename: string
-    snippet: string
-  }>
+interface ChatInterfaceProps {
+  onNewMessage?: () => void
 }
 
-interface ChatRequest {
-  query: string
-  file_ids?: string[]
-  model?: 'openai' | 'gemini'
-  top_k?: number
-}
-
-interface ChatResponse {
-  success: boolean
-  answer: string
-  sources?: Array<{
-    filename: string
-    snippet: string
-  }>
-  model_used?: string
-  processing_time?: number
-}
-
-export default function ChatInterface() {
-  const [messages, setMessages] = useState<ChatMessage[]>([])
+export default function ChatInterface({ onNewMessage }: ChatInterfaceProps) {
+  const [messages, setMessages] = useState<MockChatMessage[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [selectedModel, setSelectedModel] = useState<'openai' | 'gemini'>('gemini')
@@ -50,22 +26,22 @@ export default function ChatInterface() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  // Add welcome message on component mount
+  // Load initial messages on component mount
   useEffect(() => {
+    const loadInitialMessages = async () => {
+      const initialMessages = await ChatService.getInitialMessages()
+      setMessages(initialMessages)
+    }
+    
     if (messages.length === 0) {
-      setMessages([{
-        id: 'welcome',
-        type: 'assistant',
-        content: 'Xin chào! Tôi là AI assistant của Chatnary. Tôi có thể giúp bạn tìm hiểu nội dung trong các tài liệu đã tải lên. Hãy hỏi tôi bất cứ điều gì!',
-        timestamp: new Date()
-      }])
+      loadInitialMessages()
     }
   }, [messages.length])
 
   const handleSendMessage = async () => {
     if (!input.trim() || loading) return
 
-    const userMessage: ChatMessage = {
+    const userMessage: MockChatMessage = {
       id: Date.now().toString(),
       type: 'user',
       content: input.trim(),
@@ -77,16 +53,16 @@ export default function ChatInterface() {
     setLoading(true)
 
     try {
-      const chatRequest: ChatRequest = {
+      const chatRequest = {
         query: userMessage.content,
         model: selectedModel,
         top_k: 5
       }
 
-      const response = await api.post<ChatResponse>(API_ENDPOINTS.chat.send, chatRequest)
+      const response = await ChatService.sendMessage(chatRequest)
 
       if (response.data.success) {
-        const assistantMessage: ChatMessage = {
+        const assistantMessage: MockChatMessage = {
           id: (Date.now() + 1).toString(),
           type: 'assistant',
           content: response.data.answer,
@@ -99,6 +75,9 @@ export default function ChatInterface() {
         if (response.data.processing_time) {
           showToast(`Phản hồi trong ${response.data.processing_time}ms`, 'success')
         }
+
+        // Trigger refresh of chat history
+        onNewMessage?.()
       } else {
         throw new Error('Chat request failed')
       }
@@ -113,7 +92,7 @@ export default function ChatInterface() {
         }
       }
       
-      const errorMessage: ChatMessage = {
+      const errorMessage: MockChatMessage = {
         id: (Date.now() + 1).toString(),
         type: 'assistant',
         content: errorText,
@@ -134,13 +113,17 @@ export default function ChatInterface() {
     }
   }
 
-  const clearChat = () => {
-    setMessages([{
-      id: 'welcome',
-      type: 'assistant',
-      content: 'Cuộc trò chuyện đã được xóa. Tôi sẵn sàng trả lời câu hỏi mới của bạn!',
-      timestamp: new Date()
-    }])
+  const clearChat = async () => {
+    const initialMessages = await ChatService.getInitialMessages()
+    setMessages([
+      ...initialMessages,
+      {
+        id: 'cleared',
+        type: 'assistant',
+        content: 'Cuộc trò chuyện đã được xóa. Tôi sẵn sàng trả lời câu hỏi mới của bạn!',
+        timestamp: new Date()
+      }
+    ])
   }
 
   const formatTime = (date: Date) => {
@@ -166,17 +149,22 @@ export default function ChatInterface() {
           </div>
           
           <div className="flex items-center gap-3">
-            {/* Model Selection */}
-            <select
-              value={selectedModel}
-              onChange={(e) => setSelectedModel(e.target.value as 'openai' | 'gemini')}
-              className="text-sm border rounded px-2 py-1"
-              disabled={loading}
-              title="Chọn AI model"
-            >
-              <option value="gemini">Gemini AI</option>
-              <option value="openai">OpenAI GPT</option>
-            </select>
+            {/* Model Selection - Improved Design */}
+            <div className="relative">
+              <select
+                value={selectedModel}
+                onChange={(e) => setSelectedModel(e.target.value as 'openai' | 'gemini')}
+                className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-10 text-sm font-medium text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-100 disabled:cursor-not-allowed min-w-[140px]"
+                disabled={loading}
+                title="Chọn AI model"
+              >
+                <option value="gemini">🧠 Gemini AI</option>
+                <option value="openai">⚡ OpenAI GPT</option>
+              </select>
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <ChevronDown className="w-4 h-4 text-gray-400" />
+              </div>
+            </div>
             
             <Button
               onClick={clearChat}
@@ -228,18 +216,32 @@ export default function ChatInterface() {
                 }`}>
                   <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                   
-                  {/* Sources */}
+                  {/* Sources - Tối ưu hiển thị trích dẫn */}
                   {message.sources && message.sources.length > 0 && (
-                    <div className="mt-3 pt-3 border-t border-gray-200">
-                      <p className="text-xs font-medium text-gray-600 mb-2 flex items-center gap-1">
-                        <FileText className="w-3 h-3" />
-                        Nguồn tham khảo:
-                      </p>
-                      <div className="space-y-2">
+                    <div className="mt-4 pt-3 border-t border-gray-300/50">
+                      <div className="flex items-center gap-2 mb-3">
+                        <FileText className="w-4 h-4 text-gray-500" />
+                        <span className="text-sm font-medium text-gray-700">
+                          Nguồn tham khảo ({message.sources.length})
+                        </span>
+                      </div>
+                      <div className="space-y-3">
                         {message.sources.map((source, index) => (
-                          <div key={index} className="text-xs bg-white rounded p-2 border">
-                            <p className="font-medium text-gray-700">{source.filename}</p>
-                            <p className="text-gray-600 mt-1">{source.snippet}</p>
+                          <div 
+                            key={index} 
+                            className="bg-blue-50/80 border border-blue-200/60 rounded-lg p-3 hover:bg-blue-50 transition-colors"
+                          >
+                            <div className="flex items-start gap-2">
+                              <div className="w-2 h-2 rounded-full bg-blue-400 mt-2 flex-shrink-0"></div>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium text-gray-800 text-sm truncate" title={source.filename}>
+                                  {source.filename}
+                                </p>
+                                <p className="text-gray-700 text-sm mt-1 leading-relaxed">
+                                  &quot;{source.snippet}&quot;
+                                </p>
+                              </div>
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -304,8 +306,17 @@ export default function ChatInterface() {
         
         <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
           <span className="flex items-center gap-1">
-            <MessageCircle className="w-3 h-3" />
-            AI Model: {selectedModel === 'gemini' ? 'Gemini' : 'OpenAI GPT'}
+            {selectedModel === 'gemini' ? (
+              <>
+                <Brain className="w-3 h-3 text-purple-500" />
+                AI Model: 🧠 Gemini AI
+              </>
+            ) : (
+              <>
+                <Zap className="w-3 h-3 text-green-500" />
+                AI Model: ⚡ OpenAI GPT
+              </>
+            )}
           </span>
           <span>Press Enter để gửi, Shift+Enter để xuống dòng</span>
         </div>

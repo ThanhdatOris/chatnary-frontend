@@ -53,13 +53,13 @@ const getIcon = (type: Notification['type']) => {
 const getBgColor = (type: Notification['type']) => {
   switch (type) {
     case 'info':
-      return 'bg-blue-50 border-blue-200'
+      return 'bg-blue-50/20 dark:bg-blue-900/20 border-blue-200/30 dark:border-blue-700/30'
     case 'success':
-      return 'bg-green-50 border-green-200'
+      return 'bg-green-50/20 dark:bg-green-900/20 border-green-200/30 dark:border-green-700/30'
     case 'warning':
-      return 'bg-yellow-50 border-yellow-200'
+      return 'bg-yellow-50/20 dark:bg-yellow-900/20 border-yellow-200/30 dark:border-yellow-700/30'
     case 'error':
-      return 'bg-red-50 border-red-200'
+      return 'bg-red-50/20 dark:bg-red-900/20 border-red-200/30 dark:border-red-700/30'
   }
 }
 
@@ -98,7 +98,7 @@ export default function SystemNotification({
   return (
     <div className="space-y-3 mb-6">
       {visibleNotifications.map((notification) => (
-        <Card key={notification.id} className={`border ${getBgColor(notification.type)}`}>
+        <Card key={notification.id} glass className={`border ${getBgColor(notification.type)}`}>
           <div className="p-4">
             <div className="flex items-start justify-between">
               <div className="flex items-start space-x-3">
@@ -109,10 +109,10 @@ export default function SystemNotification({
                   <h4 className={`text-sm font-medium ${getTextColor(notification.type)}`}>
                     {notification.title}
                   </h4>
-                  <p className="text-sm text-gray-700 mt-1">
+                  <p className="text-sm text-gray-800 dark:text-gray-300 mt-1">
                     {notification.message}
                   </p>
-                  <p className="text-xs text-gray-500 mt-2">
+                  <p className="text-xs text-gray-700 dark:text-gray-400 mt-2">
                     {notification.timestamp.toLocaleString('vi-VN')}
                   </p>
                 </div>
@@ -121,7 +121,7 @@ export default function SystemNotification({
               {notification.dismissible && (
                 <button
                   onClick={() => handleDismiss(notification.id)}
-                  className="flex-shrink-0 ml-3 text-gray-400 hover:text-gray-600"
+                  className="flex-shrink-0 ml-3 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300"
                   title="Đóng thông báo"
                 >
                   <X className="w-4 h-4" />
