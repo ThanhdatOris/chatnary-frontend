@@ -50,6 +50,7 @@ export default function NavbarSearch({ className }: NavbarSearchProps) {
     total: number
     processingTime: number
   } | null>(null)
+  const [showAllResults, setShowAllResults] = useState(false)
   
   const searchRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -213,9 +214,13 @@ export default function NavbarSearch({ className }: NavbarSearchProps) {
     e.preventDefault()
     if (query.trim()) {
       handleSearch()
-      // Navigate to full search page
-      window.location.href = `/dashboard/search?q=${encodeURIComponent(query)}`
+      setShowAllResults(true)
     }
+  }
+
+  const viewAllResults = () => {
+    setShowAllResults(true)
+    setIsOpen(false)
   }
 
   return (
@@ -365,12 +370,10 @@ export default function NavbarSearch({ className }: NavbarSearchProps) {
                   variant="ghost"
                   size="sm"
                   className="w-full text-xs hover:bg-white/80 dark:hover:bg-slate-800/80 hover:text-blue-600 transition-all duration-200 border-l-2 border-transparent hover:border-blue-600 hover:backdrop-blur-lg"
-                  onClick={() => {
-                    window.location.href = `/dashboard/search?q=${encodeURIComponent(query)}`
-                  }}
+                  onClick={viewAllResults}
                 >
                   <FileText className="w-3 h-3 mr-1" />
-                  Xem tất cả kết quả
+                  Xem tất cả kết quả ({searchStats?.total || 0})
                 </Button>
               </div>
             </div>
@@ -386,6 +389,93 @@ export default function NavbarSearch({ className }: NavbarSearchProps) {
               </p>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Full Results Modal */}
+      {showAllResults && (
+        <div className="fixed inset-0 z-[70] overflow-y-auto">
+          <div className="flex items-start justify-center min-h-screen px-4 pt-16 pb-20">
+            <div 
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
+              onClick={() => setShowAllResults(false)}
+            />
+            
+            <div className="relative w-full max-w-4xl bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-200/50">
+              {/* Modal Header */}
+              <div className="flex items-center justify-between p-6 border-b border-gray-200/50">
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">
+                    Kết quả tìm kiếm: "{query}"
+                  </h2>
+                  {searchStats && (
+                    <p className="text-sm text-gray-600 mt-1">
+                      Tìm thấy {searchStats.total} kết quả trong {searchStats.processingTime}ms
+                    </p>
+                  )}
+                </div>
+                <button
+                  onClick={() => setShowAllResults(false)}
+                  className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
+                  title="Đóng"
+                >
+                  <X className="w-5 h-5 text-gray-500" />
+                </button>
+              </div>
+
+              {/* Modal Content */}
+              <div className="p-6 max-h-[60vh] overflow-y-auto">
+                {results.length > 0 ? (
+                  <div className="space-y-4">
+                    {results.map((result) => (
+                      <div
+                        key={result.file.id}
+                        className="bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-xl p-4 hover:shadow-md transition-all duration-200 cursor-pointer"
+                        onClick={() => {
+                          // TODO: Navigate to file detail or open file
+                          console.log('Open file:', result.file.id)
+                        }}
+                      >
+                        <div className="flex items-start space-x-3">
+                          <div className="text-2xl flex-shrink-0 mt-1">
+                            {getFileIcon(result.file.mimetype)}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-sm font-semibold text-gray-900 truncate">
+                              {result.file.originalName}
+                            </h3>
+                            <div className="flex items-center space-x-4 text-xs text-gray-500 mt-1">
+                              <span>{formatFileSize(result.file.size)}</span>
+                              <span>{formatDate(result.file.uploadTime)}</span>
+                              <span className="flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span>
+                                {Math.round(result.score * 100)}% phù hợp
+                              </span>
+                            </div>
+                            {result.snippet && (
+                              <p className="text-sm text-gray-600 mt-2 line-clamp-3">
+                                {result.snippet}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <Search className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                      Không tìm thấy kết quả
+                    </h3>
+                    <p className="text-gray-600">
+                      Thử sử dụng từ khóa khác hoặc kiểm tra chính tả
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

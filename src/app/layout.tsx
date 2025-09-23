@@ -1,6 +1,5 @@
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { ToastProvider } from "@/contexts/ToastContext";
-import { AuthProvider } from "@/hooks/useAuth";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
@@ -37,11 +36,9 @@ export default function RootLayout({
       </head>
       <body className={`${inter.variable} font-sans antialiased theme-transition`}>
         <ThemeProvider defaultTheme="light">
-          <AuthProvider>
-            <ToastProvider>
-              {children}
-            </ToastProvider>
-          </AuthProvider>
+          <ToastProvider>
+            {children}
+          </ToastProvider>
         </ThemeProvider>
       </body>
     </html>

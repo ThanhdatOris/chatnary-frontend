@@ -1,5 +1,4 @@
 import axios from 'axios'
-import Cookies from 'js-cookie'
 
 // API Base URL - Updated to match Python backend
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
@@ -13,46 +12,18 @@ export const api = axios.create({
   },
 })
 
-// Request interceptor to add auth token
-api.interceptors.request.use(
-  (config) => {
-    const token = Cookies.get('auth_token')
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
-    }
-    return config
-  },
-  (error) => {
-    return Promise.reject(error)
-  }
-)
-
-// Response interceptor for error handling
+// Response interceptor for basic error handling
 api.interceptors.response.use(
   (response) => {
     return response
   },
   (error) => {
-    if (error.response?.status === 401) {
-      // Token expired or invalid
-      Cookies.remove('auth_token')
-      window.location.href = '/login'
-    }
     return Promise.reject(error)
   }
 )
 
 // API Endpoints - Updated to match Python FastAPI backend
 export const API_ENDPOINTS = {
-  auth: {
-    register: '/api/auth/register',
-    login: '/api/auth/login',
-    profile: '/api/auth/profile',
-    verify: '/api/auth/verify',
-    devLogin: '/api/auth/dev-login',
-    changePassword: '/api/auth/change-password',
-    forgotPassword: '/api/auth/forgot-password',
-  },
   files: {
     upload: '/api/upload',
     list: '/api/files',

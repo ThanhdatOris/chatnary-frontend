@@ -3,11 +3,9 @@
 import Header from '@/components/layout/Header'
 import Sidebar from '@/components/layout/Sidebar'
 import { Button, Card, TextInput, ThemeToggle } from '@/components/ui'
-import Loading from '@/components/ui/Loading'
 import { useTheme } from '@/contexts/ThemeContext'
 import { useToast } from '@/contexts/ToastContext'
-import { useAuth } from '@/hooks/useAuth'
-import { api, API_ENDPOINTS } from '@/lib/api'
+// Auth removed
 import {
     Bell,
     Eye,
@@ -22,7 +20,6 @@ import {
 import { useEffect, useState } from 'react'
 
 export default function SettingsPageClient() {
-  const { user, loading } = useAuth()
   const { showToast } = useToast()
   const { theme } = useTheme()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -37,26 +34,14 @@ export default function SettingsPageClient() {
     confirmPassword: ''
   })
 
-  // Load user data when user is available
+  // Initialize default user data
   useEffect(() => {
-    if (user) {
-      setFormData(prev => ({
-        ...prev,
-        fullName: user.fullName || '',
-        email: user.email || ''
-      }))
-    }
-  }, [user])
-
-  if (loading) {
-    return (
-      <div className="min-h-screen gradient-bg">
-        <div className="flex items-center justify-center min-h-screen">
-          <Loading size="lg" />
-        </div>
-      </div>
-    )
-  }
+    setFormData(prev => ({
+      ...prev,
+      fullName: 'Demo User',
+      email: 'demo@chatnary.com'
+    }))
+  }, [])
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }))
@@ -70,19 +55,11 @@ export default function SettingsPageClient() {
 
     setIsSaving(true)
     try {
-      await api.put(API_ENDPOINTS.auth.profile, {
-        fullName: formData.fullName.trim()
-      })
+      // Demo mode - simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000))
       showToast('Thông tin đã được cập nhật thành công', 'success')
     } catch (error: unknown) {
-      let errorMessage = 'Không thể cập nhật thông tin'
-      if (error && typeof error === 'object' && 'response' in error) {
-        const response = (error as { response?: { data?: { detail?: string } } }).response
-        if (response?.data?.detail) {
-          errorMessage = response.data.detail
-        }
-      }
-      showToast(errorMessage, 'error')
+      showToast('Không thể cập nhật thông tin', 'error')
     } finally {
       setIsSaving(false)
     }
@@ -111,10 +88,8 @@ export default function SettingsPageClient() {
 
     setIsSaving(true)
     try {
-      await api.put(API_ENDPOINTS.auth.changePassword, {
-        currentPassword: formData.currentPassword,
-        newPassword: formData.newPassword
-      })
+      // Demo mode - simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000))
       showToast('Mật khẩu đã được thay đổi thành công', 'success')
       setFormData(prev => ({
         ...prev,
@@ -123,14 +98,7 @@ export default function SettingsPageClient() {
         confirmPassword: ''
       }))
     } catch (error: unknown) {
-      let errorMessage = 'Không thể thay đổi mật khẩu'
-      if (error && typeof error === 'object' && 'response' in error) {
-        const response = (error as { response?: { data?: { detail?: string } } }).response
-        if (response?.data?.detail) {
-          errorMessage = response.data.detail
-        }
-      }
-      showToast(errorMessage, 'error')
+      showToast('Không thể thay đổi mật khẩu', 'error')
     } finally {
       setIsSaving(false)
     }
@@ -139,7 +107,6 @@ export default function SettingsPageClient() {
   return (
     <div className="min-h-screen gradient-bg">
       <Header 
-        user={user}
         onMobileMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
         isMobileMenuOpen={isMobileMenuOpen}
       />

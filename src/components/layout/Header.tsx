@@ -1,37 +1,23 @@
 import { Button, Modal, NavbarSearch, ThemeToggle } from '@/components/ui'
-import { AuthUtils } from '@/lib/auth'
-import { User as UserType } from '@/lib/types'
 import {
-  FileText,
-  LogOut,
-  Menu,
-  Search,
-  User,
-  X
+    FileText,
+    Menu,
+    Search,
+    X
 } from 'lucide-react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import React from 'react'
 
 interface HeaderProps {
-  user?: UserType | null
   onMobileMenuToggle?: () => void
   isMobileMenuOpen?: boolean
 }
 
 const Header: React.FC<HeaderProps> = ({ 
-  user, 
   onMobileMenuToggle,
   isMobileMenuOpen = false 
 }) => {
-  const router = useRouter()
-  const [isUserMenuOpen, setIsUserMenuOpen] = React.useState(false)
   const [showMobileSearch, setShowMobileSearch] = React.useState(false)
-
-  const handleLogout = () => {
-    AuthUtils.logout()
-    router.push('/login')
-  }
 
   return (
     <header className="glass-header border-b border-glass-border theme-transition">
@@ -68,49 +54,7 @@ const Header: React.FC<HeaderProps> = ({
             {/* Theme Toggle */}
             <ThemeToggle size="sm" />
 
-            {user ? (
-              <div className="relative">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center space-x-2"
-                >
-                  <User className="w-4 h-4" />
-                  <span className="hidden sm:inline">{user.fullName}</span>
-                </Button>
-
-                {/* User Dropdown Menu */}
-                {isUserMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-48 glass-card py-1 z-[52]">
-                    <Link
-                      href="/dashboard/profile"
-                      className="flex items-center px-4 py-2 text-sm text-foreground hover:bg-background/20 dark:hover:bg-background/10 rounded-lg mx-1 transition-colors"
-                      onClick={() => setIsUserMenuOpen(false)}
-                    >
-                      <User className="w-4 h-4 mr-2" />
-                      Profile
-                    </Link>
-                    <button
-                      onClick={handleLogout}
-                      className="flex items-center w-full px-4 py-2 text-sm text-foreground hover:bg-background/20 dark:hover:bg-background/10 rounded-lg mx-1 transition-colors"
-                    >
-                      <LogOut className="w-4 h-4 mr-2" />
-                      Logout
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="flex items-center space-x-2">
-                <Link href="/login">
-                  <Button variant="ghost" size="sm">Login</Button>
-                </Link>
-                <Link href="/register">
-                  <Button size="sm">Sign Up</Button>
-                </Link>
-              </div>
-            )}
+            {/* User menu removed - no authentication */}
 
             {/* Mobile menu button */}
             <Button
@@ -129,13 +73,7 @@ const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Click outside to close user menu */}
-      {isUserMenuOpen && (
-        <div 
-          className="fixed inset-0 z-[51]" 
-          onClick={() => setIsUserMenuOpen(false)}
-        />
-      )}
+      {/* User menu removed */}
 
       {/* Mobile Search Modal */}
       <Modal

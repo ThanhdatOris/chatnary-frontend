@@ -1,40 +1,17 @@
 'use client'
 
 import ChatLayout from '@/components/chat/ChatLayout'
-import Header from '@/components/layout/Header'
-import Sidebar from '@/components/layout/Sidebar'
-import Loading from '@/components/ui/Loading'
-import { useAuth } from '@/hooks/useAuth'
-import { useState } from 'react'
+import ModernLayout from '@/components/layout/ModernLayout'
 
 export default function ChatPage() {
-  const { user, loading } = useAuth()
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loading size="lg" />
-      </div>
-    )
-  }
-
   return (
-    <div className="min-h-screen gradient-bg">
-      <Header 
-        user={user}
-        onMobileMenuToggle={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        isMobileMenuOpen={isMobileMenuOpen}
-      />
-      <div className="flex h-[calc(100vh-4rem)]">
-        <Sidebar 
-          isOpen={isMobileMenuOpen}
-          onClose={() => setIsMobileMenuOpen(false)}
-        />
-        <main className="flex-1 min-h-0">
-          <ChatLayout className="h-full" />
-        </main>
+    <ModernLayout 
+      title="Trò chuyện với AI" 
+      description="Đặt câu hỏi và nhận câu trả lời thông minh từ tài liệu của bạn"
+    >
+      <div className="bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-2xl overflow-hidden" style={{ height: 'calc(100vh - 300px)' }}>
+        <ChatLayout className="h-full" />
       </div>
-    </div>
+    </ModernLayout>
   )
 }

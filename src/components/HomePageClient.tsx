@@ -1,190 +1,116 @@
 'use client'
 
 import { Button } from '@/components/ui'
-import Loading from '@/components/ui/Loading'
-import { useAuth } from '@/hooks/useAuth'
-import { FileText, MessageSquare, Search, Shield, Upload, Zap } from 'lucide-react'
+import { ArrowRight, FileText, MessageSquare, Search, Upload } from 'lucide-react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { useEffect } from 'react'
 
 export default function HomePageClient() {
-  const { user, loading } = useAuth()
-  const router = useRouter()
 
-  useEffect(() => {
-    // Redirect to dashboard if already logged in
-    if (!loading && user) {
-      router.push('/dashboard')
-    }
-  }, [user, loading, router])
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loading size="lg" />
-      </div>
-    )
-  }
-
-  // If user is logged in, don't show home page content (will redirect)
-  if (user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loading size="lg" />
-      </div>
-    )
-  }
-
-  const features = [
+  const quickActions = [
     {
       icon: Upload,
-      title: 'Easy Upload',
-      description: 'Drag & drop your documents (PDF, DOCX, TXT) for instant processing'
+      title: 'Upload & Chat',
+      description: 'Tải tài liệu và bắt đầu trò chuyện ngay',
+      href: '/dashboard/files',
+      color: 'bg-blue-500'
     },
     {
       icon: Search,
-      title: 'Smart Search',
-      description: 'Find content across all your documents with full-text search powered by AI'
+      title: 'Search Documents',
+      description: 'Tìm kiếm nhanh trong tài liệu',
+      href: '/dashboard/search',
+      color: 'bg-green-500'
     },
     {
       icon: MessageSquare,
-      title: 'Chat with Documents',
-      description: 'Ask questions about your documents and get accurate answers with citations'
-    },
-    {
-      icon: Shield,
-      title: 'Secure & Private',
-      description: 'Your documents are encrypted and stored securely with user-level access control'
-    },
-    {
-      icon: Zap,
-      title: 'Lightning Fast',
-      description: 'Instant search results and real-time chat responses powered by advanced AI'
-    },
-    {
-      icon: FileText,
-      title: 'Multiple Formats',
-      description: 'Support for various document formats including PDF, Word, and plain text'
+      title: 'Start Chatting',
+      description: 'Bắt đầu cuộc trò chuyện mới',
+      href: '/dashboard/chat',
+      color: 'bg-purple-500'
     }
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-bg">
-      {/* Header */}
-      <header className="relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-cyan-50">
+      {/* Modern Minimal Header */}
+      <header className="absolute top-0 w-full z-10">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 gradient-primary rounded-lg flex items-center justify-center">
-                <FileText className="w-5 h-5 text-white" />
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                <FileText className="w-6 h-6 text-white" />
               </div>
-              <span className="text-2xl font-bold text-foreground">Chatnary</span>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Link href="/login">
-                <Button variant="ghost">Đăng nhập</Button>
-              </Link>
-              <Link href="/register">
-                <Button>Đăng ký</Button>
-              </Link>
+              <span className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+                Chatnary
+              </span>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="relative py-20 lg:py-32">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-4xl lg:text-6xl font-bold text-foreground mb-6">
-              Chat with Your{' '}
-              <span className="gradient-text">Documents</span>
+      {/* Hero Section - Centered & Focused */}
+      <section className="relative flex items-center justify-center min-h-screen px-4">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="mb-8">
+            <h1 className="text-5xl lg:text-7xl font-bold mb-6">
+              <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-teal-600 bg-clip-text text-transparent">
+                Chat với
+              </span>
+              <br />
+              <span className="text-gray-900">Tài liệu của bạn</span>
             </h1>
-            <p className="text-xl text-muted-foreground mb-8 max-w-3xl mx-auto">
-              Upload your documents and start chatting with them using AI. 
-              Search, ask questions, and get instant answers from your own knowledge base.
+            <p className="text-xl text-gray-600 mb-12 max-w-2xl mx-auto leading-relaxed">
+              Tải lên, tìm kiếm và trò chuyện với tài liệu thông qua AI một cách thông minh và nhanh chóng.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link href="/register">
-                <Button size="lg" className="px-8 py-3">
-                  Bắt đầu miễn phí
-                </Button>
-              </Link>
-              <Button variant="outline" size="lg" className="px-8 py-3">
-                Xem demo
-              </Button>
-            </div>
           </div>
-        </div>
-      </section>
 
-      {/* Features Section */}
-      <section className="py-20 bg-background">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-              Everything you need to manage documents
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Powerful features designed to make document management and interaction effortless.
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => {
-              const IconComponent = feature.icon
+          {/* Quick Action Cards */}
+          <div className="grid md:grid-cols-3 gap-6 mb-12">
+            {quickActions.map((action, index) => {
+              const IconComponent = action.icon
               return (
-                <div key={index} className="p-6 rounded-lg border border-border hover:border-blue-300 transition-colors">
-                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-4">
-                    <IconComponent className="w-6 h-6 text-blue-600" />
+                <Link key={index} href={action.href}>
+                  <div className="group bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-2xl p-8 hover:bg-white hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer">
+                    <div className={`w-16 h-16 ${action.color} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                      <IconComponent className="w-8 h-8 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-3">
+                      {action.title}
+                    </h3>
+                    <p className="text-gray-600 mb-4">
+                      {action.description}
+                    </p>
+                    <div className="flex items-center text-blue-600 font-medium group-hover:text-purple-600 transition-colors">
+                      Bắt đầu
+                      <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                    </div>
                   </div>
-                  <h3 className="text-xl font-semibold text-foreground mb-2">
-                    {feature.title}
-                  </h3>
-                  <p className="text-muted-foreground">
-                    {feature.description}
-                  </p>
-                </div>
+                </Link>
               )
             })}
           </div>
-        </div>
-      </section>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-blue-600">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">
-            Ready to transform your document workflow?
-          </h2>
-          <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-            Join thousands of users who are already chatting with their documents.
-          </p>
-          <Link href="/register">
-            <Button size="lg" variant="outline" className="bg-background text-blue-600 hover:bg-muted px-8 py-3">
-              Bắt đầu ngay hôm nay
-            </Button>
-          </Link>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="bg-gray-900 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="flex items-center space-x-2 mb-4 md:mb-0">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <FileText className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-xl font-bold">Chatnary</span>
-            </div>
-            <div className="text-muted-foreground text-sm">
-              © 2025 Chatnary. All rights reserved.
-            </div>
+          {/* Main CTA */}
+          <div className="space-y-4">
+            <Link href="/dashboard">
+              <Button 
+                size="lg" 
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-12 py-4 text-lg rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                Khám phá ngay
+              </Button>
+            </Link>
+            <p className="text-sm text-gray-500">
+              Không cần đăng ký • Miễn phí sử dụng
+            </p>
           </div>
         </div>
-      </footer>
+
+        {/* Floating Elements */}
+        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
+        <div className="absolute top-40 right-10 w-72 h-72 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
+      </section>
     </div>
   )
 }
