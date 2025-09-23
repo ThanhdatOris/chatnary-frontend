@@ -1,13 +1,14 @@
 'use client'
 
 import { Button, NavbarSearch } from '@/components/ui';
+import BackgroundToggle from '@/components/ui/BackgroundToggle';
 import {
-    ArrowLeft,
-    BarChart3,
-    FileText,
-    Library,
-    MessageSquare,
-    Plus
+  ArrowLeft,
+  BarChart3,
+  FileText,
+  Library,
+  MessageSquare,
+  Plus
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -37,7 +38,7 @@ export default function ModernLayout({
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+    <div className="min-h-screen">
       {/* Modern Header */}
       <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200/50 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -57,23 +58,25 @@ export default function ModernLayout({
               <NavbarSearch className="w-full" />
             </div>
 
-            {/* Actions or Quick Add Button (fixed width to prevent search shifting) */}
-            <div className="flex-shrink-0 hidden sm:block w-48">
-              <div className="w-full flex justify-end">
+            {/* Theme & Background Toggles + Actions */}
+            <div className="flex-shrink-0 flex items-center gap-2">
+              {/* <ThemeToggle /> */}
+              <BackgroundToggle compact />
+              
+              {/* Actions or Quick Add Button - Desktop */}
+              <div className="hidden sm:block">
                 {actions || (
                   <Link href="/files">
-                    <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg w-full sm:w-auto">
+                    <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg">
                       <Plus className="w-4 h-4 mr-2" />
                       Thêm tài liệu
                     </Button>
                   </Link>
                 )}
               </div>
-            </div>
-            
-            {/* Mobile Action Button (fixed width) */}
-            <div className="flex-shrink-0 sm:hidden w-10">
-              <div className="w-full flex justify-end">
+              
+              {/* Mobile Action Button */}
+              <div className="sm:hidden">
                 {actions || (
                   <Link href="/files">
                     <Button size="sm" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg">

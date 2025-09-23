@@ -417,12 +417,12 @@ export default function FileList({ onFileSelect, refreshTrigger }: FileListProps
   return (
     <div className="flex flex-col h-full">
       {/* Sticky Filters and Search */}
-      <div className="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-gray-200/50 pb-4 mb-4">
+      <div className="sticky top-0 z-30 bg-white/40 backdrop-blur-md border-b border-white/30 pb-4 mb-4 rounded-lg mx-2 mt-2">
         <SearchAndFilters />
 
         {/* Results Header */}
         <div className="flex items-center justify-between mt-4">
-          <h2 className="text-lg font-semibold text-foreground">
+          <h2 className="text-lg font-semibold text-gradient-aurora">
             Tài liệu của bạn ({filteredFiles.length} / {files.length})
           </h2>
           <Button onClick={fetchFiles} variant="outline" size="sm">
@@ -435,9 +435,15 @@ export default function FileList({ onFileSelect, refreshTrigger }: FileListProps
       <div className="flex-1 overflow-y-auto overflow-x-hidden">
         <div className="grid-container px-1">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 max-w-full">
-            {Array.isArray(currentFiles) && currentFiles.map((file) => (
+            {Array.isArray(currentFiles) && currentFiles.map((file, index) => (
               <div key={getFileId(file)} className="transform-wrapper">
-                <div className="file-grid-item group relative border rounded-xl p-4 pb-20 bg-background hover:shadow-xl transition-all duration-300 ease-in-out cursor-pointer min-h-[220px] overflow-hidden">
+                <div className={`file-grid-item group relative border-2 rounded-xl p-4 pb-20 ${
+                  index % 5 === 0 ? 'bg-white/70 border-purple-200/50 shadow-lg shadow-purple-500/10' :
+                  index % 5 === 1 ? 'bg-white/70 border-pink-200/50 shadow-lg shadow-pink-500/10' :
+                  index % 5 === 2 ? 'bg-white/70 border-blue-200/50 shadow-lg shadow-blue-500/10' :
+                  index % 5 === 3 ? 'bg-white/70 border-emerald-200/50 shadow-lg shadow-emerald-500/10' :
+                  'bg-white/70 border-orange-200/50 shadow-lg shadow-orange-500/10'
+                } hover:shadow-xl hover:shadow-purple-500/20 hover:bg-white/80 transition-all duration-300 ease-in-out cursor-pointer min-h-[220px] overflow-hidden backdrop-blur-sm`}>
                   {/* File Icon and Type Badge */}
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-shrink-0">
@@ -490,7 +496,7 @@ export default function FileList({ onFileSelect, refreshTrigger }: FileListProps
                       onClick={() => setViewingFile({ id: getFileId(file), name: file.originalName })}
                       variant="outline"
                       size="sm"
-                      className="flex-1 bg-white/90 backdrop-blur-sm border-white/20 hover:bg-white/95"
+                      className="flex-1 bg-purple-500/80 backdrop-blur-sm border-white/30 hover:bg-purple-600/90 text-white shadow-lg hover:shadow-purple-500/40 transition-all duration-200"
                     >
                       <Eye className="w-3 h-3 mr-1" />
                       Xem
@@ -504,7 +510,7 @@ export default function FileList({ onFileSelect, refreshTrigger }: FileListProps
                       variant="outline"
                       size="sm"
                       disabled={actionLoading[`download-${getFileId(file)}`]}
-                      className="bg-white/90 backdrop-blur-sm border-white/20 hover:bg-white/95"
+                      className="bg-blue-500/80 backdrop-blur-sm border-white/30 hover:bg-blue-600/90 text-white shadow-lg hover:shadow-blue-500/40 transition-all duration-200"
                     >
                       {actionLoading[`download-${getFileId(file)}`] ? (
                         <div className="w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" />
@@ -553,12 +559,12 @@ export default function FileList({ onFileSelect, refreshTrigger }: FileListProps
       </div>
 
       {/* Sticky Pagination */}
-      <div className="sticky bottom-0 z-30 bg-white/95 backdrop-blur-sm border-t border-gray-200/50 pt-4 mt-4">
+      <div className="sticky bottom-0 z-30 bg-white/40 backdrop-blur-md border-t border-white/30 pt-4 mt-4 rounded-lg mx-2 mb-2">
         <div className="flex items-center justify-between flex-wrap gap-4">
-          <div className="text-sm text-muted-foreground">
+          <div className="text-sm text-gradient-aurora font-medium">
             Hiển thị {startIndex + 1}-{Math.min(endIndex, filteredFiles.length)} của {filteredFiles.length} tài liệu
             {filteredFiles.length !== files.length && (
-              <span className="text-blue-600"> (đã lọc từ {files.length} tài liệu)</span>
+              <span className="text-gradient-cosmic font-semibold"> (đã lọc từ {files.length} tài liệu)</span>
             )}
           </div>
 

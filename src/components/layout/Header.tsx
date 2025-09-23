@@ -1,9 +1,11 @@
-import { Button, Modal, NavbarSearch, ThemeToggle } from '@/components/ui'
+import { Button, Modal, NavbarSearch } from '@/components/ui'
+import BackgroundToggle from '@/components/ui/BackgroundToggle'
+import { useBackground } from '@/contexts/BackgroundContext'
 import {
-    FileText,
-    Menu,
-    Search,
-    X
+  FileText,
+  Menu,
+  Search,
+  X
 } from 'lucide-react'
 import Link from 'next/link'
 import React from 'react'
@@ -18,6 +20,7 @@ const Header: React.FC<HeaderProps> = ({
   isMobileMenuOpen = false 
 }) => {
   const [showMobileSearch, setShowMobileSearch] = React.useState(false)
+  const { setBackground } = useBackground()
 
   return (
     <header className="glass-header border-b border-glass-border theme-transition">
@@ -52,7 +55,10 @@ const Header: React.FC<HeaderProps> = ({
             </Button>
 
             {/* Theme Toggle */}
-            <ThemeToggle size="sm" />
+            {/* <ThemeToggle size="sm" /> */}
+
+            {/* Background Toggle */}
+            <BackgroundToggle onBackgroundChange={setBackground} compact />
 
             {/* User menu removed - no authentication */}
 
