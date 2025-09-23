@@ -21,8 +21,8 @@ export default function DashboardPage() {
 
   const tabs = [
     { id: 'overview', name: 'Tổng quan', icon: BarChart3 },
-    { id: 'files', name: 'Tài liệu', icon: Library, href: '/dashboard/files' },
-    { id: 'chat', name: 'Trò chuyện', icon: MessageSquare, href: '/dashboard/chat' },
+    { id: 'files', name: 'Tài liệu', icon: Library, href: '/files' },
+    { id: 'chat', name: 'Trò chuyện', icon: MessageSquare, href: '/chat' },
   ];
 
   const quickActions = [
@@ -30,7 +30,7 @@ export default function DashboardPage() {
       title: 'Tải lên tài liệu',
       description: 'Thêm tài liệu mới để bắt đầu trò chuyện',
       icon: Upload,
-      href: '/dashboard/files',
+      href: '/files',
       color: 'bg-blue-500 hover:bg-blue-600',
       iconBg: 'bg-blue-100 text-blue-600'
     },
@@ -38,7 +38,7 @@ export default function DashboardPage() {
       title: 'Bắt đầu chat',
       description: 'Tạo cuộc trò chuyện mới với AI',
       icon: MessageSquare,
-      href: '/dashboard/chat',
+      href: '/chat',
       color: 'bg-green-500 hover:bg-green-600',
       iconBg: 'bg-green-100 text-green-600'
     }
@@ -61,7 +61,7 @@ export default function DashboardPage() {
             </Link>
 
             {/* Quick Add Button */}
-            <Link href="/dashboard/files">
+            <Link href="/files">
               <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg">
                 <Plus className="w-4 h-4 mr-2" />
                 Thêm tài liệu
@@ -114,17 +114,17 @@ export default function DashboardPage() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}
-        <div className="mb-8">
+            <div className="mb-8">
           <div className="flex items-center space-x-2 mb-4">
             <Sparkles className="w-6 h-6 text-yellow-500" />
             <h1 className="text-3xl font-bold text-gray-900">
               Chào mừng trở lại!
-            </h1>
+              </h1>
           </div>
           <p className="text-lg text-gray-600">
             Sẵn sàng khám phá và trò chuyện với tài liệu của bạn
-          </p>
-        </div>
+              </p>
+            </div>
 
         {/* Quick Actions */}
         <div className="grid md:grid-cols-2 gap-6 mb-8">
@@ -198,8 +198,8 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
-        </div>
-      </main>
+          </div>
+        </main>
     </div>
   );
 }

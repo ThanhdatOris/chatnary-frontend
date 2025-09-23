@@ -1,9 +1,9 @@
 import { cn } from '@/lib/utils'
 import {
-  Home,
-  Library,
-  MessageSquare,
-  Settings
+    Home,
+    Library,
+    MessageSquare,
+    Settings
 } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -18,10 +18,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen = true, onClose }) => {
   const pathname = usePathname()
 
   const navigation = [
-    { name: 'Dashboard', href: '/dashboard', icon: Home },
-    { name: 'Files', href: '/dashboard/files', icon: Library },
-    { name: 'Chat', href: '/dashboard/chat', icon: MessageSquare },
-    { name: 'Settings', href: '/dashboard/settings', icon: Settings },
+    { name: 'Tổng quan', href: '/overview', icon: Home },
+    { name: 'Files', href: '/files', icon: Library },
+    { name: 'Chat', href: '/chat', icon: MessageSquare },
+    { name: 'Settings', href: '/settings', icon: Settings },
   ]
 
   return (

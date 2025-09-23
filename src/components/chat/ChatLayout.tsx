@@ -6,16 +6,16 @@ import ChatService from '@/lib/chatService'
 import { MockChatHistoryItem } from '@/lib/mockData'
 import { cn } from '@/lib/utils'
 import {
-  Brain,
-  Calendar,
-  ChevronLeft,
-  ChevronRight,
-  Clock,
-  History,
-  MessageSquare,
-  Search,
-  Trash2,
-  Zap
+    Brain,
+    Calendar,
+    ChevronLeft,
+    ChevronRight,
+    Clock,
+    History,
+    MessageSquare,
+    Search,
+    Trash2,
+    Zap
 } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import ChatInterface from './ChatInterface'

@@ -36,21 +36,21 @@ export default function QuickActions() {
       description: 'Bắt đầu chat với AI',
       icon: <MessageCircle className="w-6 h-6" />,
       color: 'bg-green-500 hover:bg-green-600',
-      onClick: () => router.push('/dashboard/chat')
+      onClick: () => router.push('/chat')
     },
     {
       title: 'Tìm kiếm tài liệu',
       description: 'Tìm kiếm trong thư viện',
       icon: <Search className="w-6 h-6" />,
       color: 'bg-yellow-500 hover:bg-yellow-600',
-      onClick: () => router.push('/dashboard/search')
+      onClick: () => router.push('/chat')
     },
     {
       title: 'Quản lý files',
       description: 'Xem và quản lý tất cả files',
       icon: <Plus className="w-6 h-6" />,
       color: 'bg-purple-500 hover:bg-purple-600',
-      onClick: () => router.push('/dashboard/files')
+      onClick: () => router.push('/files')
     }
   ]
 

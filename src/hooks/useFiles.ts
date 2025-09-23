@@ -1,6 +1,7 @@
 'use client'
 
 import { api, API_ENDPOINTS } from '@/lib/api'
+import { isBypassMode, mockFiles } from '@/lib/mockData'
 import { FileMetadata } from '@/lib/types'
 import { useCallback, useEffect, useState } from 'react'
 
@@ -61,21 +62,39 @@ export function useFiles(options: UseFilesOptions = {}): UseFilesReturn {
     try {
       setLoading(true)
       setError(null)
-      
-      const params = new URLSearchParams({
-        page: page.toString(),
-        limit: limit.toString(),
-        sortBy,
-        sortOrder
-      })
 
-      const response = await api.get<FileListResponse>(`${API_ENDPOINTS.files.list}?${params}`)
-      
-      if (response.data.success) {
-        setFiles(response.data.data.files)
-        setPagination(response.data.data.pagination)
+      if (isBypassMode()) {
+        // Use mock data with client-side sorting/pagination
+        const sorted = [...mockFiles].sort((a, b) => {
+          const aVal = (a as any)[sortBy]
+          const bVal = (b as any)[sortBy]
+          if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1
+          if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1
+          return 0
+        })
+        const start = (page - 1) * limit
+        const paged = sorted.slice(start, start + limit)
+        setFiles(paged as unknown as FileMetadata[])
+        setPagination({
+          page,
+          limit,
+          total: mockFiles.length,
+          totalPages: Math.max(1, Math.ceil(mockFiles.length / limit))
+        })
       } else {
-        setError(response.data.message || 'Failed to fetch files')
+        const params = new URLSearchParams({
+          page: page.toString(),
+          limit: limit.toString(),
+          sortBy,
+          sortOrder
+        })
+        const response = await api.get<FileListResponse>(`${API_ENDPOINTS.files.list}?${params}`)
+        if (response.data.success) {
+          setFiles(response.data.data.files)
+          setPagination(response.data.data.pagination)
+        } else {
+          setError(response.data.message || 'Failed to fetch files')
+        }
       }
     } catch (err: unknown) {
       let errorMessage = 'Failed to fetch files'
@@ -95,10 +114,13 @@ export function useFiles(options: UseFilesOptions = {}): UseFilesReturn {
 
   const deleteFile = async (fileId: string): Promise<boolean> => {
     try {
+      if (isBypassMode()) {
+        // Simulate delete locally
+        setFiles(prev => prev.filter(file => file.id !== fileId))
+        return true
+      }
       const response = await api.delete(API_ENDPOINTS.files.delete(fileId))
-      
       if (response.data.success) {
-        // Remove file from local state
         setFiles(prev => prev.filter(file => file.id !== fileId))
         return true
       } else {

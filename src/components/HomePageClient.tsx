@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui'
 import { ArrowRight, FileText, MessageSquare, Search, Upload } from 'lucide-react'
 import Link from 'next/link'
+import OverviewExtras from './OverviewExtras'
 
 export default function HomePageClient() {
 
@@ -11,21 +12,21 @@ export default function HomePageClient() {
       icon: Upload,
       title: 'Upload & Chat',
       description: 'Tải tài liệu và bắt đầu trò chuyện ngay',
-      href: '/dashboard/files',
+      href: '/files',
       color: 'bg-blue-500'
     },
     {
       icon: Search,
       title: 'Search Documents',
       description: 'Tìm kiếm nhanh trong tài liệu',
-      href: '/dashboard/search',
+      href: '/chat',
       color: 'bg-green-500'
     },
     {
       icon: MessageSquare,
       title: 'Start Chatting',
       description: 'Bắt đầu cuộc trò chuyện mới',
-      href: '/dashboard/chat',
+      href: '/chat',
       color: 'bg-purple-500'
     }
   ]
@@ -69,15 +70,15 @@ export default function HomePageClient() {
             {quickActions.map((action, index) => {
               const IconComponent = action.icon
               return (
-                <Link key={index} href={action.href}>
-                  <div className="group bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-2xl p-8 hover:bg-white hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer">
+                <Link key={index} href={action.href} className="block h-full">
+                  <div className="group bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-2xl p-8 hover:bg-white hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer h-full flex flex-col">
                     <div className={`w-16 h-16 ${action.color} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
                       <IconComponent className="w-8 h-8 text-white" />
                     </div>
                     <h3 className="text-xl font-bold text-gray-900 mb-3">
                       {action.title}
                     </h3>
-                    <p className="text-gray-600 mb-4">
+                    <p className="text-gray-600 mb-4 flex-1">
                       {action.description}
                     </p>
                     <div className="flex items-center text-blue-600 font-medium group-hover:text-purple-600 transition-colors">
@@ -92,7 +93,7 @@ export default function HomePageClient() {
 
           {/* Main CTA */}
           <div className="space-y-4">
-            <Link href="/dashboard">
+            <Link href="/files">
               <Button 
                 size="lg" 
                 className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-12 py-4 text-lg rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300"
@@ -110,6 +111,13 @@ export default function HomePageClient() {
         <div className="absolute top-20 left-10 w-72 h-72 bg-blue-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
         <div className="absolute top-40 right-10 w-72 h-72 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
         <div className="absolute -bottom-8 left-20 w-72 h-72 bg-pink-200 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
+      </section>
+
+      {/* Overview extras */}
+      <section className="pb-24 px-4">
+        <div className="max-w-6xl mx-auto">
+          <OverviewExtras />
+        </div>
       </section>
     </div>
   )

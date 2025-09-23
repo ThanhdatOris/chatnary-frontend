@@ -3,8 +3,9 @@
 import { Button } from '@/components/ui'
 import { useToast } from '@/contexts/ToastContext'
 import { api, API_ENDPOINTS } from '@/lib/api'
+import { isBypassMode, mockFiles } from '@/lib/mockData'
 import { formatDate, formatFileSize } from '@/lib/utils'
-import { Calendar, Download, Eye, File, FileText, MessageSquare, Trash2, Zap } from 'lucide-react'
+import { Calendar, ChevronLeft, ChevronRight, Download, Eye, File, FileText, MessageSquare, Trash2, Zap } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import FileContentViewer from './FileContentViewer'
 
@@ -38,31 +39,36 @@ export default function FileList({ onFileSelect, refreshTrigger }: FileListProps
   const [error, setError] = useState('')
   const [actionLoading, setActionLoading] = useState<{ [key: string]: boolean }>({})
   const [viewingFile, setViewingFile] = useState<{ id: string; name: string } | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage] = useState(10)
   const { showToast } = useToast()
 
   const fetchFiles = useCallback(async () => {
     try {
       setLoading(true)
       setError('') // Clear previous errors
-      const response = await api.get(API_ENDPOINTS.files.list)
-      console.log('Files API response:', response.data)
-      
-      // Handle different response structures
-      let filesData = []
-      if (response.data.success && response.data.data && response.data.data.files) {
-        filesData = response.data.data.files
-      } else if (response.data.files) {
-        filesData = response.data.files
-      } else if (Array.isArray(response.data)) {
-        filesData = response.data
+      if (isBypassMode()) {
+        // Use mock files directly
+        setFiles([...mockFiles] as unknown as FileItem[])
+      } else {
+        const response = await api.get(API_ENDPOINTS.files.list)
+        console.log('Files API response:', response.data)
+        // Handle different response structures
+        let filesData: any = []
+        if (response.data.success && response.data.data && response.data.data.files) {
+          filesData = response.data.data.files
+        } else if (response.data.files) {
+          filesData = response.data.files
+        } else if (Array.isArray(response.data)) {
+          filesData = response.data
+        }
+        setFiles(Array.isArray(filesData) ? filesData : [])
       }
-      
-      setFiles(Array.isArray(filesData) ? filesData : [])
     } catch (err) {
       setError('Failed to load files')
       showToast('Không thể tải danh sách file', 'error')
       console.error('Error fetching files:', err)
-      setFiles([]) // Ensure files is always an array
+      setFiles([])
     } finally {
       setLoading(false)
     }
@@ -70,6 +76,7 @@ export default function FileList({ onFileSelect, refreshTrigger }: FileListProps
 
   useEffect(() => {
     fetchFiles()
+    setCurrentPage(1) // Reset to first page when refreshing
   }, [refreshTrigger, fetchFiles])
 
         // Auto-refresh every 30 seconds for processing status
@@ -91,13 +98,15 @@ export default function FileList({ onFileSelect, refreshTrigger }: FileListProps
     setActionLoading(prev => ({ ...prev, [`delete-${fileId}`]: true }))
     
     try {
-      await api.delete(API_ENDPOINTS.files.delete(fileId))
-      
-      // Optimistic update
-      setFiles(prev => prev.filter(f => (f._id || f.id) !== fileId))
-      
-      // Show success notification if available
-      // Show success notification
+      if (isBypassMode()) {
+        setFiles(prev => prev.filter(f => (f._id || f.id) !== fileId))
+        // Also remove from global mock for consistency
+        const idx = (mockFiles as any).findIndex((f: any) => f.id === fileId)
+        if (idx > -1) (mockFiles as any).splice(idx, 1)
+      } else {
+        await api.delete(API_ENDPOINTS.files.delete(fileId))
+        setFiles(prev => prev.filter(f => (f._id || f.id) !== fileId))
+      }
       showToast('File đã được xóa thành công', 'success')
     } catch (err) {
       console.error('Error deleting file:', err)
@@ -118,14 +127,19 @@ export default function FileList({ onFileSelect, refreshTrigger }: FileListProps
     setActionLoading(prev => ({ ...prev, [`reprocess-${fileId}`]: true }))
     
     try {
-      await api.post(API_ENDPOINTS.files.process(fileId))
-      
-      showToast('Đang xử lý lại tài liệu...', 'info')
-      
-      // Refresh after a short delay to show processing status
-      setTimeout(() => {
-        fetchFiles()
-      }, 2000)
+      if (isBypassMode()) {
+        // Simulate processing by toggling processed flag in local state
+        setTimeout(() => {
+          setFiles(prev => prev.map(f => (f._id === fileId || f.id === fileId) ? { ...f, indexed: true, processed: true } : f))
+          showToast('Đã xử lý lại (mock)', 'success')
+        }, 1000)
+      } else {
+        await api.post(API_ENDPOINTS.files.process(fileId))
+        showToast('Đang xử lý lại tài liệu...', 'info')
+        setTimeout(() => {
+          fetchFiles()
+        }, 2000)
+      }
     } catch (err) {
       console.error('Error reprocessing file:', err)
       showToast('Không thể xử lý lại file. Vui lòng thử lại.', 'error')
@@ -148,22 +162,24 @@ export default function FileList({ onFileSelect, refreshTrigger }: FileListProps
     setActionLoading(prev => ({ ...prev, [`download-${fileId}`]: true }))
     
     try {
-      const response = await api.get(API_ENDPOINTS.files.download(fileId), {
-        responseType: 'blob'
-      })
-      
-      const blob = new Blob([response.data])
-      const url = window.URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      link.download = file.originalName || file.filename || 'download'
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      window.URL.revokeObjectURL(url)
-      
-      // Show success notification
-      showToast('File đã được tải xuống thành công', 'success')
+      if (isBypassMode()) {
+        // In mock mode, just show a toast
+        showToast('Mock: không có file thực để tải xuống', 'info')
+      } else {
+        const response = await api.get(API_ENDPOINTS.files.download(fileId), {
+          responseType: 'blob'
+        })
+        const blob = new Blob([response.data])
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.download = file.originalName || file.filename || 'download'
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
+        showToast('File đã được tải xuống thành công', 'success')
+      }
     } catch (err) {
       console.error('Error downloading file:', err)
       showToast('Không thể tải file. Vui lòng thử lại.', 'error')
@@ -232,6 +248,16 @@ export default function FileList({ onFileSelect, refreshTrigger }: FileListProps
     )
   }
 
+  // Pagination logic
+  const totalPages = Math.ceil(files.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const currentFiles = files.slice(startIndex, endIndex)
+
+  const goToPage = (page: number) => {
+    setCurrentPage(Math.max(1, Math.min(page, totalPages)))
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -244,7 +270,7 @@ export default function FileList({ onFileSelect, refreshTrigger }: FileListProps
       </div>
 
       <div className="grid gap-4">
-        {Array.isArray(files) && files.map((file) => (
+        {Array.isArray(currentFiles) && currentFiles.map((file) => (
           <div
             key={getFileId(file)}
             className="border rounded-lg p-4 hover:shadow-md transition-shadow bg-background"
@@ -363,6 +389,62 @@ export default function FileList({ onFileSelect, refreshTrigger }: FileListProps
           </div>
         ))}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between border-t pt-4">
+          <div className="text-sm text-muted-foreground">
+            Hiển thị {startIndex + 1}-{Math.min(endIndex, files.length)} của {files.length} tài liệu
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Button
+              onClick={() => goToPage(currentPage - 1)}
+              disabled={currentPage === 1}
+              variant="outline"
+              size="sm"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Trước
+            </Button>
+            
+            <div className="flex items-center space-x-1">
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter(page => 
+                  page === 1 || 
+                  page === totalPages || 
+                  Math.abs(page - currentPage) <= 1
+                )
+                .map((page, index, array) => (
+                  <div key={page} className="flex items-center">
+                    {index > 0 && array[index - 1] !== page - 1 && (
+                      <span className="px-2 text-muted-foreground">...</span>
+                    )}
+                    <Button
+                      onClick={() => goToPage(page)}
+                      variant={currentPage === page ? "primary" : "outline"}
+                      size="sm"
+                      className="min-w-[2.5rem]"
+                    >
+                      {page}
+                    </Button>
+                  </div>
+                ))
+              }
+            </div>
+            
+            <Button
+              onClick={() => goToPage(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              variant="outline"
+              size="sm"
+            >
+              Sau
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* File Content Viewer Modal */}
       {viewingFile && (

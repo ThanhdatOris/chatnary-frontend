@@ -31,9 +31,9 @@ export default function ModernLayout({
   const pathname = usePathname();
 
   const tabs = [
-    { id: 'overview', name: 'Tổng quan', icon: BarChart3, href: '/dashboard' },
-    { id: 'files', name: 'Tài liệu', icon: Library, href: '/dashboard/files' },
-    { id: 'chat', name: 'Trò chuyện', icon: MessageSquare, href: '/dashboard/chat' },
+    { id: 'overview', name: 'Tổng quan', icon: BarChart3, href: '/overview' },
+    { id: 'files', name: 'Tài liệu', icon: Library, href: '/files' },
+    { id: 'chat', name: 'Trò chuyện', icon: MessageSquare, href: '/chat' },
   ];
 
   return (
@@ -57,27 +57,31 @@ export default function ModernLayout({
               <NavbarSearch className="w-full" />
             </div>
 
-            {/* Actions or Quick Add Button */}
-            <div className="flex-shrink-0 hidden sm:block">
-              {actions || (
-                <Link href="/dashboard/files">
-                  <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Thêm tài liệu
-                  </Button>
-                </Link>
-              )}
+            {/* Actions or Quick Add Button (fixed width to prevent search shifting) */}
+            <div className="flex-shrink-0 hidden sm:block w-48">
+              <div className="w-full flex justify-end">
+                {actions || (
+                  <Link href="/files">
+                    <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg w-full sm:w-auto">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Thêm tài liệu
+                    </Button>
+                  </Link>
+                )}
+              </div>
             </div>
             
-            {/* Mobile Action Button */}
-            <div className="flex-shrink-0 sm:hidden">
-              {actions || (
-                <Link href="/dashboard/files">
-                  <Button size="sm" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg">
-                    <Plus className="w-4 h-4" />
-                  </Button>
-                </Link>
-              )}
+            {/* Mobile Action Button (fixed width) */}
+            <div className="flex-shrink-0 sm:hidden w-10">
+              <div className="w-full flex justify-end">
+                {actions || (
+                  <Link href="/files">
+                    <Button size="sm" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white shadow-lg">
+                      <Plus className="w-4 h-4" />
+                    </Button>
+                  </Link>
+                )}
+              </div>
             </div>
           </div>
         </div>

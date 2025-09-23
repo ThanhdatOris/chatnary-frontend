@@ -3,6 +3,7 @@
 import { Button, Modal } from '@/components/ui'
 import { useToast } from '@/contexts/ToastContext'
 import { api, API_ENDPOINTS } from '@/lib/api'
+import { isBypassMode, mockFiles } from '@/lib/mockData'
 import { Copy, Download, FileText, X } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 
@@ -37,15 +38,27 @@ export default function FileContentViewer({
     try {
       setLoading(true)
       setError('')
-      
-      const response = await api.get<FileContentData>(
-        API_ENDPOINTS.files.content(fileId)
-      )
-      
-      if (response.data.success) {
-        setContent(response.data)
+      if (isBypassMode()) {
+        // Mock simple content view from mockFiles
+        const f = mockFiles.find(f => f.id === fileId)
+        if (!f) throw new Error('File not found')
+        setContent({
+          success: true,
+          content: `Nội dung mô phỏng của tài liệu: ${f.originalName}\n\n(Đây là dữ liệu giả lập để xem nội dung file trong chế độ mock)`,
+          filename: f.filename,
+          mimetype: f.mimetype,
+          size: f.size,
+          pages: Math.max(1, Math.round(f.size / 50000))
+        })
       } else {
-        throw new Error('Failed to load content')
+        const response = await api.get<FileContentData>(
+          API_ENDPOINTS.files.content(fileId)
+        )
+        if (response.data.success) {
+          setContent(response.data)
+        } else {
+          throw new Error('Failed to load content')
+        }
       }
     } catch (err: unknown) {
       let errorMessage = 'Không thể tải nội dung file'

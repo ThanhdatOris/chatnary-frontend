@@ -535,6 +535,23 @@ body {
   height: 100%;
 }
 
+/* Sticky layout for better scrolling experience */
+.sticky-content {
+  position: sticky;
+  top: 80px;
+  z-index: 10;
+}
+
+/* Smooth scrolling for the entire page */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Better scroll experience for main content */
+.scroll-smooth {
+  scroll-behavior: smooth;
+}
+
 .chat-interface {
   height: 100%;
   display: flex;

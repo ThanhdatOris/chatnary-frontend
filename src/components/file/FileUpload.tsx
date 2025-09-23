@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui'
 import { useToast } from '@/contexts/ToastContext'
 import { api, API_ENDPOINTS } from '@/lib/api'
+import { isBypassMode, mockFiles } from '@/lib/mockData'
 import { AlertCircle, CheckCircle, File, Upload, X } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { useDropzone } from 'react-dropzone'
@@ -64,27 +65,62 @@ export default function FileUpload({
         )
       )
 
-      const formData = new FormData()
-      formData.append('file', uploadFile.file)
-
-      const response = await api.post(API_ENDPOINTS.files.upload, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-        onUploadProgress: (progressEvent) => {
-          const progress = progressEvent.total 
-            ? Math.round((progressEvent.loaded * 100) / progressEvent.total)
-            : 0
-          
-          setUploadFiles(prev => 
-            prev.map(f => 
-              f.id === uploadFile.id 
-                ? { ...f, progress }
-                : f
+      let response: any
+      if (isBypassMode()) {
+        // Simulate upload progress
+        await new Promise<void>((resolve) => {
+          let progress = 0
+          const interval = setInterval(() => {
+            progress += Math.random() * 25 + 10
+            if (progress >= 100) {
+              progress = 100
+              clearInterval(interval)
+              resolve()
+            }
+            setUploadFiles(prev => 
+              prev.map(f => 
+                f.id === uploadFile.id 
+                  ? { ...f, progress: Math.min(100, Math.round(progress)) }
+                  : f
+              )
             )
-          )
+          }, 200)
+        })
+        // Push a new mock file entry
+        const newMock = {
+          id: `file-${Math.random().toString(36).slice(2, 8)}`,
+          originalName: uploadFile.file.name,
+          filename: uploadFile.file.name,
+          size: uploadFile.file.size,
+          mimetype: uploadFile.file.type || 'application/octet-stream',
+          uploadTime: new Date().toISOString(),
+          indexed: true,
+          userId: 'dev-user-id'
         }
-      })
+        ;(mockFiles as any).unshift(newMock)
+        response = { data: newMock }
+      } else {
+        const formData = new FormData()
+        formData.append('file', uploadFile.file)
+        response = await api.post(API_ENDPOINTS.files.upload, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+          onUploadProgress: (progressEvent) => {
+            const progress = progressEvent.total 
+              ? Math.round((progressEvent.loaded * 100) / progressEvent.total)
+              : 0
+            
+            setUploadFiles(prev => 
+              prev.map(f => 
+                f.id === uploadFile.id 
+                  ? { ...f, progress }
+                  : f
+              )
+            )
+          }
+        })
+      }
 
       setUploadFiles(prev => 
         prev.map(f => 
@@ -98,13 +134,9 @@ export default function FileUpload({
         onUploadSuccess(response.data)
       }
 
-      // Show AI processing notification if mentioned in response
-      if (response.data.message && response.data.message.includes('Xử lý AI')) {
-        if (response.data.message.includes('success')) {
-          showToast('Tài liệu đã được xử lý AI thành công!', 'success')
-        } else if (response.data.message.includes('failed')) {
-          showToast('Tài liệu đã upload nhưng xử lý AI thất bại. Bạn có thể thử lại sau.', 'info')
-        }
+      // Optional: notify in mock mode
+      if (isBypassMode()) {
+        showToast('Đã thêm tài liệu vào mock data', 'success')
       }
     } catch (error: unknown) {
       const errorMessage = error && typeof error === 'object' && 'response' in error 

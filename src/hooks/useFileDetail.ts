@@ -1,3 +1,4 @@
+import { isBypassMode, mockFiles } from '@/lib/mockData'
 import axios from 'axios'
 import { useEffect, useState } from 'react'
 
@@ -27,14 +28,39 @@ export function useFileDetail(fileId?: string) {
     if (!fileId) return
     setLoading(true)
     setError(null)
-    axios.get(`/api/files/${fileId}`)
-      .then(res => {
-        setFile(res.data.data)
-      })
-      .catch(err => {
-        setError(err?.response?.data?.message || err.message)
-      })
-      .finally(() => setLoading(false))
+    if (isBypassMode()) {
+      const f = mockFiles.find(f => f.id === fileId)
+      if (f) {
+        setFile({
+          id: f.id,
+          originalName: f.originalName,
+          filename: f.filename,
+          size: f.size,
+          mimetype: f.mimetype,
+          uploadTime: f.uploadTime,
+          userId: f.userId,
+          userEmail: 'demo@chatnary.com',
+          indexed: true,
+          previewUrl: undefined,
+          downloadUrl: undefined,
+          aiStatus: 'indexed',
+          history: [],
+          permissions: []
+        })
+      } else {
+        setError('File not found')
+      }
+      setLoading(false)
+    } else {
+      axios.get(`/api/files/${fileId}`)
+        .then(res => {
+          setFile(res.data.data)
+        })
+        .catch(err => {
+          setError(err?.response?.data?.message || err.message)
+        })
+        .finally(() => setLoading(false))
+    }
   }, [fileId])
 
   return { file, loading, error }

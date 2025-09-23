@@ -53,12 +53,16 @@ export default function FilesPage() {
         </div>
       )}
 
-      <div className="bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-2xl p-6">
-        <FileList
-          onFileSelect={handleFileSelect}
-          refreshTrigger={refreshTrigger}
-        />
+      <div className="bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-2xl p-6 h-[calc(85vh)] sticky top-16 z-20 overflow-hidden">
+        <div className="h-full overflow-y-auto">
+          <FileList
+            onFileSelect={handleFileSelect}
+            refreshTrigger={refreshTrigger}
+          />
+        </div>
       </div>
     </ModernLayout>
   )
 }
+
+
