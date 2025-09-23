@@ -171,7 +171,7 @@ export const mockChatHistory: MockChatHistoryItem[] = [
   }
 ]
 
-// Mock files data
+// Mock files data with extended entries for pagination testing
 export const mockFiles: MockFile[] = [
   {
     id: 'file-1',
@@ -221,6 +221,206 @@ export const mockFiles: MockFile[] = [
     mimetype: 'application/pdf',
     uploadTime: new Date(Date.now() - 432000000).toISOString(),
     indexed: true,
+    userId: 'dev-user-id'
+  },
+  {
+    id: 'file-6',
+    originalName: 'Machine_Learning_Basics.pdf',
+    filename: 'machine-learning-basics.pdf',
+    size: 4567890,
+    mimetype: 'application/pdf',
+    uploadTime: new Date(Date.now() - 518400000).toISOString(),
+    indexed: true,
+    userId: 'dev-user-id'
+  },
+  {
+    id: 'file-7',
+    originalName: 'Data_Science_Handbook.pdf',
+    filename: 'data-science-handbook.pdf',
+    size: 5678901,
+    mimetype: 'application/pdf',
+    uploadTime: new Date(Date.now() - 604800000).toISOString(),
+    indexed: false,
+    userId: 'dev-user-id'
+  },
+  {
+    id: 'file-8',
+    originalName: 'Python_Programming_Guide.docx',
+    filename: 'python-programming-guide.docx',
+    size: 2345678,
+    mimetype: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    uploadTime: new Date(Date.now() - 691200000).toISOString(),
+    indexed: true,
+    userId: 'dev-user-id'
+  },
+  {
+    id: 'file-9',
+    originalName: 'Database_Design_Principles.pdf',
+    filename: 'database-design-principles.pdf',
+    size: 3456789,
+    mimetype: 'application/pdf',
+    uploadTime: new Date(Date.now() - 777600000).toISOString(),
+    indexed: true,
+    userId: 'dev-user-id'
+  },
+  {
+    id: 'file-10',
+    originalName: 'Web_Development_Best_Practices.txt',
+    filename: 'web-development-best-practices.txt',
+    size: 123456,
+    mimetype: 'text/plain',
+    uploadTime: new Date(Date.now() - 864000000).toISOString(),
+    indexed: true,
+    userId: 'dev-user-id'
+  },
+  {
+    id: 'file-11',
+    originalName: 'Cloud_Computing_Architecture.pdf',
+    filename: 'cloud-computing-architecture.pdf',
+    size: 4567890,
+    mimetype: 'application/pdf',
+    uploadTime: new Date(Date.now() - 950400000).toISOString(),
+    indexed: false,
+    userId: 'dev-user-id'
+  },
+  {
+    id: 'file-12',
+    originalName: 'Cybersecurity_Guidelines.docx',
+    filename: 'cybersecurity-guidelines.docx',
+    size: 2345678,
+    mimetype: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    uploadTime: new Date(Date.now() - 1036800000).toISOString(),
+    indexed: true,
+    userId: 'dev-user-id'
+  },
+  {
+    id: 'file-13',
+    originalName: 'Project_Management_Framework.xlsx',
+    filename: 'project-management-framework.xlsx',
+    size: 1876543,
+    mimetype: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    uploadTime: new Date(Date.now() - 1123200000).toISOString(),
+    indexed: true,
+    userId: 'dev-user-id'
+  },
+  {
+    id: 'file-14',
+    originalName: 'Software_Testing_Strategies.pdf',
+    filename: 'software-testing-strategies.pdf',
+    size: 3456789,
+    mimetype: 'application/pdf',
+    uploadTime: new Date(Date.now() - 1209600000).toISOString(),
+    indexed: true,
+    userId: 'dev-user-id'
+  },
+  {
+    id: 'file-15',
+    originalName: 'DevOps_Implementation_Guide.pdf',
+    filename: 'devops-implementation-guide.pdf',
+    size: 4567890,
+    mimetype: 'application/pdf',
+    uploadTime: new Date(Date.now() - 1296000000).toISOString(),
+    indexed: false,
+    userId: 'dev-user-id'
+  },
+  {
+    id: 'file-16',
+    originalName: 'Mobile_App_Development.docx',
+    filename: 'mobile-app-development.docx',
+    size: 2345678,
+    mimetype: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    uploadTime: new Date(Date.now() - 1382400000).toISOString(),
+    indexed: true,
+    userId: 'dev-user-id'
+  },
+  {
+    id: 'file-17',
+    originalName: 'API_Design_Standards.pdf',
+    filename: 'api-design-standards.pdf',
+    size: 1876543,
+    mimetype: 'application/pdf',
+    uploadTime: new Date(Date.now() - 1468800000).toISOString(),
+    indexed: true,
+    userId: 'dev-user-id'
+  },
+  {
+    id: 'file-18',
+    originalName: 'User_Experience_Guidelines.pdf',
+    filename: 'user-experience-guidelines.pdf',
+    size: 3456789,
+    mimetype: 'application/pdf',
+    uploadTime: new Date(Date.now() - 1555200000).toISOString(),
+    indexed: true,
+    userId: 'dev-user-id'
+  },
+  {
+    id: 'file-19',
+    originalName: 'Marketing_Strategy_2024.xlsx',
+    filename: 'marketing-strategy-2024.xlsx',
+    size: 987654,
+    mimetype: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    uploadTime: new Date(Date.now() - 1641600000).toISOString(),
+    indexed: false,
+    userId: 'dev-user-id'
+  },
+  {
+    id: 'file-20',
+    originalName: 'Business_Plan_Template.docx',
+    filename: 'business-plan-template.docx',
+    size: 2345678,
+    mimetype: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    uploadTime: new Date(Date.now() - 1728000000).toISOString(),
+    indexed: true,
+    userId: 'dev-user-id'
+  },
+  {
+    id: 'file-21',
+    originalName: 'Financial_Analysis_Q3_2024.pdf',
+    filename: 'financial-analysis-q3-2024.pdf',
+    size: 4567890,
+    mimetype: 'application/pdf',
+    uploadTime: new Date(Date.now() - 1814400000).toISOString(),
+    indexed: true,
+    userId: 'dev-user-id'
+  },
+  {
+    id: 'file-22',
+    originalName: 'Team_Management_Handbook.pdf',
+    filename: 'team-management-handbook.pdf',
+    size: 3456789,
+    mimetype: 'application/pdf',
+    uploadTime: new Date(Date.now() - 1900800000).toISOString(),
+    indexed: true,
+    userId: 'dev-user-id'
+  },
+  {
+    id: 'file-23',
+    originalName: 'Customer_Feedback_Report.xlsx',
+    filename: 'customer-feedback-report.xlsx',
+    size: 1234567,
+    mimetype: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    uploadTime: new Date(Date.now() - 1987200000).toISOString(),
+    indexed: false,
+    userId: 'dev-user-id'
+  },
+  {
+    id: 'file-24',
+    originalName: 'Product_Roadmap_2025.pdf',
+    filename: 'product-roadmap-2025.pdf',
+    size: 2876543,
+    mimetype: 'application/pdf',
+    uploadTime: new Date(Date.now() - 2073600000).toISOString(),
+    indexed: true,
+    userId: 'dev-user-id'
+  },
+  {
+    id: 'file-25',
+    originalName: 'Training_Materials_Complete.zip',
+    filename: 'training-materials-complete.zip',
+    size: 15678901,
+    mimetype: 'application/zip',
+    uploadTime: new Date(Date.now() - 2160000000).toISOString(),
+    indexed: false,
     userId: 'dev-user-id'
   }
 ]
