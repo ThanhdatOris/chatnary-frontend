@@ -1,4 +1,5 @@
 import { ChatProvider } from "@/contexts/ChatContext";
+import { SidebarProvider } from "@/contexts/SidebarContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import type { Metadata } from "next";
 import "./globals.css";
@@ -17,9 +18,11 @@ export default function RootLayout({
     <html lang="vi" suppressHydrationWarning>
       <body>
         <ThemeProvider>
-          <ChatProvider>
-            {children}
-          </ChatProvider>
+          <SidebarProvider>
+            <ChatProvider>
+              {children}
+            </ChatProvider>
+          </SidebarProvider>
         </ThemeProvider>
       </body>
     </html>

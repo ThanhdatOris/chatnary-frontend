@@ -1,6 +1,7 @@
 'use client';
 
-import { ReactNode, useEffect, useState } from 'react';
+import { useSidebar } from '@/contexts/SidebarContext';
+import { ReactNode } from 'react';
 import Sidebar from './Sidebar';
 
 interface MainLayoutProps {
@@ -8,28 +9,15 @@ interface MainLayoutProps {
 }
 
 export default function MainLayout({ children }: MainLayoutProps) {
-  const [sidebarWidth, setSidebarWidth] = useState(256);
-
-  useEffect(() => {
-    // Listen for sidebar width changes
-    const handleResize = () => {
-      const sidebar = document.querySelector('aside');
-      if (sidebar) {
-        setSidebarWidth(sidebar.offsetWidth);
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-    // Initial check
-    handleResize();
-
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  const { sidebarWidth, isCollapsed } = useSidebar();
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <Sidebar />
-      <main style={{ marginLeft: `${sidebarWidth}px` }} className="transition-all duration-200">
+      <main 
+        style={{ marginLeft: isCollapsed ? '64px' : `${sidebarWidth}px` }} 
+        className="transition-[margin] duration-200"
+      >
         <div className="p-6 lg:p-8">
           {children}
         </div>
