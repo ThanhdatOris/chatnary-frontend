@@ -94,7 +94,13 @@ export const mockDocuments: Document[] = [
 ];
 
 // ==================== MOCK CHAT SESSIONS ====================
+const now = new Date();
+const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+const yesterday = new Date(today);
+yesterday.setDate(yesterday.getDate() - 1);
+
 export const mockChatSessions: ChatSession[] = [
+  // Hôm nay
   {
     id: 'chat_001',
     title: 'Tìm hiểu về Machine Learning',
@@ -108,14 +114,33 @@ export const mockChatSessions: ChatSession[] = [
     ],
     lastMessage: {
       content: 'Machine Learning là một nhánh của AI tập trung vào việc máy tính học từ dữ liệu...',
-      createdAt: '2024-01-15T11:00:00Z',
+      createdAt: new Date(today.getTime() + 2 * 60 * 60 * 1000).toISOString(),
     },
     messageCount: 8,
-    createdAt: '2024-01-15T10:35:00Z',
-    updatedAt: '2024-01-15T11:00:00Z',
+    createdAt: new Date(today.getTime() + 1 * 60 * 60 * 1000).toISOString(),
+    updatedAt: new Date(today.getTime() + 2 * 60 * 60 * 1000).toISOString(),
   },
   {
     id: 'chat_002',
+    title: 'Phân tích dữ liệu với Python',
+    documentIds: ['doc_005'],
+    documents: [
+      {
+        id: 'doc_005',
+        name: 'Python Programming.txt',
+      },
+    ],
+    lastMessage: {
+      content: 'Python có nhiều thư viện mạnh mẽ cho data analysis...',
+      createdAt: new Date(today.getTime() + 4 * 60 * 60 * 1000).toISOString(),
+    },
+    messageCount: 6,
+    createdAt: new Date(today.getTime() + 3 * 60 * 60 * 1000).toISOString(),
+    updatedAt: new Date(today.getTime() + 4 * 60 * 60 * 1000).toISOString(),
+  },
+  // Hôm qua
+  {
+    id: 'chat_003',
     title: 'Deep Learning vs Machine Learning',
     documentIds: ['doc_001', 'doc_002'],
     documents: [
@@ -129,15 +154,34 @@ export const mockChatSessions: ChatSession[] = [
       },
     ],
     lastMessage: {
-      content: 'Deep Learning là một tập con của Machine Learning, sử dụng neural networks với nhiều layers...',
-      createdAt: '2024-01-16T15:30:00Z',
+      content: 'Deep Learning là một tập con của Machine Learning...',
+      createdAt: new Date(yesterday.getTime() + 15 * 60 * 60 * 1000).toISOString(),
     },
     messageCount: 12,
-    createdAt: '2024-01-16T14:30:00Z',
-    updatedAt: '2024-01-16T15:30:00Z',
+    createdAt: new Date(yesterday.getTime() + 14 * 60 * 60 * 1000).toISOString(),
+    updatedAt: new Date(yesterday.getTime() + 15 * 60 * 60 * 1000).toISOString(),
   },
   {
-    id: 'chat_003',
+    id: 'chat_004',
+    title: 'Ứng dụng AI trong thực tế',
+    documentIds: ['doc_002'],
+    documents: [
+      {
+        id: 'doc_002',
+        name: 'Deep Learning Guide.pdf',
+      },
+    ],
+    lastMessage: {
+      content: 'AI được ứng dụng rộng rãi trong nhiều lĩnh vực...',
+      createdAt: new Date(yesterday.getTime() + 10 * 60 * 60 * 1000).toISOString(),
+    },
+    messageCount: 7,
+    createdAt: new Date(yesterday.getTime() + 9 * 60 * 60 * 1000).toISOString(),
+    updatedAt: new Date(yesterday.getTime() + 10 * 60 * 60 * 1000).toISOString(),
+  },
+  // 7 ngày trước
+  {
+    id: 'chat_005',
     title: 'Neural Networks Architecture',
     documentIds: ['doc_003'],
     documents: [
@@ -148,11 +192,66 @@ export const mockChatSessions: ChatSession[] = [
     ],
     lastMessage: {
       content: 'Có nhiều loại kiến trúc neural network như CNN, RNN, LSTM...',
-      createdAt: '2024-01-18T10:00:00Z',
+      createdAt: new Date(today.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString(),
     },
     messageCount: 5,
-    createdAt: '2024-01-18T09:20:00Z',
-    updatedAt: '2024-01-18T10:00:00Z',
+    createdAt: new Date(today.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+    updatedAt: new Date(today.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: 'chat_006',
+    title: 'Tối ưu hóa model ML',
+    documentIds: ['doc_001'],
+    documents: [
+      {
+        id: 'doc_001',
+        name: 'Machine Learning Basics.pdf',
+      },
+    ],
+    lastMessage: {
+      content: 'Hyperparameter tuning là bước quan trọng...',
+      createdAt: new Date(today.getTime() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    messageCount: 9,
+    createdAt: new Date(today.getTime() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+    updatedAt: new Date(today.getTime() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  // 30 ngày trước
+  {
+    id: 'chat_007',
+    title: 'Giới thiệu Data Science',
+    documentIds: ['doc_004'],
+    documents: [
+      {
+        id: 'doc_004',
+        name: 'Data Science Handbook.pdf',
+      },
+    ],
+    lastMessage: {
+      content: 'Data Science kết hợp nhiều lĩnh vực khác nhau...',
+      createdAt: new Date(today.getTime() - 15 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    messageCount: 4,
+    createdAt: new Date(today.getTime() - 15 * 24 * 60 * 60 * 1000).toISOString(),
+    updatedAt: new Date(today.getTime() - 15 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    id: 'chat_008',
+    title: 'Xử lý ngôn ngữ tự nhiên',
+    documentIds: ['doc_002'],
+    documents: [
+      {
+        id: 'doc_002',
+        name: 'Deep Learning Guide.pdf',
+      },
+    ],
+    lastMessage: {
+      content: 'NLP là một nhánh quan trọng của AI...',
+      createdAt: new Date(today.getTime() - 20 * 24 * 60 * 60 * 1000).toISOString(),
+    },
+    messageCount: 11,
+    createdAt: new Date(today.getTime() - 20 * 24 * 60 * 60 * 1000).toISOString(),
+    updatedAt: new Date(today.getTime() - 20 * 24 * 60 * 60 * 1000).toISOString(),
   },
 ];
 

@@ -2,6 +2,7 @@
 
 import MainLayout from '@/components/layout/MainLayout';
 import { Button, Card, Loading } from '@/components/ui';
+import { useChats } from '@/contexts/ChatContext';
 import { chatsApi, documentsApi } from '@/lib/api';
 import { Document } from '@/lib/types';
 import { getFileIcon } from '@/lib/utils';
@@ -10,6 +11,7 @@ import { useEffect, useState } from 'react';
 
 export default function ChatPage() {
   const router = useRouter();
+  const { addChat } = useChats();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [selectedDocs, setSelectedDocs] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -58,6 +60,7 @@ export default function ChatPage() {
       });
       
       if (response.success && response.data) {
+        addChat(response.data); // Add to global state
         router.push(`/chat/${response.data.id}`);
       }
     } catch (error) {

@@ -4,6 +4,7 @@ import DocumentCard from '@/components/document/DocumentCard';
 import FileUploadZone from '@/components/document/FileUploadZone';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button, Input, Loading, Modal } from '@/components/ui';
+import { useChats } from '@/contexts/ChatContext';
 import { chatsApi, documentsApi } from '@/lib/api';
 import { Document } from '@/lib/types';
 import { useRouter } from 'next/navigation';
@@ -11,6 +12,7 @@ import { useEffect, useState } from 'react';
 
 export default function DocumentsPage() {
   const router = useRouter();
+  const { addChat } = useChats();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -77,6 +79,7 @@ export default function DocumentsPage() {
       });
       
       if (response.success && response.data) {
+        addChat(response.data); // Add to global state
         router.push(`/chat/${response.data.id}`);
       }
     } catch (error) {
