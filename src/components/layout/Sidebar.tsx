@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { Button, Modal, ModalFooter } from '../ui';
 import ThemeToggle from '../ui/ThemeToggle';
 
 interface NavItem {
@@ -73,6 +74,11 @@ export default function Sidebar() {
   const [displayLimit, setDisplayLimit] = useState(20);
   const [isResizing, setIsResizing] = useState(false);
   const [isHistoryCollapsed, setIsHistoryCollapsed] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; chatId: string | null }>({
+    isOpen: false,
+    chatId: null,
+  });
 
   useEffect(() => {
     if (isResizing) {
@@ -108,17 +114,29 @@ export default function Sidebar() {
     }
   }, [isResizing, setSidebarWidth]);
 
-  const handleDeleteChat = async (chatId: string) => {
-    if (confirm('Xóa chat này?')) {
-      const response = await chatsApi.deleteChat(chatId);
+  const handleDeleteChat = async () => {
+    if (!deleteModal.chatId) return;
+
+    try {
+      const response = await chatsApi.deleteChat(deleteModal.chatId);
       if (response.success) {
-        removeChat(chatId);
+        removeChat(deleteModal.chatId);
+        setDeleteModal({ isOpen: false, chatId: null });
       }
+    } catch (error) {
+      console.error('Failed to delete chat:', error);
     }
   };
 
-  const { recent, older } = groupChatsByTime(chats.slice(0, displayLimit));
-  const hasMore = chats.length > displayLimit;
+  // Filter chats by search term
+  const filteredChats = searchTerm
+    ? chats.filter(chat =>
+        chat.title.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : chats;
+
+  const { recent, older } = groupChatsByTime(filteredChats.slice(0, displayLimit));
+  const hasMore = filteredChats.length > displayLimit;
   
   return (
     <>
@@ -264,13 +282,39 @@ export default function Sidebar() {
             
             {!isHistoryCollapsed && (
               <>
+                {/* Search Input */}
+                <div className="px-3 py-2">
+                  <div className="relative">
+                    <svg className="absolute left-3 top-2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <input
+                      type="text"
+                      placeholder="Tìm kiếm..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="w-full pl-9 pr-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder:text-gray-400 dark:placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    />
+                    {searchTerm && (
+                      <button
+                        onClick={() => setSearchTerm('')}
+                        className="absolute right-3 top-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                      >
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                </div>
+
                 {loading ? (
                   <div className="px-6 py-2 text-sm text-gray-500 dark:text-gray-400">
                     Đang tải...
                   </div>
-                ) : chats.length === 0 ? (
+                ) : filteredChats.length === 0 ? (
                   <div className="px-6 py-2 text-sm text-gray-500 dark:text-gray-400">
-                    Chưa có chat nào
+                    {searchTerm ? 'Không tìm thấy' : 'Chưa có chat nào'}
                   </div>
                 ) : (
                   <div className="space-y-4 mt-2">
@@ -303,7 +347,7 @@ export default function Sidebar() {
                                     onClick={(e) => {
                                       e.preventDefault();
                                       e.stopPropagation();
-                                      handleDeleteChat(chat.id);
+                                      setDeleteModal({ isOpen: true, chatId: chat.id });
                                     }}
                                   className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-all"
                                 >
@@ -347,7 +391,7 @@ export default function Sidebar() {
                                     onClick={(e) => {
                                       e.preventDefault();
                                       e.stopPropagation();
-                                      handleDeleteChat(chat.id);
+                                      setDeleteModal({ isOpen: true, chatId: chat.id });
                                     }}
                                   className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-all"
                                 >
@@ -501,6 +545,29 @@ export default function Sidebar() {
           background: rgb(107 114 128 / 0.7);
         }
       `}</style>
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ isOpen: false, chatId: null })}
+        title="Xác nhận xóa"
+        size="sm"
+      >
+        <p className="text-gray-600 dark:text-gray-400 mb-4">
+          Bạn có chắc chắn muốn xóa cuộc trò chuyện này? Hành động này không thể hoàn tác.
+        </p>
+        <ModalFooter>
+          <Button
+            variant="ghost"
+            onClick={() => setDeleteModal({ isOpen: false, chatId: null })}
+          >
+            Hủy
+          </Button>
+          <Button variant="danger" onClick={handleDeleteChat}>
+            Xóa
+          </Button>
+        </ModalFooter>
+      </Modal>
     </>
   );
 }
