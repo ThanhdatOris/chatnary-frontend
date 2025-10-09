@@ -1,500 +1,294 @@
-/**
- * Mock data for development and bypass mode
- */
+import {
+    ChatSession,
+    Document,
+    Message,
+    OverviewStats,
+    User
+} from './types';
 
-export interface MockChatMessage {
-  id: string
-  type: 'user' | 'assistant'
-  content: string
-  timestamp: Date
-  sources?: Array<{
-    filename: string
-    snippet: string
-  }>
-}
+// ==================== MOCK USER ====================
+export const mockUser: User = {
+  id: 'user_001',
+  email: 'demo@chatnary.com',
+  name: 'Người dùng Demo',
+  createdAt: '2024-01-01T00:00:00Z',
+};
 
-export interface MockChatHistoryItem {
-  id: string
-  query: string
-  answer: string
-  sources: Array<{
-    file_id: string
-    file_name: string
-    chunks: Array<{
-      content?: string
-      text?: string
-    }>
-    chunk_count: number
-  }>
-  model_used: string
-  timestamp: number
-  created_at: string
-}
-
-export interface MockFile {
-  id: string
-  originalName: string
-  filename: string
-  size: number
-  mimetype: string
-  uploadTime: string
-  indexed: boolean
-  userId: string
-}
-
-export interface MockSearchResult {
-  file: {
-    id: string
-    originalName: string
-    size: number
-    uploadTime: string
-    mimetype: string
-  }
-  score: number
-  snippet?: string
-}
-
-export interface MockSearchResponse {
-  success: boolean
-  data: {
-    results: MockSearchResult[]
-    hitsCount: number
-    processingTimeMs: number
-    query: string
-  }
-}
-
-// Mock chat history data
-export const mockChatHistory: MockChatHistoryItem[] = [
+// ==================== MOCK DOCUMENTS ====================
+export const mockDocuments: Document[] = [
   {
-    id: 'chat-1',
-    query: 'Tài liệu này nói về gì?',
-    answer: 'Tài liệu này là một báo cáo nghiên cứu về trí tuệ nhân tạo trong giáo dục. Nó bao gồm các phương pháp ứng dụng AI để cá nhân hóa học tập, phân tích dữ liệu học sinh, và tự động hóa các quy trình đánh giá. Báo cáo cũng thảo luận về những thách thức đạo đức và kỹ thuật khi triển khai AI trong môi trường giáo dục.',
-    sources: [
-      {
-        file_id: 'file-1',
-        file_name: 'AI_in_Education_Report.pdf',
-        chunks: [
-          { content: 'Trí tuệ nhân tạo đang thay đổi cách chúng ta tiếp cận giáo dục...' },
-          { content: 'Các hệ thống học tập thích ứng sử dụng AI để cá nhân hóa...' }
-        ],
-        chunk_count: 5
-      }
-    ],
-    model_used: 'gemini',
-    timestamp: Date.now() - 3600000, // 1 hour ago
-    created_at: new Date(Date.now() - 3600000).toISOString()
+    id: 'doc_001',
+    name: 'Machine Learning Basics.pdf',
+    originalName: 'Machine Learning Basics.pdf',
+    size: 2048000,
+    type: 'application/pdf',
+    url: 'https://example.com/ml-basics.pdf',
+    status: 'completed',
+    uploadedAt: '2024-01-15T10:30:00Z',
+    processedAt: '2024-01-15T10:31:00Z',
+    pageCount: 25,
+    wordCount: 8500,
+    chatCount: 3,
+    metadata: {
+      title: 'Machine Learning Basics',
+      author: 'John Doe',
+      createdDate: '2023-12-01',
+    },
   },
   {
-    id: 'chat-2',
-    query: 'Làm thế nào để triển khai AI trong trường học?',
-    answer: 'Để triển khai AI trong trường học, cần thực hiện theo các bước sau:\n\n1. **Đánh giá nhu cầu**: Xác định các lĩnh vực cần cải thiện như cá nhân hóa học tập, quản lý lớp học, hoặc đánh giá học sinh.\n\n2. **Đào tạo giáo viên**: Trang bị kiến thức và kỹ năng sử dụng công nghệ AI cho đội ngũ giáo viên.\n\n3. **Chọn công nghệ phù hợp**: Lựa chọn các nền tảng và công cụ AI phù hợp với ngân sách và mục tiêu của trường.\n\n4. **Triển khai từng bước**: Bắt đầu với các dự án pilot nhỏ trước khi mở rộng ra toàn trường.',
-    sources: [
+    id: 'doc_002',
+    name: 'Deep Learning Guide.pdf',
+    originalName: 'Deep Learning Guide.pdf',
+    size: 3500000,
+    type: 'application/pdf',
+    url: 'https://example.com/dl-guide.pdf',
+    status: 'completed',
+    uploadedAt: '2024-01-16T14:20:00Z',
+    processedAt: '2024-01-16T14:22:00Z',
+    pageCount: 45,
+    wordCount: 15000,
+    chatCount: 5,
+  },
+  {
+    id: 'doc_003',
+    name: 'Neural Networks.docx',
+    originalName: 'Neural Networks.docx',
+    size: 1024000,
+    type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    url: 'https://example.com/neural-networks.docx',
+    status: 'completed',
+    uploadedAt: '2024-01-18T09:15:00Z',
+    processedAt: '2024-01-18T09:16:00Z',
+    pageCount: 12,
+    wordCount: 4200,
+    chatCount: 1,
+  },
+  {
+    id: 'doc_004',
+    name: 'Data Science Handbook.pdf',
+    originalName: 'Data Science Handbook.pdf',
+    size: 5120000,
+    type: 'application/pdf',
+    url: 'https://example.com/ds-handbook.pdf',
+    status: 'processing',
+    uploadedAt: '2024-01-20T16:45:00Z',
+    processedAt: null,
+    pageCount: null,
+    wordCount: null,
+    chatCount: 0,
+  },
+  {
+    id: 'doc_005',
+    name: 'Python Programming.txt',
+    originalName: 'Python Programming.txt',
+    size: 512000,
+    type: 'text/plain',
+    url: 'https://example.com/python.txt',
+    status: 'completed',
+    uploadedAt: '2024-01-19T11:30:00Z',
+    processedAt: '2024-01-19T11:30:30Z',
+    pageCount: 1,
+    wordCount: 3000,
+    chatCount: 2,
+  },
+];
+
+// ==================== MOCK CHAT SESSIONS ====================
+export const mockChatSessions: ChatSession[] = [
+  {
+    id: 'chat_001',
+    title: 'Tìm hiểu về Machine Learning',
+    documentIds: ['doc_001'],
+    documents: [
       {
-        file_id: 'file-1',
-        file_name: 'AI_in_Education_Report.pdf',
-        chunks: [
-          { content: 'Quy trình triển khai AI trong giáo dục cần được thực hiện cẩn thận...' },
-          { content: 'Đào tạo giáo viên là yếu tố quan trọng nhất trong thành công...' }
-        ],
-        chunk_count: 3
+        id: 'doc_001',
+        name: 'Machine Learning Basics.pdf',
+        type: 'application/pdf',
+      },
+    ],
+    lastMessage: {
+      content: 'Machine Learning là một nhánh của AI tập trung vào việc máy tính học từ dữ liệu...',
+      createdAt: '2024-01-15T11:00:00Z',
+    },
+    messageCount: 8,
+    createdAt: '2024-01-15T10:35:00Z',
+    updatedAt: '2024-01-15T11:00:00Z',
+  },
+  {
+    id: 'chat_002',
+    title: 'Deep Learning vs Machine Learning',
+    documentIds: ['doc_001', 'doc_002'],
+    documents: [
+      {
+        id: 'doc_001',
+        name: 'Machine Learning Basics.pdf',
       },
       {
-        file_id: 'file-2',
-        file_name: 'Implementation_Guide.docx',
-        chunks: [
-          { content: 'Các bước cụ thể để triển khai công nghệ trong trường học...' }
-        ],
-        chunk_count: 2
-      }
-    ],
-    model_used: 'openai',
-    timestamp: Date.now() - 7200000, // 2 hours ago
-    created_at: new Date(Date.now() - 7200000).toISOString()
-  },
-  {
-    id: 'chat-3',
-    query: 'Chi phí triển khai AI trong giáo dục là bao nhiêu?',
-    answer: 'Chi phí triển khai AI trong giáo dục phụ thuộc vào nhiều yếu tố:\n\n**Chi phí ban đầu:**\n- Phần mềm và license: $5,000 - $50,000/năm\n- Đào tạo nhân sự: $10,000 - $30,000\n- Hạ tầng kỹ thuật: $15,000 - $100,000\n\n**Chi phí vận hành:**\n- Bảo trì hệ thống: $2,000 - $10,000/năm\n- Hỗ trợ kỹ thuật: $3,000 - $15,000/năm\n- Nâng cấp và cập nhật: $1,000 - $5,000/năm\n\nTổng chi phí trung bình cho một trường học cỡ trung bình dao động từ $25,000 - $150,000 trong năm đầu.',
-    sources: [
-      {
-        file_id: 'file-3',
-        file_name: 'Budget_Analysis_2024.xlsx',
-        chunks: [
-          { content: 'Phân tích chi phí triển khai AI cho 50 trường học...' },
-          { content: 'ROI trung bình đạt được sau 18 tháng triển khai...' }
-        ],
-        chunk_count: 4
-      }
-    ],
-    model_used: 'gemini',
-    timestamp: Date.now() - 86400000, // 1 day ago
-    created_at: new Date(Date.now() - 86400000).toISOString()
-  },
-  {
-    id: 'chat-4',
-    query: 'Những rủi ro khi sử dụng AI trong giáo dục?',
-    answer: 'Việc sử dụng AI trong giáo dục có một số rủi ro cần lưu ý:\n\n**Rủi ro về dữ liệu:**\n- Bảo mật thông tin học sinh\n- Quyền riêng tư và GDPR compliance\n- Lưu trữ và xử lý dữ liệu nhạy cảm\n\n**Rủi ro về công nghệ:**\n- Độ chính xác của thuật toán\n- Bias trong mô hình AI\n- Phụ thuộc quá nhiều vào công nghệ\n\n**Rủi ro về con người:**\n- Giảm tương tác trực tiếp giữa giáo viên và học sinh\n- Mất kỹ năng tư duy phản biện\n- Kháng cự thay đổi từ giáo viên',
-    sources: [
-      {
-        file_id: 'file-4',
-        file_name: 'Risk_Assessment_AI_Education.pdf',
-        chunks: [
-          { content: 'Đánh giá rủi ro toàn diện về việc sử dụng AI trong giáo dục...' },
-          { content: 'Các biện pháp giảm thiểu rủi ro được đề xuất...' }
-        ],
-        chunk_count: 6
-      }
-    ],
-    model_used: 'openai',
-    timestamp: Date.now() - 172800000, // 2 days ago
-    created_at: new Date(Date.now() - 172800000).toISOString()
-  },
-  {
-    id: 'chat-5',
-    query: 'Tương lai của AI trong giáo dục như thế nào?',
-    answer: 'Tương lai của AI trong giáo dục rất hứa hẹn với nhiều xu hướng đáng chú ý:\n\n**Xu hướng ngắn hạn (2024-2026):**\n- Chatbot hỗ trợ học tập 24/7\n- Hệ thống chấm điểm tự động\n- Phân tích học tập cá nhân hóa\n\n**Xu hướng trung hạn (2026-2030):**\n- Thực tế ảo (VR) kết hợp AI cho trải nghiệm học tập\n- Gia sư AI thông minh\n- Dự đoán và can thiệp sớm khó khăn học tập\n\n**Tầm nhìn dài hạn (2030+):**\n- Giáo dục hoàn toàn cá nhân hóa\n- AI tạo nội dung học tập động\n- Hệ sinh thái giáo dục thích ứng thông minh',
-    sources: [
-      {
-        file_id: 'file-5',
-        file_name: 'Future_Trends_AI_2024.pdf',
-        chunks: [
-          { content: 'Dự báo xu hướng công nghệ giáo dục trong 10 năm tới...' },
-          { content: 'Nghiên cứu từ 100 chuyên gia hàng đầu về AI và giáo dục...' }
-        ],
-        chunk_count: 8
-      }
-    ],
-    model_used: 'gemini',
-    timestamp: Date.now() - 259200000, // 3 days ago
-    created_at: new Date(Date.now() - 259200000).toISOString()
-  }
-]
-
-// Mock files data with extended entries for pagination testing
-export const mockFiles: MockFile[] = [
-  {
-    id: 'file-1',
-    originalName: 'AI_in_Education_Report.pdf',
-    filename: 'ai-education-report-2024.pdf',
-    size: 2547328,
-    mimetype: 'application/pdf',
-    uploadTime: new Date(Date.now() - 86400000).toISOString(),
-    indexed: true,
-    userId: 'dev-user-id'
-  },
-  {
-    id: 'file-2',
-    originalName: 'Implementation_Guide.docx',
-    filename: 'implementation-guide.docx',
-    size: 1234567,
-    mimetype: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    uploadTime: new Date(Date.now() - 172800000).toISOString(),
-    indexed: true,
-    userId: 'dev-user-id'
-  },
-  {
-    id: 'file-3',
-    originalName: 'Budget_Analysis_2024.xlsx',
-    filename: 'budget-analysis-2024.xlsx',
-    size: 987654,
-    mimetype: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    uploadTime: new Date(Date.now() - 259200000).toISOString(),
-    indexed: true,
-    userId: 'dev-user-id'
-  },
-  {
-    id: 'file-4',
-    originalName: 'Risk_Assessment_AI_Education.pdf',
-    filename: 'risk-assessment-ai-education.pdf',
-    size: 1876543,
-    mimetype: 'application/pdf',
-    uploadTime: new Date(Date.now() - 345600000).toISOString(),
-    indexed: true,
-    userId: 'dev-user-id'
-  },
-  {
-    id: 'file-5',
-    originalName: 'Future_Trends_AI_2024.pdf',
-    filename: 'future-trends-ai-2024.pdf',
-    size: 3456789,
-    mimetype: 'application/pdf',
-    uploadTime: new Date(Date.now() - 432000000).toISOString(),
-    indexed: true,
-    userId: 'dev-user-id'
-  },
-  {
-    id: 'file-6',
-    originalName: 'Machine_Learning_Basics.pdf',
-    filename: 'machine-learning-basics.pdf',
-    size: 4567890,
-    mimetype: 'application/pdf',
-    uploadTime: new Date(Date.now() - 518400000).toISOString(),
-    indexed: true,
-    userId: 'dev-user-id'
-  },
-  {
-    id: 'file-7',
-    originalName: 'Data_Science_Handbook.pdf',
-    filename: 'data-science-handbook.pdf',
-    size: 5678901,
-    mimetype: 'application/pdf',
-    uploadTime: new Date(Date.now() - 604800000).toISOString(),
-    indexed: false,
-    userId: 'dev-user-id'
-  },
-  {
-    id: 'file-8',
-    originalName: 'Python_Programming_Guide.docx',
-    filename: 'python-programming-guide.docx',
-    size: 2345678,
-    mimetype: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    uploadTime: new Date(Date.now() - 691200000).toISOString(),
-    indexed: true,
-    userId: 'dev-user-id'
-  },
-  {
-    id: 'file-9',
-    originalName: 'Database_Design_Principles.pdf',
-    filename: 'database-design-principles.pdf',
-    size: 3456789,
-    mimetype: 'application/pdf',
-    uploadTime: new Date(Date.now() - 777600000).toISOString(),
-    indexed: true,
-    userId: 'dev-user-id'
-  },
-  {
-    id: 'file-10',
-    originalName: 'Web_Development_Best_Practices.txt',
-    filename: 'web-development-best-practices.txt',
-    size: 123456,
-    mimetype: 'text/plain',
-    uploadTime: new Date(Date.now() - 864000000).toISOString(),
-    indexed: true,
-    userId: 'dev-user-id'
-  },
-  {
-    id: 'file-11',
-    originalName: 'Cloud_Computing_Architecture.pdf',
-    filename: 'cloud-computing-architecture.pdf',
-    size: 4567890,
-    mimetype: 'application/pdf',
-    uploadTime: new Date(Date.now() - 950400000).toISOString(),
-    indexed: false,
-    userId: 'dev-user-id'
-  },
-  {
-    id: 'file-12',
-    originalName: 'Cybersecurity_Guidelines.docx',
-    filename: 'cybersecurity-guidelines.docx',
-    size: 2345678,
-    mimetype: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    uploadTime: new Date(Date.now() - 1036800000).toISOString(),
-    indexed: true,
-    userId: 'dev-user-id'
-  },
-  {
-    id: 'file-13',
-    originalName: 'Project_Management_Framework.xlsx',
-    filename: 'project-management-framework.xlsx',
-    size: 1876543,
-    mimetype: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    uploadTime: new Date(Date.now() - 1123200000).toISOString(),
-    indexed: true,
-    userId: 'dev-user-id'
-  },
-  {
-    id: 'file-14',
-    originalName: 'Software_Testing_Strategies.pdf',
-    filename: 'software-testing-strategies.pdf',
-    size: 3456789,
-    mimetype: 'application/pdf',
-    uploadTime: new Date(Date.now() - 1209600000).toISOString(),
-    indexed: true,
-    userId: 'dev-user-id'
-  },
-  {
-    id: 'file-15',
-    originalName: 'DevOps_Implementation_Guide.pdf',
-    filename: 'devops-implementation-guide.pdf',
-    size: 4567890,
-    mimetype: 'application/pdf',
-    uploadTime: new Date(Date.now() - 1296000000).toISOString(),
-    indexed: false,
-    userId: 'dev-user-id'
-  },
-  {
-    id: 'file-16',
-    originalName: 'Mobile_App_Development.docx',
-    filename: 'mobile-app-development.docx',
-    size: 2345678,
-    mimetype: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    uploadTime: new Date(Date.now() - 1382400000).toISOString(),
-    indexed: true,
-    userId: 'dev-user-id'
-  },
-  {
-    id: 'file-17',
-    originalName: 'API_Design_Standards.pdf',
-    filename: 'api-design-standards.pdf',
-    size: 1876543,
-    mimetype: 'application/pdf',
-    uploadTime: new Date(Date.now() - 1468800000).toISOString(),
-    indexed: true,
-    userId: 'dev-user-id'
-  },
-  {
-    id: 'file-18',
-    originalName: 'User_Experience_Guidelines.pdf',
-    filename: 'user-experience-guidelines.pdf',
-    size: 3456789,
-    mimetype: 'application/pdf',
-    uploadTime: new Date(Date.now() - 1555200000).toISOString(),
-    indexed: true,
-    userId: 'dev-user-id'
-  },
-  {
-    id: 'file-19',
-    originalName: 'Marketing_Strategy_2024.xlsx',
-    filename: 'marketing-strategy-2024.xlsx',
-    size: 987654,
-    mimetype: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    uploadTime: new Date(Date.now() - 1641600000).toISOString(),
-    indexed: false,
-    userId: 'dev-user-id'
-  },
-  {
-    id: 'file-20',
-    originalName: 'Business_Plan_Template.docx',
-    filename: 'business-plan-template.docx',
-    size: 2345678,
-    mimetype: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    uploadTime: new Date(Date.now() - 1728000000).toISOString(),
-    indexed: true,
-    userId: 'dev-user-id'
-  },
-  {
-    id: 'file-21',
-    originalName: 'Financial_Analysis_Q3_2024.pdf',
-    filename: 'financial-analysis-q3-2024.pdf',
-    size: 4567890,
-    mimetype: 'application/pdf',
-    uploadTime: new Date(Date.now() - 1814400000).toISOString(),
-    indexed: true,
-    userId: 'dev-user-id'
-  },
-  {
-    id: 'file-22',
-    originalName: 'Team_Management_Handbook.pdf',
-    filename: 'team-management-handbook.pdf',
-    size: 3456789,
-    mimetype: 'application/pdf',
-    uploadTime: new Date(Date.now() - 1900800000).toISOString(),
-    indexed: true,
-    userId: 'dev-user-id'
-  },
-  {
-    id: 'file-23',
-    originalName: 'Customer_Feedback_Report.xlsx',
-    filename: 'customer-feedback-report.xlsx',
-    size: 1234567,
-    mimetype: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    uploadTime: new Date(Date.now() - 1987200000).toISOString(),
-    indexed: false,
-    userId: 'dev-user-id'
-  },
-  {
-    id: 'file-24',
-    originalName: 'Product_Roadmap_2025.pdf',
-    filename: 'product-roadmap-2025.pdf',
-    size: 2876543,
-    mimetype: 'application/pdf',
-    uploadTime: new Date(Date.now() - 2073600000).toISOString(),
-    indexed: true,
-    userId: 'dev-user-id'
-  },
-  {
-    id: 'file-25',
-    originalName: 'Training_Materials_Complete.zip',
-    filename: 'training-materials-complete.zip',
-    size: 15678901,
-    mimetype: 'application/zip',
-    uploadTime: new Date(Date.now() - 2160000000).toISOString(),
-    indexed: false,
-    userId: 'dev-user-id'
-  }
-]
-
-// Mock current chat messages
-export const mockChatMessages: MockChatMessage[] = [
-  {
-    id: 'welcome',
-    type: 'assistant',
-    content: 'Xin chào! Tôi là AI assistant của Chatnary. Tôi có thể giúp bạn tìm hiểu nội dung trong các tài liệu đã tải lên. Hãy hỏi tôi bất cứ điều gì!\n\n*Hiện tại bạn đang ở chế độ bypass với dữ liệu mẫu. Các tài liệu mẫu bao gồm báo cáo về AI trong giáo dục, hướng dẫn triển khai, phân tích ngân sách, và đánh giá rủi ro.*',
-    timestamp: new Date()
-  }
-]
-
-// Helper function to check if bypass mode is enabled
-export const isBypassMode = (): boolean => {
-  return process.env.NEXT_PUBLIC_BYPASS_AUTH === '1'
-}
-
-// Helper function to get random delay for mock API calls
-export const getMockDelay = (min = 500, max = 1500): number => {
-  return Math.random() * (max - min) + min
-}
-
-// Mock API response wrapper
-export const createMockResponse = <T>(data: T): Promise<{ data: T }> => {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({
-        data
-      })
-    }, getMockDelay())
-  })
-}
-
-// Mock search function
-export const createMockSearchResponse = (query: string, files = mockFiles): MockSearchResponse => {
-  if (!query.trim()) {
-    return {
-      success: true,
-      data: {
-        results: [],
-        hitsCount: 0,
-        processingTimeMs: 0,
-        query
-      }
-    }
-  }
-
-  const results = files
-    .filter(file => 
-      file.originalName.toLowerCase().includes(query.toLowerCase()) ||
-      file.mimetype.toLowerCase().includes(query.toLowerCase())
-    )
-    .slice(0, 20)
-    .map(file => ({
-      file: {
-        id: file.id,
-        originalName: file.originalName,
-        size: file.size,
-        uploadTime: file.uploadTime,
-        mimetype: file.mimetype
+        id: 'doc_002',
+        name: 'Deep Learning Guide.pdf',
       },
-      score: Math.random() * 0.3 + 0.7, // Random score between 0.7-1.0
-      snippet: `Tìm thấy từ khóa "${query}" trong tài liệu ${file.originalName}. Nội dung liên quan bao gồm các thông tin quan trọng về chủ đề được tìm kiếm...`
-    }))
+    ],
+    lastMessage: {
+      content: 'Deep Learning là một tập con của Machine Learning, sử dụng neural networks với nhiều layers...',
+      createdAt: '2024-01-16T15:30:00Z',
+    },
+    messageCount: 12,
+    createdAt: '2024-01-16T14:30:00Z',
+    updatedAt: '2024-01-16T15:30:00Z',
+  },
+  {
+    id: 'chat_003',
+    title: 'Neural Networks Architecture',
+    documentIds: ['doc_003'],
+    documents: [
+      {
+        id: 'doc_003',
+        name: 'Neural Networks.docx',
+      },
+    ],
+    lastMessage: {
+      content: 'Có nhiều loại kiến trúc neural network như CNN, RNN, LSTM...',
+      createdAt: '2024-01-18T10:00:00Z',
+    },
+    messageCount: 5,
+    createdAt: '2024-01-18T09:20:00Z',
+    updatedAt: '2024-01-18T10:00:00Z',
+  },
+];
 
-  return {
-    success: true,
-    data: {
-      results,
-      hitsCount: results.length,
-      processingTimeMs: Math.floor(Math.random() * 100) + 50,
-      query
-    }
-  }
-}
+// ==================== MOCK MESSAGES ====================
+export const mockMessages: Record<string, Message[]> = {
+  chat_001: [
+    {
+      id: 'msg_001',
+      chatId: 'chat_001',
+      role: 'user',
+      content: 'Machine Learning là gì?',
+      createdAt: '2024-01-15T10:35:00Z',
+    },
+    {
+      id: 'msg_002',
+      chatId: 'chat_001',
+      role: 'assistant',
+      content: 'Machine Learning (Học máy) là một nhánh của trí tuệ nhân tạo (AI) tập trung vào việc xây dựng các hệ thống có khả năng học và cải thiện từ kinh nghiệm mà không cần được lập trình cụ thể. Theo tài liệu, Machine Learning cho phép máy tính nhận diện các mẫu trong dữ liệu và đưa ra dự đoán hoặc quyết định dựa trên dữ liệu đó.',
+      sources: [
+        {
+          documentId: 'doc_001',
+          documentName: 'Machine Learning Basics.pdf',
+          pageNumber: 1,
+          chunkId: 'chunk_001',
+          content: 'Machine Learning is a subset of artificial intelligence that focuses on building systems that can learn from and make decisions based on data.',
+          score: 0.95,
+          startIndex: 0,
+          endIndex: 150,
+        },
+      ],
+      model: 'gpt-4',
+      tokensUsed: {
+        prompt: 850,
+        completion: 120,
+        total: 970,
+      },
+      createdAt: '2024-01-15T10:35:05Z',
+    },
+    {
+      id: 'msg_003',
+      chatId: 'chat_001',
+      role: 'user',
+      content: 'Có những loại Machine Learning nào?',
+      createdAt: '2024-01-15T10:40:00Z',
+    },
+    {
+      id: 'msg_004',
+      chatId: 'chat_001',
+      role: 'assistant',
+      content: 'Theo tài liệu, có 3 loại Machine Learning chính:\n\n1. **Supervised Learning (Học có giám sát)**: Máy học từ dữ liệu đã được gán nhãn, ví dụ như phân loại email spam/not spam.\n\n2. **Unsupervised Learning (Học không giám sát)**: Máy tự tìm ra các mẫu trong dữ liệu không có nhãn, như phân nhóm khách hàng.\n\n3. **Reinforcement Learning (Học tăng cường)**: Máy học thông qua việc thử và sai, nhận phản hồi từ môi trường.',
+      sources: [
+        {
+          documentId: 'doc_001',
+          documentName: 'Machine Learning Basics.pdf',
+          pageNumber: 3,
+          chunkId: 'chunk_005',
+          content: 'There are three main types of machine learning: Supervised Learning, Unsupervised Learning, and Reinforcement Learning...',
+          score: 0.92,
+        },
+      ],
+      createdAt: '2024-01-15T10:40:08Z',
+    },
+  ],
+  chat_002: [
+    {
+      id: 'msg_005',
+      chatId: 'chat_002',
+      role: 'user',
+      content: 'So sánh Machine Learning và Deep Learning',
+      createdAt: '2024-01-16T14:30:00Z',
+    },
+    {
+      id: 'msg_006',
+      chatId: 'chat_002',
+      role: 'assistant',
+      content: 'Dựa trên hai tài liệu, đây là sự khác biệt chính:\n\n**Machine Learning:**\n- Sử dụng các thuật toán đơn giản hơn\n- Cần feature engineering thủ công\n- Hoạt động tốt với dữ liệu nhỏ và trung bình\n- Ví dụ: Decision Trees, SVM, Random Forest\n\n**Deep Learning:**\n- Sử dụng neural networks với nhiều layers\n- Tự động học features từ dữ liệu\n- Cần dữ liệu lớn và sức mạnh tính toán cao\n- Ví dụ: CNN, RNN, Transformers\n\nDeep Learning là một tập con của Machine Learning, đặc biệt hiệu quả với dữ liệu phi cấu trúc như hình ảnh, âm thanh, văn bản.',
+      sources: [
+        {
+          documentId: 'doc_001',
+          documentName: 'Machine Learning Basics.pdf',
+          pageNumber: 5,
+          chunkId: 'chunk_010',
+          content: 'Traditional machine learning requires manual feature engineering...',
+          score: 0.88,
+        },
+        {
+          documentId: 'doc_002',
+          documentName: 'Deep Learning Guide.pdf',
+          pageNumber: 2,
+          chunkId: 'chunk_003',
+          content: 'Deep Learning uses neural networks with multiple layers to automatically learn representations from data...',
+          score: 0.91,
+        },
+      ],
+      createdAt: '2024-01-16T14:30:12Z',
+    },
+  ],
+};
+
+// ==================== MOCK STATS ====================
+export const mockOverviewStats: OverviewStats = {
+  totalDocuments: 5,
+  totalChats: 3,
+  totalMessages: 25,
+  storageUsed: 12288000, // ~12MB
+  storageLimit: 1073741824, // 1GB
+  documentsThisMonth: 5,
+  chatsThisMonth: 3,
+  messagesThisMonth: 25,
+  recentActivity: [
+    {
+      type: 'document_upload',
+      documentId: 'doc_004',
+      documentName: 'Data Science Handbook.pdf',
+      timestamp: '2024-01-20T16:45:00Z',
+    },
+    {
+      type: 'chat_created',
+      chatId: 'chat_003',
+      chatTitle: 'Neural Networks Architecture',
+      timestamp: '2024-01-18T09:20:00Z',
+    },
+    {
+      type: 'document_upload',
+      documentId: 'doc_005',
+      documentName: 'Python Programming.txt',
+      timestamp: '2024-01-19T11:30:00Z',
+    },
+  ],
+};
+
+// ==================== MOCK SUGGESTIONS ====================
+export const mockSuggestions: string[] = [
+  'Tài liệu này nói về chủ đề gì?',
+  'Tóm tắt những điểm chính trong tài liệu',
+  'Giải thích khái niệm quan trọng nhất',
+  'So sánh các phương pháp được đề cập',
+];
+

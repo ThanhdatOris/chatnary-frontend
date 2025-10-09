@@ -1,98 +1,82 @@
-import { Button, Modal, NavbarSearch } from '@/components/ui'
-import BackgroundToggle from '@/components/ui/BackgroundToggle'
-import { useBackground } from '@/contexts/BackgroundContext'
-import {
-  FileText,
-  Menu,
-  Search,
-  X
-} from 'lucide-react'
-import Link from 'next/link'
-import React from 'react'
+'use client';
 
-interface HeaderProps {
-  onMobileMenuToggle?: () => void
-  isMobileMenuOpen?: boolean
-}
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import ThemeToggle from '../ui/ThemeToggle';
 
-const Header: React.FC<HeaderProps> = ({ 
-  onMobileMenuToggle,
-  isMobileMenuOpen = false 
-}) => {
-  const [showMobileSearch, setShowMobileSearch] = React.useState(false)
-  const { setBackground } = useBackground()
-
+export default function Header() {
+  const pathname = usePathname();
+  
   return (
-    <header className="glass-header border-b border-glass-border theme-transition">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between h-16">
-          {/* Logo and Brand */}
-          <div className="flex items-center">
-            <Link href="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 gradient-primary rounded-xl flex items-center justify-center shadow-glass">
-                <FileText className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-xl font-bold text-foreground">Chatnary</span>
-            </Link>
+    <header className="sticky top-0 z-40 w-full border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
+      <div className="container mx-auto flex h-16 items-center justify-between px-4">
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+            <span className="text-white font-bold text-lg">C</span>
           </div>
-
-          {/* Search Bar - Hidden on mobile */}
-          <div className="flex-1 max-w-md mx-6 hidden md:flex md:items-center">
-            <NavbarSearch />
-          </div>
-
-          {/* User Menu */}
-          <div className="flex items-center space-x-4">
-            {/* Mobile Search Button */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowMobileSearch(true)}
-              className="md:hidden"
-              title="Tìm kiếm"
-            >
-              <Search className="w-5 h-5" />
-            </Button>
-
-            {/* Theme Toggle */}
-            {/* <ThemeToggle size="sm" /> */}
-
-            {/* Background Toggle */}
-            <BackgroundToggle onBackgroundChange={setBackground} compact />
-
-            {/* User menu removed - no authentication */}
-
-            {/* Mobile menu button */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onMobileMenuToggle}
-              className="md:hidden"
-            >
-              {isMobileMenuOpen ? (
-                <X className="w-5 h-5" />
-              ) : (
-                <Menu className="w-5 h-5" />
-              )}
-            </Button>
+          <span className="text-xl font-bold text-gray-900 dark:text-gray-100">
+            Chatnary
+          </span>
+        </Link>
+        
+        {/* Navigation */}
+        <nav className="hidden md:flex items-center gap-6">
+          <Link
+            href="/dashboard"
+            className={`text-sm font-medium transition-colors hover:text-blue-600 dark:hover:text-blue-400 ${
+              pathname === '/dashboard'
+                ? 'text-blue-600 dark:text-blue-400'
+                : 'text-gray-700 dark:text-gray-300'
+            }`}
+          >
+            Dashboard
+          </Link>
+          <Link
+            href="/documents"
+            className={`text-sm font-medium transition-colors hover:text-blue-600 dark:hover:text-blue-400 ${
+              pathname === '/documents'
+                ? 'text-blue-600 dark:text-blue-400'
+                : 'text-gray-700 dark:text-gray-300'
+            }`}
+          >
+            Tài liệu
+          </Link>
+          <Link
+            href="/chat"
+            className={`text-sm font-medium transition-colors hover:text-blue-600 dark:hover:text-blue-400 ${
+              pathname?.startsWith('/chat')
+                ? 'text-blue-600 dark:text-blue-400'
+                : 'text-gray-700 dark:text-gray-300'
+            }`}
+          >
+            Chat
+          </Link>
+          <Link
+            href="/history"
+            className={`text-sm font-medium transition-colors hover:text-blue-600 dark:hover:text-blue-400 ${
+              pathname === '/history'
+                ? 'text-blue-600 dark:text-blue-400'
+                : 'text-gray-700 dark:text-gray-300'
+            }`}
+          >
+            Lịch sử
+          </Link>
+        </nav>
+        
+        {/* Right section */}
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          
+          {/* User menu */}
+          <div className="ml-2 flex items-center gap-2">
+            <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+              <span className="text-white text-sm font-medium">N</span>
+            </div>
           </div>
         </div>
       </div>
-
-      {/* User menu removed */}
-
-      {/* Mobile Search Modal */}
-      <Modal
-        isOpen={showMobileSearch}
-        onClose={() => setShowMobileSearch(false)}
-        title="Tìm kiếm tài liệu"
-      >
-        <div className="p-4">
-          <NavbarSearch className="w-full" />
-        </div>
-      </Modal>
     </header>
-  )
+  );
 }
 
-export default Header

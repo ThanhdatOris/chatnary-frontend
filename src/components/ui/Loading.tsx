@@ -1,68 +1,31 @@
-import { cn } from '@/lib/utils'
-import { Loader2 } from 'lucide-react'
-import React from 'react'
+import { cn } from '@/lib/utils';
+import { HTMLAttributes } from 'react';
 
-interface LoadingProps {
-  size?: 'sm' | 'md' | 'lg'
-  text?: string
-  fullScreen?: boolean
-  className?: string
+export interface LoadingProps extends HTMLAttributes<HTMLDivElement> {
+  size?: 'sm' | 'md' | 'lg';
+  text?: string;
 }
 
-const Loading: React.FC<LoadingProps> = ({
-  size = 'md',
-  text,
-  fullScreen = false,
-  className
-}) => {
+export default function Loading({ size = 'md', text, className, ...props }: LoadingProps) {
   const sizes = {
-    sm: 'h-4 w-4',
-    md: 'h-6 w-6',
-    lg: 'h-8 w-8'
-  }
-
-  const textSizes = {
-    sm: 'text-sm',
-    md: 'text-base',
-    lg: 'text-lg'
-  }
-
-  const LoadingContent = () => (
-    <div className={cn('flex flex-col items-center justify-center', className)}>
-      <Loader2 className={cn('animate-spin text-blue-600', sizes[size])} />
-      {text && (
-        <p className={cn('mt-2 text-muted-foreground', textSizes[size])}>
-          {text}
-        </p>
-      )}
-    </div>
-  )
-
-  if (fullScreen) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-        <LoadingContent />
-      </div>
-    )
-  }
-
-  return <LoadingContent />
-}
-
-// Spinner only component
-export const Spinner: React.FC<{ size?: 'sm' | 'md' | 'lg'; className?: string }> = ({
-  size = 'md',
-  className
-}) => {
-  const sizes = {
-    sm: 'h-4 w-4',
-    md: 'h-6 w-6',
-    lg: 'h-8 w-8'
-  }
-
+    sm: 'w-6 h-6',
+    md: 'w-10 h-10',
+    lg: 'w-16 h-16',
+  };
+  
   return (
-    <Loader2 className={cn('animate-spin text-blue-600', sizes[size], className)} />
-  )
+    <div className={cn('flex flex-col items-center justify-center gap-3', className)} {...props}>
+      <div className={cn('animate-spin rounded-full border-4 border-gray-200 border-t-blue-600', sizes[size])} />
+      {text && <p className="text-sm text-gray-600 dark:text-gray-400">{text}</p>}
+    </div>
+  );
 }
 
-export default Loading
+// Skeleton loader
+export const Skeleton = ({ className, ...props }: HTMLAttributes<HTMLDivElement>) => (
+  <div
+    className={cn('animate-pulse bg-gray-200 dark:bg-gray-700 rounded', className)}
+    {...props}
+  />
+);
+
