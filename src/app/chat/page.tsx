@@ -132,6 +132,7 @@ export default function ChatPage() {
                         checked={selectedDocs.includes(doc.id)}
                         onChange={() => handleToggleDoc(doc.id)}
                         className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
+                        aria-label={`Chọn tài liệu ${doc.name}`}
                       />
                     </div>
                     <div className="text-3xl">{getFileIcon(doc.type)}</div>

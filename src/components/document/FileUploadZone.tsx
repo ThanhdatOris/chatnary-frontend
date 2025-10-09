@@ -91,6 +91,7 @@ export default function FileUploadZone({ onUpload, isUploading }: FileUploadZone
           accept=".pdf,.doc,.docx,.txt,.md"
           onChange={handleFileSelect}
           disabled={isUploading}
+          aria-label="Chọn file để tải lên"
         />
 
         <div className="flex flex-col items-center gap-4">

@@ -112,10 +112,11 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label htmlFor="model-select" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Model
               </label>
               <select
+                id="model-select"
                 value={settings.model}
                 onChange={(e) => setSettings({ ...settings, model: e.target.value })}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg
@@ -129,10 +130,11 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label htmlFor="temperature-range" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Temperature: {settings.temperature}
               </label>
               <input
+                id="temperature-range"
                 type="range"
                 min="0"
                 max="1"
@@ -148,10 +150,11 @@ export default function SettingsPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              <label htmlFor="max-tokens-range" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Max Tokens: {settings.maxTokens}
               </label>
               <input
+                id="max-tokens-range"
                 type="range"
                 min="500"
                 max="4000"
