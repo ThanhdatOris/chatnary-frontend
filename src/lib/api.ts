@@ -4,8 +4,8 @@
  */
 
 import {
+    allMockDocuments,
     mockChatSessions,
-    mockDocuments,
     mockMessages,
     mockOverviewStats,
     mockSuggestions,
@@ -66,7 +66,7 @@ export const documentsApi = {
   async getDocuments(params?: PaginationParams): Promise<ApiResponse<PaginatedResponse<Document>>> {
     await delay();
     
-    let filteredDocs = [...mockDocuments];
+    let filteredDocs = [...allMockDocuments];
     
     // Search filter
     if (params?.search) {
@@ -81,6 +81,12 @@ export const documentsApi = {
         const aVal = a[params.sortBy as keyof Document];
         const bVal = b[params.sortBy as keyof Document];
         const order = params.sortOrder === 'asc' ? 1 : -1;
+        
+        // Handle null/undefined values
+        if (aVal == null && bVal == null) return 0;
+        if (aVal == null) return order;
+        if (bVal == null) return -order;
+        
         return aVal > bVal ? order : -order;
       });
     }
@@ -107,7 +113,7 @@ export const documentsApi = {
 
   async getDocument(id: string): Promise<ApiResponse<Document>> {
     await delay(300);
-    const doc = mockDocuments.find(d => d.id === id);
+    const doc = allMockDocuments.find((d: Document) => d.id === id);
     
     if (!doc) {
       return {
@@ -159,7 +165,7 @@ export const documentsApi = {
 
   async deleteDocument(id: string): Promise<ApiResponse<void>> {
     await delay(500);
-    const index = mockDocuments.findIndex(d => d.id === id);
+    const index = allMockDocuments.findIndex((d: Document) => d.id === id);
     
     if (index === -1) {
       return {
@@ -171,7 +177,7 @@ export const documentsApi = {
       };
     }
     
-    mockDocuments.splice(index, 1);
+    allMockDocuments.splice(index, 1);
     
     return {
       success: true,
@@ -241,7 +247,7 @@ export const chatsApi = {
       title: request.title || 'Chat mới',
       documentIds: request.documentIds,
       documents: request.documentIds.map(docId => {
-        const doc = mockDocuments.find(d => d.id === docId);
+        const doc = allMockDocuments.find((d: Document) => d.id === docId);
         return {
           id: docId,
           name: doc?.name || 'Unknown',

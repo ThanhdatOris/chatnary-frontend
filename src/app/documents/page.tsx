@@ -21,6 +21,9 @@ export default function DocumentsPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list'); // Default to list view
+  
+  // Fixed total documents count for display (simulating real app)
+  const totalDocuments = 2547;
 
   useEffect(() => {
     fetchDocuments();
@@ -201,6 +204,7 @@ export default function DocumentsPage() {
                     selectedDocument={selectedDocument}
                     onSelectDocument={setSelectedDocument}
                     onDeleteDocument={handleDelete}
+                    totalDocuments={totalDocuments}
                   />
                   <DocumentViewer
                     document={selectedDocument}
