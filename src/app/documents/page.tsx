@@ -7,6 +7,7 @@ import MainLayout from '@/components/layout/MainLayout';
 import { Button, Input, Loading, Modal } from '@/components/ui';
 import { useChats } from '@/contexts/ChatContext';
 import { chatsApi, documentsApi } from '@/lib/api';
+import { allMockDocuments } from '@/lib/mockData';
 import { Document } from '@/lib/types';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -14,8 +15,8 @@ import { useEffect, useState } from 'react';
 export default function DocumentsPage() {
   const router = useRouter();
   const { addChat } = useChats();
-  const [documents, setDocuments] = useState<Document[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [documents, setDocuments] = useState<Document[]>(allMockDocuments);
+  const [loading, setLoading] = useState(false); // Set to false since we're using mock data directly
   const [searchTerm, setSearchTerm] = useState('');
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -23,7 +24,7 @@ export default function DocumentsPage() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list'); // Default to list view
   
   // Fixed total documents count for display (simulating real app)
-  const totalDocuments = 2547;
+  const totalDocuments = allMockDocuments.length;
 
   useEffect(() => {
     fetchDocuments();
@@ -92,12 +93,6 @@ export default function DocumentsPage() {
       console.error('Failed to create chat:', error);
     }
   };
-
-  const filteredDocuments = searchTerm
-    ? documents.filter(doc => 
-        doc.name.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    : documents;
 
   return (
     <MainLayout>
@@ -172,7 +167,7 @@ export default function DocumentsPage() {
             <div className="flex-1 flex items-center justify-center">
               <Loading size="lg" text="Đang tải tài liệu..." />
             </div>
-          ) : filteredDocuments.length === 0 ? (
+          ) : documents.length === 0 ? (
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center py-16">
                 <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -200,11 +195,12 @@ export default function DocumentsPage() {
               {viewMode === 'list' ? (
                 <>
                   <DocumentList
-                    documents={filteredDocuments}
+                    documents={documents}
                     selectedDocument={selectedDocument}
                     onSelectDocument={setSelectedDocument}
                     onDeleteDocument={handleDelete}
                     totalDocuments={totalDocuments}
+                    searchTerm={searchTerm}
                   />
                   <DocumentViewer
                     document={selectedDocument}

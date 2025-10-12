@@ -11,6 +11,7 @@ interface DocumentListProps {
   onSelectDocument: (document: Document) => void;
   onDeleteDocument?: (id: string) => void;
   totalDocuments: number; // Fixed count for display
+  searchTerm?: string; // Add search term prop
 }
 
 export default function DocumentList({ 
@@ -18,7 +19,8 @@ export default function DocumentList({
   selectedDocument, 
   onSelectDocument,
   onDeleteDocument,
-  totalDocuments 
+  totalDocuments,
+  searchTerm = ''
 }: DocumentListProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -32,17 +34,34 @@ export default function DocumentList({
     sortOrder: 'desc' as 'asc' | 'desc'
   });
   const settingsRef = useRef<HTMLDivElement>(null);
+  const filterButtonRef = useRef<HTMLButtonElement>(null);
 
   // Close popup when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
-        setShowPaginationSettings(false);
+      const target = event.target as Node;
+      
+      // Don't close if clicking on the filter button itself or inside the popup
+      if (
+        (settingsRef.current && settingsRef.current.contains(target)) ||
+        (filterButtonRef.current && filterButtonRef.current.contains(target))
+      ) {
+        return;
       }
+      
+      setShowPaginationSettings(false);
     };
 
     if (showPaginationSettings) {
-      document.addEventListener('mousedown', handleClickOutside);
+      // Add small delay to prevent immediate closing when opening
+      const timeoutId = setTimeout(() => {
+        document.addEventListener('mousedown', handleClickOutside);
+      }, 100);
+      
+      return () => {
+        clearTimeout(timeoutId);
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
     }
 
     return () => {
@@ -50,14 +69,94 @@ export default function DocumentList({
     };
   }, [showPaginationSettings]);
 
+  // Prevent popup from closing when clicking inside
+  const handlePopupClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+  };
+
+  // Handle filter button click outside popup
+  const handleFilterButtonClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowPaginationSettings(!showPaginationSettings);
+  };
+
   // Paginate documents
   const paginatedResult = useMemo(() => {
-    return paginateArray(documents, {
+    // Start with all documents
+    let filteredDocuments = [...documents];
+    
+    // Apply search filter first
+    if (searchTerm.trim()) {
+      filteredDocuments = filteredDocuments.filter(doc => 
+        doc.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+    
+    // Filter by file type
+    if (filters.fileType) {
+      filteredDocuments = filteredDocuments.filter(doc => 
+        doc.type.toLowerCase().includes(filters.fileType.toLowerCase())
+      );
+    }
+    
+    // Filter by status
+    if (filters.status) {
+      filteredDocuments = filteredDocuments.filter(doc => 
+        doc.status === filters.status
+      );
+    }
+    
+    // Filter by date range
+    if (filters.dateRange) {
+      const now = new Date();
+      const uploadDate = (doc: Document) => new Date(doc.uploadedAt);
+      
+      filteredDocuments = filteredDocuments.filter(doc => {
+        const docDate = uploadDate(doc);
+        const diffTime = now.getTime() - docDate.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        
+        switch (filters.dateRange) {
+          case 'today':
+            return diffDays <= 1;
+          case 'week':
+            return diffDays <= 7;
+          case 'month':
+            return diffDays <= 30;
+          case 'year':
+            return docDate.getFullYear() === now.getFullYear();
+          default:
+            return true;
+        }
+      });
+    }
+    
+    // Apply sorting
+    if (filters.sortBy) {
+      filteredDocuments.sort((a, b) => {
+        let aVal = a[filters.sortBy as keyof Document];
+        let bVal = b[filters.sortBy as keyof Document];
+        
+        // Handle null/undefined values
+        if (aVal == null && bVal == null) return 0;
+        if (aVal == null) return filters.sortOrder === 'asc' ? -1 : 1;
+        if (bVal == null) return filters.sortOrder === 'asc' ? 1 : -1;
+        
+        // Convert to comparable values
+        if (typeof aVal === 'string') aVal = aVal.toLowerCase();
+        if (typeof bVal === 'string') bVal = bVal.toLowerCase();
+        
+        const comparison = aVal < bVal ? -1 : aVal > bVal ? 1 : 0;
+        return filters.sortOrder === 'asc' ? comparison : -comparison;
+      });
+    }
+    
+    return paginateArray(filteredDocuments, {
       page: currentPage,
       limit: itemsPerPage,
-      total: totalDocuments
+      total: filteredDocuments.length
     });
-  }, [documents, currentPage, itemsPerPage, totalDocuments]);
+  }, [documents, currentPage, itemsPerPage, filters, searchTerm]);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
@@ -81,6 +180,19 @@ export default function DocumentList({
     setCurrentPage(1); // Reset to first page when filtering
   };
 
+  const clearFilters = () => {
+    setFilters({
+      fileType: '',
+      dateRange: '',
+      status: '',
+      sortBy: 'uploadedAt',
+      sortOrder: 'desc'
+    });
+    setCurrentPage(1);
+  };
+
+  const hasActiveFilters = filters.fileType || filters.dateRange || filters.status || filters.sortBy !== 'uploadedAt' || filters.sortOrder !== 'desc';
+
   return (
     <div className="w-1/2 bg-white dark:bg-gray-800 flex flex-col document-list-scroll">
       {/* Header with Pagination */}
@@ -93,56 +205,77 @@ export default function DocumentList({
           {/* Pagination in header */}
           {totalDocuments > 0 && (
             <div className="flex items-center gap-3">
-              {/* Settings button */}
+              {/* Filter button */}
               <button
-                onClick={() => setShowPaginationSettings(!showPaginationSettings)}
-                className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors relative"
-                title="Cài đặt phân trang"
+                ref={filterButtonRef}
+                onClick={handleFilterButtonClick}
+                className={cn(
+                  'p-2 rounded-lg transition-colors relative',
+                  showPaginationSettings
+                    ? 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400'
+                    : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
+                )}
+                title="Bộ lọc và cài đặt"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" />
                 </svg>
+                {hasActiveFilters && (
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full border-2 border-white dark:border-gray-800"></div>
+                )}
                 
-                {/* Settings popup */}
+                {/* Filter popup */}
                 {showPaginationSettings && (
                   <div 
                     ref={settingsRef}
-                    className="absolute top-full right-0 mt-2 w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50"
+                    onClick={handlePopupClick}
+                    className="absolute top-full right-0 mt-2 w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl z-50 overflow-hidden"
                   >
                     <div className="p-4">
+                      {/* Header */}
                       <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                          Cài đặt & Bộ lọc
-                        </h3>
-                        <button
-                          onClick={() => setShowPaginationSettings(false)}
-                          className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
-                          title="Đóng"
-                        >
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <div className="p-1.5 bg-blue-100 dark:bg-blue-900 rounded-md">
+                            <svg className="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4" />
+                            </svg>
+                          </div>
+                          <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                            Cài đặt & Bộ lọc
+                          </h3>
+                        </div>
+                        {hasActiveFilters && (
+                          <button
+                            onClick={clearFilters}
+                            className="px-2 py-1 text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 rounded transition-colors"
+                            title="Xóa bộ lọc"
+                          >
+                            Xóa bộ lọc
+                          </button>
+                        )}
                       </div>
                       
                       <div className="space-y-4">
-                        {/* Pagination Settings */}
-                        <div>
-                          <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2 block">
-                            Số tài liệu mỗi trang
-                          </label>
+                        {/* Pagination Settings Card */}
+                        <div className="bg-gray-50 dark:bg-gray-900/50 rounded-md p-3">
+                          <div className="flex items-center gap-2 mb-2">
+                            <svg className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                            </svg>
+                            <h4 className="text-xs font-medium text-gray-900 dark:text-gray-100">
+                              Số tài liệu mỗi trang
+                            </h4>
+                          </div>
                           <div className="grid grid-cols-4 gap-2">
                             {[5, 10, 20, 50].map(option => (
                               <button
                                 key={option}
-                                onClick={() => {
-                                  handleItemsPerPageChange(option);
-                                }}
+                                onClick={() => handleItemsPerPageChange(option)}
                                 className={cn(
-                                  'px-3 py-2 text-sm rounded-md border transition-colors',
+                                  'px-3 py-2 text-xs font-medium rounded-md border transition-colors',
                                   itemsPerPage === option
                                     ? 'bg-blue-500 text-white border-blue-500'
-                                    : 'bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600'
+                                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950/50'
                                 )}
                               >
                                 {option}
@@ -151,100 +284,127 @@ export default function DocumentList({
                           </div>
                         </div>
 
-                        {/* File Type Filter */}
-                        <div>
-                          <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2 block">
-                            Loại file
-                          </label>
-                          <select
-                            value={filters.fileType}
-                            onChange={(e) => handleFilterChange('fileType', e.target.value)}
-                            aria-label="Chọn loại file"
-                            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                          >
-                            <option value="">Tất cả loại file</option>
-                            <option value="pdf">PDF</option>
-                            <option value="docx">Word Document</option>
-                            <option value="xlsx">Excel</option>
-                            <option value="pptx">PowerPoint</option>
-                            <option value="txt">Text</option>
-                            <option value="image">Hình ảnh</option>
-                            <option value="video">Video</option>
-                            <option value="audio">Audio</option>
-                          </select>
-                        </div>
-
-                        {/* Status Filter */}
-                        <div>
-                          <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2 block">
-                            Trạng thái
-                          </label>
-                          <select
-                            value={filters.status}
-                            onChange={(e) => handleFilterChange('status', e.target.value)}
-                            aria-label="Chọn trạng thái"
-                            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                          >
-                            <option value="">Tất cả trạng thái</option>
-                            <option value="completed">Đã xử lý</option>
-                            <option value="processing">Đang xử lý</option>
-                            <option value="failed">Lỗi</option>
-                          </select>
-                        </div>
-
-                        {/* Date Range Filter */}
-                        <div>
-                          <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2 block">
-                            Thời gian upload
-                          </label>
-                          <select
-                            value={filters.dateRange}
-                            onChange={(e) => handleFilterChange('dateRange', e.target.value)}
-                            aria-label="Chọn thời gian"
-                            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                          >
-                            <option value="">Tất cả thời gian</option>
-                            <option value="today">Hôm nay</option>
-                            <option value="week">7 ngày qua</option>
-                            <option value="month">30 ngày qua</option>
-                            <option value="quarter">3 tháng qua</option>
-                            <option value="year">Năm nay</option>
-                          </select>
-                        </div>
-
-                        {/* Sort Options */}
-                        <div>
-                          <label className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2 block">
-                            Sắp xếp theo
-                          </label>
-                          <div className="grid grid-cols-2 gap-2">
+                        {/* Filters */}
+                        <div className="space-y-3">
+                          {/* File Type Filter */}
+                          <div>
+                            <div className="flex items-center gap-2 mb-2">
+                              <svg className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                              </svg>
+                              <label className="text-xs font-medium text-gray-900 dark:text-gray-100">
+                                Loại file
+                              </label>
+                            </div>
                             <select
-                              value={filters.sortBy}
-                              onChange={(e) => handleFilterChange('sortBy', e.target.value)}
-                              aria-label="Sắp xếp theo"
-                              className="px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                              value={filters.fileType}
+                              onChange={(e) => handleFilterChange('fileType', e.target.value)}
+                              aria-label="Chọn loại file"
+                              className="w-full px-3 py-2 text-xs border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
                             >
-                              <option value="uploadedAt">Ngày upload</option>
-                              <option value="name">Tên file</option>
-                              <option value="size">Kích thước</option>
-                              <option value="pageCount">Số trang</option>
+                              <option value="">Tất cả loại file</option>
+                              <option value="pdf">PDF</option>
+                              <option value="docx">Word</option>
+                              <option value="xlsx">Excel</option>
+                              <option value="pptx">PowerPoint</option>
+                              <option value="txt">Text</option>
+                              <option value="image">Hình ảnh</option>
                             </select>
-                            <select
-                              value={filters.sortOrder}
-                              onChange={(e) => handleFilterChange('sortOrder', e.target.value)}
-                              aria-label="Thứ tự sắp xếp"
-                              className="px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                            >
-                              <option value="desc">Giảm dần</option>
-                              <option value="asc">Tăng dần</option>
-                            </select>
+                          </div>
+
+                          {/* Status and Date in same row */}
+                          <div className="grid grid-cols-2 gap-3">
+                            {/* Status Filter */}
+                            <div>
+                              <div className="flex items-center gap-1 mb-2">
+                                <svg className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <label className="text-xs font-medium text-gray-900 dark:text-gray-100">
+                                  Trạng thái
+                                </label>
+                              </div>
+                              <select
+                                value={filters.status}
+                                onChange={(e) => handleFilterChange('status', e.target.value)}
+                                aria-label="Chọn trạng thái"
+                                className="w-full px-2 py-1.5 text-xs border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                              >
+                                <option value="">Tất cả</option>
+                                <option value="completed">Đã xử lý</option>
+                                <option value="processing">Đang xử lý</option>
+                                <option value="failed">Lỗi</option>
+                              </select>
+                            </div>
+
+                            {/* Date Range Filter */}
+                            <div>
+                              <div className="flex items-center gap-1 mb-2">
+                                <svg className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                </svg>
+                                <label className="text-xs font-medium text-gray-900 dark:text-gray-100">
+                                  Thời gian
+                                </label>
+                              </div>
+                              <select
+                                value={filters.dateRange}
+                                onChange={(e) => handleFilterChange('dateRange', e.target.value)}
+                                aria-label="Chọn thời gian"
+                                className="w-full px-2 py-1.5 text-xs border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                              >
+                                <option value="">Tất cả</option>
+                                <option value="today">Hôm nay</option>
+                                <option value="week">7 ngày qua</option>
+                                <option value="month">30 ngày qua</option>
+                                <option value="year">Năm nay</option>
+                              </select>
+                            </div>
+                          </div>
+
+                          {/* Sort Options */}
+                          <div>
+                            <div className="flex items-center gap-2 mb-2">
+                              <svg className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4" />
+                              </svg>
+                              <label className="text-xs font-medium text-gray-900 dark:text-gray-100">
+                                Sắp xếp theo
+                              </label>
+                            </div>
+                            <div className="grid grid-cols-3 gap-2">
+                              <select
+                                value={filters.sortBy}
+                                onChange={(e) => handleFilterChange('sortBy', e.target.value)}
+                                aria-label="Sắp xếp theo"
+                                className="col-span-2 px-2 py-1.5 text-xs border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                              >
+                                <option value="uploadedAt">Ngày upload</option>
+                                <option value="name">Tên file</option>
+                                <option value="size">Kích thước</option>
+                                <option value="pageCount">Số trang</option>
+                              </select>
+                              <select
+                                value={filters.sortOrder}
+                                onChange={(e) => handleFilterChange('sortOrder', e.target.value)}
+                                aria-label="Thứ tự sắp xếp"
+                                className="px-2 py-1.5 text-xs border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                              >
+                                <option value="desc">Giảm dần</option>
+                                <option value="asc">Tăng dần</option>
+                              </select>
+                            </div>
                           </div>
                         </div>
                         
+                        {/* Summary */}
                         <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
                           <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
-                            <div>Hiển thị: {(currentPage - 1) * itemsPerPage + 1}-{Math.min(currentPage * itemsPerPage, totalDocuments)} của {totalDocuments.toLocaleString()}</div>
-                            <div>Tổng trang: {paginatedResult.pagination.totalPages}</div>
+                            <div>Hiển thị {(currentPage - 1) * itemsPerPage + 1}-{Math.min(currentPage * itemsPerPage, paginatedResult.pagination.total)} của {paginatedResult.pagination.total.toLocaleString()} tài liệu</div>
+                            <div>Tổng {paginatedResult.pagination.totalPages} trang</div>
+                            {paginatedResult.pagination.total !== totalDocuments && (
+                              <div className="text-blue-600 dark:text-blue-400">Đã lọc từ {totalDocuments.toLocaleString()} tài liệu</div>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -253,16 +413,16 @@ export default function DocumentList({
                 )}
               </button>
 
-              {/* Navigation buttons */}
-              {paginatedResult.pagination.totalPages > 1 && (
+              {/* Navigation buttons - hiển thị khi có tài liệu */}
+              {paginatedResult.pagination.total > 0 && (
                 <div className="flex items-center gap-2">
                   {/* Previous button */}
                   <button
                     onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
+                    disabled={currentPage === 1 || paginatedResult.pagination.totalPages <= 1}
                     className={cn(
                       'p-2 rounded-lg transition-colors',
-                      currentPage === 1
+                      (currentPage === 1 || paginatedResult.pagination.totalPages <= 1)
                         ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
                         : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700'
                     )}
@@ -278,7 +438,7 @@ export default function DocumentList({
                     <input
                       type="number"
                       min="1"
-                      max={paginatedResult.pagination.totalPages}
+                      max={Math.max(1, paginatedResult.pagination.totalPages)}
                       value={pageInput || currentPage}
                       onChange={(e) => setPageInput(e.target.value)}
                       onBlur={(e) => {
@@ -293,19 +453,20 @@ export default function DocumentList({
                       }}
                       className="w-12 px-2 py-1 text-sm text-center border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
                       title="Nhập số trang"
+                      disabled={paginatedResult.pagination.totalPages <= 1}
                     />
                     <span className="text-sm text-gray-500 dark:text-gray-400">
-                      / {paginatedResult.pagination.totalPages}
+                      / {Math.max(1, paginatedResult.pagination.totalPages)}
                     </span>
                   </div>
 
                   {/* Next button */}
                   <button
                     onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === paginatedResult.pagination.totalPages}
+                    disabled={currentPage === paginatedResult.pagination.totalPages || paginatedResult.pagination.totalPages <= 1}
                     className={cn(
                       'p-2 rounded-lg transition-colors',
-                      currentPage === paginatedResult.pagination.totalPages
+                      (currentPage === paginatedResult.pagination.totalPages || paginatedResult.pagination.totalPages <= 1)
                         ? 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
                         : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700'
                     )}
@@ -435,22 +596,22 @@ export default function DocumentList({
             </div>
           </div>
         ))}
-      </div>
-
-      {/* Empty State */}
-      {paginatedResult.data.length === 0 && (
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center text-gray-500 dark:text-gray-400">
-            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-            </div>
-            <p className="text-lg font-medium">Chưa có tài liệu nào</p>
-            <p className="text-sm mt-1">Upload tài liệu để bắt đầu</p>
-          </div>
         </div>
-      )}
+
+        {/* Empty State */}
+        {paginatedResult.data.length === 0 && (
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center text-gray-500 dark:text-gray-400">
+              <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <p className="text-lg font-medium">Chưa có tài liệu nào</p>
+              <p className="text-sm mt-1">Upload tài liệu để bắt đầu</p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
