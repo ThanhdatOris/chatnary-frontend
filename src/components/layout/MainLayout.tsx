@@ -13,7 +13,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const { sidebarWidth, isCollapsed } = useSidebar();
   const pathname = usePathname();
   
-  // Chat pages and documents pages use custom full-height layout
+  // Chat pages use custom full-height layout without padding
   const isChatPage = pathname?.startsWith('/chat/');
   const isDocumentsPage = pathname?.startsWith('/documents');
   const useFullHeight = isChatPage || isDocumentsPage;
@@ -28,7 +28,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
         {useFullHeight ? (
           children
         ) : (
-          <div className="p-6 lg:p-8">
+          <div className="p-4 lg:p-6">
             {children}
           </div>
         )}
