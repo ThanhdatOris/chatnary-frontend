@@ -13,17 +13,19 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const { sidebarWidth, isCollapsed } = useSidebar();
   const pathname = usePathname();
   
-  // Chat pages use custom full-height layout
+  // Chat pages and documents pages use custom full-height layout
   const isChatPage = pathname?.startsWith('/chat/');
+  const isDocumentsPage = pathname?.startsWith('/documents');
+  const useFullHeight = isChatPage || isDocumentsPage;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <Sidebar />
       <main 
         style={{ marginLeft: isCollapsed ? '64px' : `${sidebarWidth}px` }} 
-        className="transition-[margin] duration-200"
+        className={`transition-[margin] duration-200 ${useFullHeight ? 'h-screen overflow-hidden' : ''}`}
       >
-        {isChatPage ? (
+        {useFullHeight ? (
           children
         ) : (
           <div className="p-6 lg:p-8">
