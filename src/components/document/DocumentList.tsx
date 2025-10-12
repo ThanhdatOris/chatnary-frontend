@@ -3,15 +3,17 @@
 import { FileIcon } from '@/components/ui';
 import { Document } from '@/lib/types';
 import { cn, formatDate, formatFileSize, paginateArray } from '@/lib/utils';
-import { useMemo, useState, useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 interface DocumentListProps {
   documents: Document[];
-  selectedDocument: Document | null;
+  selectedDocument?: Document;
   onSelectDocument: (document: Document) => void;
-  onDeleteDocument?: (id: string) => void;
-  totalDocuments: number; // Fixed count for display
-  searchTerm?: string; // Add search term prop
+  onDeleteDocument?: (documentId: string) => void;
+  searchTerm?: string;
+  totalDocuments?: number;
+  isPanelCollapsed?: boolean;
+  onPanelToggle?: (collapsed: boolean) => void;
 }
 
 export default function DocumentList({ 
@@ -20,7 +22,9 @@ export default function DocumentList({
   onSelectDocument,
   onDeleteDocument,
   totalDocuments,
-  searchTerm = ''
+  searchTerm = '',
+  isPanelCollapsed = false,
+  onPanelToggle
 }: DocumentListProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -74,7 +78,7 @@ export default function DocumentList({
     e.stopPropagation();
   };
 
-  // Handle filter button click outside popup
+  // Handle filter button click
   const handleFilterButtonClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     setShowPaginationSettings(!showPaginationSettings);
@@ -164,7 +168,7 @@ export default function DocumentList({
 
   const handleItemsPerPageChange = (newItemsPerPage: number) => {
     setItemsPerPage(newItemsPerPage);
-    setCurrentPage(1); // Reset to first page when changing items per page
+    setCurrentPage(1);
   };
 
   const handlePageInputChange = (value: string) => {
@@ -177,7 +181,7 @@ export default function DocumentList({
 
   const handleFilterChange = (filterType: string, value: string) => {
     setFilters(prev => ({ ...prev, [filterType]: value }));
-    setCurrentPage(1); // Reset to first page when filtering
+    setCurrentPage(1);
   };
 
   const clearFilters = () => {
@@ -193,16 +197,30 @@ export default function DocumentList({
 
   const hasActiveFilters = filters.fileType || filters.dateRange || filters.status || filters.sortBy !== 'uploadedAt' || filters.sortOrder !== 'desc';
 
+  // Handle document selection - auto expand panel when selecting from grid
+  const handleSelectDocument = (document: Document) => {
+    onSelectDocument(document);
+    // If panel is collapsed and we're selecting a document, expand the panel
+    if (isPanelCollapsed && onPanelToggle) {
+      onPanelToggle(false);
+    }
+  };
+
   return (
-    <div className="w-1/2 bg-white dark:bg-gray-800 flex flex-col document-list-scroll">
-      {/* Header with Pagination */}
+    <div className={cn(
+      "bg-white dark:bg-gray-800 flex flex-col document-list-scroll transition-all duration-300",
+      isPanelCollapsed ? "w-full" : "w-1/2"
+    )}>
+      {/* Header with controls */}
       <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            Tài liệu ({totalDocuments.toLocaleString()})
-          </h2>
+          <div className="flex items-center gap-4">
+            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+              Tài liệu ({totalDocuments.toLocaleString()})
+            </h2>
+          </div>
           
-          {/* Pagination in header */}
+          {/* Controls row */}
           {totalDocuments > 0 && (
             <div className="flex items-center gap-3">
               {/* Filter button */}
@@ -218,7 +236,7 @@ export default function DocumentList({
                 title="Bộ lọc và cài đặt"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.8} d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" />
                 </svg>
                 {hasActiveFilters && (
                   <div className="absolute -top-1 -right-1 w-3 h-3 bg-blue-500 rounded-full border-2 border-white dark:border-gray-800"></div>
@@ -256,11 +274,11 @@ export default function DocumentList({
                       </div>
                       
                       <div className="space-y-4">
-                        {/* Pagination Settings Card */}
+                        {/* Pagination Settings */}
                         <div className="bg-gray-50 dark:bg-gray-900/50 rounded-md p-3">
-                          <div className="flex items-center gap-2 mb-2">
-                            <svg className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                          <div className="flex items-center gap-2 mb-3">
+                            <svg className="w-4 h-4 text-gray-600 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                             </svg>
                             <h4 className="text-xs font-medium text-gray-900 dark:text-gray-100">
                               Số tài liệu mỗi trang
@@ -299,8 +317,7 @@ export default function DocumentList({
                             <select
                               value={filters.fileType}
                               onChange={(e) => handleFilterChange('fileType', e.target.value)}
-                              aria-label="Chọn loại file"
-                              className="w-full px-3 py-2 text-xs border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-transparent"
+                              className="w-full px-3 py-2 text-xs border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
                             >
                               <option value="">Tất cả loại file</option>
                               <option value="pdf">PDF</option>
@@ -327,7 +344,6 @@ export default function DocumentList({
                               <select
                                 value={filters.status}
                                 onChange={(e) => handleFilterChange('status', e.target.value)}
-                                aria-label="Chọn trạng thái"
                                 className="w-full px-2 py-1.5 text-xs border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
                               >
                                 <option value="">Tất cả</option>
@@ -350,7 +366,6 @@ export default function DocumentList({
                               <select
                                 value={filters.dateRange}
                                 onChange={(e) => handleFilterChange('dateRange', e.target.value)}
-                                aria-label="Chọn thời gian"
                                 className="w-full px-2 py-1.5 text-xs border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
                               >
                                 <option value="">Tất cả</option>
@@ -362,7 +377,7 @@ export default function DocumentList({
                             </div>
                           </div>
 
-                          {/* Sort Options */}
+                          {/* Sort Filter */}
                           <div>
                             <div className="flex items-center gap-2 mb-2">
                               <svg className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -376,7 +391,6 @@ export default function DocumentList({
                               <select
                                 value={filters.sortBy}
                                 onChange={(e) => handleFilterChange('sortBy', e.target.value)}
-                                aria-label="Sắp xếp theo"
                                 className="col-span-2 px-2 py-1.5 text-xs border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
                               >
                                 <option value="uploadedAt">Ngày upload</option>
@@ -387,16 +401,15 @@ export default function DocumentList({
                               <select
                                 value={filters.sortOrder}
                                 onChange={(e) => handleFilterChange('sortOrder', e.target.value)}
-                                aria-label="Thứ tự sắp xếp"
                                 className="px-2 py-1.5 text-xs border border-gray-200 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
                               >
-                                <option value="desc">Giảm dần</option>
-                                <option value="asc">Tăng dần</option>
+                                <option value="desc">↓</option>
+                                <option value="asc">↑</option>
                               </select>
                             </div>
                           </div>
                         </div>
-                        
+
                         {/* Summary */}
                         <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
                           <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
@@ -413,7 +426,7 @@ export default function DocumentList({
                 )}
               </button>
 
-              {/* Navigation buttons - hiển thị khi có tài liệu */}
+              {/* Navigation buttons */}
               {paginatedResult.pagination.total > 0 && (
                 <div className="flex items-center gap-2">
                   {/* Previous button */}
@@ -478,73 +491,86 @@ export default function DocumentList({
                   </button>
                 </div>
               )}
+              
+              {/* Panel Toggle Button */}
+              <button
+                onClick={() => onPanelToggle?.(!isPanelCollapsed)}
+                className={cn(
+                  'p-2 rounded-lg transition-colors',
+                  isPanelCollapsed
+                    ? 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400'
+                    : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'
+                )}
+                title={isPanelCollapsed ? "Hiển thị panel preview" : "Thu gọn panel preview"}
+              >
+                {!isPanelCollapsed ? (
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path fillRule="evenodd" d="M7.22 14.47L9.69 12 7.22 9.53a.75.75 0 111.06-1.06l3 3a.75.75 0 010 1.06l-3 3a.75.75 0 01-1.06-1.06z"/>
+                    <path fillRule="evenodd" d="M3.75 2A1.75 1.75 0 002 3.75v16.5c0 .966.784 1.75 1.75 1.75h16.5A1.75 1.75 0 0022 20.25V3.75A1.75 1.75 0 0020.25 2H3.75zM3.5 3.75a.25.25 0 01.25-.25H15v17H3.75a.25.25 0 01-.25-.25V3.75zm13 16.75v-17h3.75a.25.25 0 01.25.25v16.5a.25.25 0 01-.25.25H16.5z"/>
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path fillRule="evenodd" d="M11.28 9.53L8.81 12l2.47 2.47a.75.75 0 11-1.06 1.06l-3-3a.75.75 0 010-1.06l3-3a.75.75 0 111.06 1.06z"/>
+                    <path fillRule="evenodd" d="M3.75 2A1.75 1.75 0 002 3.75v16.5c0 .966.784 1.75 1.75 1.75h16.5A1.75 1.75 0 0022 20.25V3.75A1.75 1.75 0 0020.25 2H3.75zM3.5 3.75a.25.25 0 01.25-.25H15v17H3.75a.25.25 0 01-.25-.25V3.75zm13 16.75v-17h3.75a.25.25 0 01.25.25v16.5a.25.25 0 01-.25.25H16.5z"/>
+                  </svg>
+                )}
+              </button>
             </div>
           )}
         </div>
       </div>
 
-      {/* Document List */}
+      {/* Document List/Grid Content */}
       <div className="flex-1 overflow-y-auto">
-        <div className="divide-y divide-gray-200 dark:divide-gray-700">
-          {paginatedResult.data.map((document) => (
-          <div
-            key={document.id}
-            className={cn(
-              'document-list-item p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700',
-              selectedDocument?.id === document.id && 'document-list-item selected bg-blue-50 dark:bg-blue-900/20'
-            )}
-            onClick={() => onSelectDocument(document)}
-          >
-            <div className="flex items-start gap-3">
-              {/* File Icon */}
-              <div className="flex-shrink-0 mt-1">
-                <FileIcon fileType={document.type} size="md" />
-              </div>
+        {!isPanelCollapsed ? (
+          // List View when panel is expanded
+          <div className="divide-y divide-gray-200 dark:divide-gray-700">
+            {paginatedResult.data.map((document) => (
+              <div
+                key={document.id}
+                className={cn(
+                  'document-list-item p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700',
+                  selectedDocument?.id === document.id && 'document-list-item selected bg-blue-50 dark:bg-blue-900/20'
+                )}
+                onClick={() => handleSelectDocument(document)}
+              >
+                <div className="flex items-start gap-3">
+                  {/* File Icon */}
+                  <div className="flex-shrink-0 mt-1">
+                    <FileIcon fileType={document.type} size="md" />
+                  </div>
 
-              {/* Content */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-start justify-between">
+                  {/* Content */}
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
-                      {document.name}
-                    </h3>
-                    <div className="flex items-center gap-2 mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      <span>{formatFileSize(document.size)}</span>
-                      <span>•</span>
-                      <span>{formatDate(document.uploadedAt)}</span>
-                    </div>
-                    
-                    {/* Status and Page count in same row */}
-                    <div className="flex items-center gap-3 mt-2">
-                      <span className={cn(
-                        'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium',
-                        document.status === 'completed' 
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                          : document.status === 'processing'
-                          ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-                          : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-                      )}>
-                        <div className={cn(
-                          'w-1.5 h-1.5 rounded-full mr-1',
-                          document.status === 'completed' ? 'bg-green-500' :
-                          document.status === 'processing' ? 'bg-yellow-500' : 'bg-red-500'
-                        )} />
-                        {document.status === 'completed' ? 'Đã xử lý' : 
-                         document.status === 'processing' ? 'Đang xử lý' : 'Lỗi'}
-                      </span>
-                      
-                      {/* Page count if available */}
-                      {document.pageCount && (
-                        <>
-                          <span className="text-gray-300 dark:text-gray-600">•</span>
-                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">
-                            <svg className="w-3 h-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            {document.pageCount} trang
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                          {document.name}
+                        </h3>
+                        <div className="flex items-center gap-2 mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          <span>{formatFileSize(document.size)}</span>
+                          <span>•</span>
+                          <span>{formatDate(document.uploadedAt)}</span>
+                          {document.pageCount && (
+                            <>
+                              <span>•</span>
+                              <span>{document.pageCount} trang</span>
+                            </>
+                          )}
+                          <span>•</span>
+                          <span className={cn(
+                            'px-2 py-1 rounded-full',
+                            document.status === 'completed' 
+                              ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                              : document.status === 'processing'
+                              ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                              : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                          )}>
+                            {document.status === 'completed' ? 'Đã xử lý' : 
+                             document.status === 'processing' ? 'Đang xử lý' : 'Lỗi'}
                           </span>
-                        </>
-                      )}
+                        </div>
+                      </div>
                     </div>
                   </div>
 
@@ -593,10 +619,62 @@ export default function DocumentList({
                   </div>
                 </div>
               </div>
+            ))}
+          </div>
+        ) : (
+          // Grid View when panel is collapsed
+          <div className="p-4">
+            <div className={cn(
+              "grid gap-4",
+              "grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6"
+            )}>
+              {paginatedResult.data.map((document) => (
+                <div
+                  key={document.id}
+                  className={cn(
+                    'cursor-pointer border rounded-lg p-4 transition-all duration-200 hover:shadow-md group',
+                    selectedDocument?.id === document.id 
+                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-md' 
+                      : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:border-gray-300 dark:hover:border-gray-600'
+                  )}
+                  onClick={() => handleSelectDocument(document)}
+                >
+                  {/* File Icon */}
+                  <div className="flex justify-center mb-3">
+                    <FileIcon fileType={document.type} size="lg" />
+                  </div>
+
+                  {/* Document Info */}
+                  <div className="text-center space-y-2">
+                    <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100 line-clamp-2">
+                      {document.name}
+                    </h3>
+                    
+                    <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
+                      <div>{formatFileSize(document.size)}</div>
+                      <div>{formatDate(document.uploadedAt)}</div>
+                    </div>
+
+                    {/* Status Badge */}
+                    <span
+                      className={cn(
+                        'inline-block px-2 py-1 text-xs rounded-full',
+                        document.status === 'completed'
+                          ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                          : document.status === 'processing'
+                          ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                          : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                      )}
+                    >
+                      {document.status === 'completed' ? 'Đã xử lý' :
+                       document.status === 'processing' ? 'Đang xử lý' : 'Lỗi'}
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-        ))}
-        </div>
+        )}
 
         {/* Empty State */}
         {paginatedResult.data.length === 0 && (
