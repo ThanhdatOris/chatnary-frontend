@@ -431,29 +431,6 @@ export default function Sidebar() {
         
         {!isCollapsed ? (
           <>
-            {/* Storage Info */}
-            <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700">
-              <div className="mb-3">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-medium text-gray-600 dark:text-gray-400">
-                    Dung lượng
-                  </span>
-                  <span className="text-xs text-gray-500 dark:text-gray-400">
-                    12%
-                  </span>
-                </div>
-                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
-                  <div
-                    className="bg-gradient-to-r from-blue-600 to-purple-600 h-1.5 rounded-full transition-all"
-                    style={{ width: '12%' }}
-                  />
-                </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  12 MB / 1 GB
-                </p>
-              </div>
-            </div>
-
             {/* User Info & Settings */}
             <div className="p-4 border-t border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between">
