@@ -1,187 +1,219 @@
-// User & Authentication Types - Updated to match backend
+// ==================== USER & AUTH ====================
 export interface User {
-  id: string
-  email: string
-  fullName: string
-  role: 'user' | 'admin'
-  isActive: boolean
-  createdAt: string
-  lastLogin?: string | null
+  id: string;
+  email: string;
+  name: string;
+  createdAt: string;
 }
 
 export interface AuthResponse {
-  success: boolean
-  token: string
-  user: User
-  message?: string
+  user: User;
+  token: string;
 }
 
-export interface LoginCredentials {
-  email: string
-  password: string
+export interface LoginRequest {
+  email: string;
+  password: string;
 }
 
-export interface RegisterData {
-  fullName: string
-  email: string
-  password: string
-  confirmPassword?: string
+export interface RegisterRequest {
+  email: string;
+  password: string;
+  name: string;
 }
 
-// File & Document Types
-export interface FileMetadata {
-  id: string
-  originalName: string
-  filename: string
-  size: number
-  mimetype: string
-  uploadTime: string
-  indexed: boolean
-  userId?: string
-  searchableContent?: string
+// ==================== DOCUMENT ====================
+export type DocumentStatus = 'processing' | 'completed' | 'failed';
+
+export interface DocumentMetadata {
+  title?: string;
+  author?: string;
+  createdDate?: string;
 }
 
-export interface UploadResponse {
-  success: boolean
-  message: string
-  file: FileMetadata
+export interface Document {
+  id: string;
+  name: string;
+  originalName: string;
+  size: number;
+  type: string;
+  url: string;
+  status: DocumentStatus;
+  uploadedAt: string;
+  processedAt: string | null;
+  pageCount: number | null;
+  wordCount: number | null;
+  chatCount?: number;
+  metadata?: DocumentMetadata;
 }
 
-export interface UploadProgress {
-  fileId: string
-  progress: number
-  status: 'uploading' | 'processing' | 'completed' | 'error'
-  error?: string
+export interface DocumentContent {
+  documentId: string;
+  content: string;
+  pages: Array<{
+    pageNumber: number;
+    content: string;
+  }>;
 }
 
-// Search Types
-export interface SearchQuery {
-  query: string
-  limit?: number
-  offset?: number
-  fileTypes?: string[]
+// ==================== CHAT ====================
+export type MessageRole = 'user' | 'assistant';
+
+export interface SourceCitation {
+  documentId: string;
+  documentName: string;
+  pageNumber: number;
+  chunkId: string;
+  content: string;
+  score: number;
+  startIndex?: number;
+  endIndex?: number;
+}
+
+export interface Message {
+  id: string;
+  chatId: string;
+  role: MessageRole;
+  content: string;
+  sources?: SourceCitation[];
+  model?: string;
+  tokensUsed?: {
+    prompt: number;
+    completion: number;
+    total: number;
+  };
+  createdAt: string;
+}
+
+export interface ChatSession {
+  id: string;
+  title: string;
+  documentIds: string[];
+  documents?: Array<{
+    id: string;
+    name: string;
+    type?: string;
+  }>;
+  lastMessage?: {
+    content: string;
+    createdAt: string;
+  };
+  messageCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SendMessageRequest {
+  content: string;
+  stream?: boolean;
+}
+
+export interface CreateChatRequest {
+  documentIds: string[];
+  title?: string;
+}
+
+// ==================== STATS ====================
+export interface ActivityItem {
+  type: 'document_upload' | 'chat_created' | 'message_sent';
+  documentId?: string;
+  documentName?: string;
+  chatId?: string;
+  chatTitle?: string;
+  timestamp: string;
+}
+
+export interface OverviewStats {
+  totalDocuments: number;
+  totalChats: number;
+  totalMessages: number;
+  storageUsed: number;
+  storageLimit: number;
+  documentsThisMonth: number;
+  chatsThisMonth: number;
+  messagesThisMonth: number;
+  recentActivity: ActivityItem[];
+}
+
+export interface UsageDataPoint {
+  date: string;
+  documents: number;
+  chats: number;
+  messages: number;
+}
+
+export interface UsageStats {
+  period: 'day' | 'week' | 'month';
+  dataPoints: UsageDataPoint[];
+}
+
+// ==================== SEARCH ====================
+export interface SearchHighlight {
+  text: string;
+  startIndex: number;
+  endIndex: number;
 }
 
 export interface SearchResult {
-  file: FileMetadata
-  score: number
-  highlights: string[]
-  snippet?: string
+  documentId: string;
+  documentName: string;
+  pageNumber: number;
+  chunkId: string;
+  content: string;
+  score: number;
+  highlights?: SearchHighlight[];
 }
 
-export interface SearchResponse {
-  success: boolean
-  results: SearchResult[]
-  total: number
-  processingTime: number
-  query: string
+export interface SearchRequest {
+  query: string;
+  documentIds?: string[];
+  limit?: number;
+  threshold?: number;
 }
 
-export interface SearchSuggestion {
-  text: string
-  count: number
+// ==================== SETTINGS ====================
+export interface UserSettings {
+  model: string;
+  temperature: number;
+  maxTokens: number;
+  language: string;
+  theme: 'light' | 'dark' | 'system';
 }
 
-// Chat Types
-export interface ChatMessage {
-  id: string
-  documentId: string
-  userId: string
-  message: string
-  response: string
-  citations?: ChatCitation[]
-  timestamp: string
+// ==================== API RESPONSES ====================
+export interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: {
+    code: string;
+    message: string;
+    details?: any;
+  };
 }
 
-export interface ChatCitation {
-  fileId: string
-  filename: string
-  snippet: string
-  score: number
-  page?: number
-}
-
-export interface ChatRequest {
-  documentId: string
-  message: string
-}
-
-export interface ChatResponse {
-  success: boolean
-  response: string
-  citations: ChatCitation[]
-  messageId: string
-}
-
-// API Response Types
-export interface ApiResponse<T = unknown> {
-  success: boolean
-  data?: T
-  message?: string
-  error?: string
+export interface PaginationParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
 }
 
 export interface PaginatedResponse<T> {
-  success: boolean
-  data: T[]
+  items: T[];
   pagination: {
-    page: number
-    limit: number
-    total: number
-    totalPages: number
-  }
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }
 
-// UI Component Types
-export interface ButtonProps {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive'
-  size?: 'sm' | 'md' | 'lg'
-  disabled?: boolean
-  loading?: boolean
-  children: React.ReactNode
-  onClick?: React.MouseEventHandler<HTMLButtonElement>
-  type?: 'button' | 'submit' | 'reset'
+// ==================== EXPORT ====================
+export type ExportFormat = 'json' | 'pdf' | 'markdown';
+
+// ==================== SUGGESTIONS ====================
+export interface Suggestions {
+  suggestions: string[];
 }
 
-export interface InputProps {
-  type?: 'text' | 'email' | 'password' | 'search'
-  placeholder?: string
-  value?: string
-  onChange?: (value: string) => void
-  error?: string
-  disabled?: boolean
-  required?: boolean
-}
-
-export interface ModalProps {
-  isOpen: boolean
-  onClose: () => void
-  title?: string
-  children: React.ReactNode
-  size?: 'sm' | 'md' | 'lg' | 'xl'
-}
-
-// Form Types
-export interface FormField {
-  name: string
-  label: string
-  type: 'text' | 'email' | 'password' | 'textarea' | 'select' | 'file'
-  placeholder?: string
-  required?: boolean
-  options?: { value: string; label: string }[]
-}
-
-// Theme Types
-export type Theme = 'light' | 'dark' | 'system'
-
-// File Upload Types
-export interface FileWithPreview extends File {
-  preview?: string
-  id?: string
-}
-
-export interface DropzoneState {
-  isDragActive: boolean
-  isDragReject: boolean
-  isDragAccept: boolean
-}

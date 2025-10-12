@@ -1,84 +1,61 @@
-'use client'
+'use client';
 
-import { useTheme } from '@/contexts/ThemeContext'
-import { cn } from '@/lib/utils'
-import { Moon, Sun } from 'lucide-react'
-import React from 'react'
+import { useTheme } from '@/contexts/ThemeContext';
 
-interface ThemeToggleProps {
-  className?: string
-  size?: 'sm' | 'md' | 'lg'
-  variant?: 'button' | 'switch'
-}
-
-const ThemeToggle: React.FC<ThemeToggleProps> = ({
-  className,
-  size = 'md',
-  variant = 'button'
-}) => {
-  const { theme, toggleTheme } = useTheme()
-
-  const sizeClasses = {
-    sm: 'w-8 h-8',
-    md: 'w-10 h-10',
-    lg: 'w-12 h-12'
-  }
-
-  const iconSizes = {
-    sm: 'w-4 h-4',
-    md: 'w-5 h-5',
-    lg: 'w-6 h-6'
-  }
-
-  if (variant === 'switch') {
-    return (
-      <button
-        onClick={toggleTheme}
-        className={cn(
-          'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
-          'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
-          'glass-card border-0',
-          theme === 'dark' ? 'bg-blue-600' : 'bg-muted',
-          className
-        )}
-        aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} theme`}
-      >
-        <span
-          className={cn(
-            'inline-block h-4 w-4 transform rounded-full bg-background transition-transform flex items-center justify-center',
-            theme === 'dark' ? 'translate-x-6' : 'translate-x-1'
-          )}
-        >
-          {theme === 'light' ? (
-            <Sun className="w-2 h-2 text-yellow-500" />
-          ) : (
-            <Moon className="w-2 h-2 text-blue-500" />
-          )}
-        </span>
-      </button>
-    )
-  }
-
+export default function ThemeToggle() {
+  const { theme, setTheme, effectiveTheme } = useTheme();
+  
+  const toggleTheme = () => {
+    // Cycle: dark → light → system → dark
+    if (theme === 'dark') {
+      setTheme('light');
+    } else if (theme === 'light') {
+      setTheme('system');
+    } else {
+      setTheme('dark');
+    }
+  };
+  
+  const getIcon = () => {
+    if (theme === 'system') {
+      return (
+        <svg className="w-5 h-5 text-gray-700 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+        </svg>
+      );
+    } else if (theme === 'light') {
+      return (
+        <svg className="w-5 h-5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+        </svg>
+      );
+    } else {
+      return (
+        <svg className="w-5 h-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+        </svg>
+      );
+    }
+  };
+  
+  const getTitle = () => {
+    if (theme === 'system') {
+      return `Tự động (${effectiveTheme === 'dark' ? 'Tối' : 'Sáng'})`;
+    } else if (theme === 'light') {
+      return 'Sáng';
+    } else {
+      return 'Tối';
+    }
+  };
+  
   return (
     <button
       onClick={toggleTheme}
-      className={cn(
-        'glass-card border-0 rounded-full flex items-center justify-center',
-        'hover:scale-105 active:scale-95 transition-all duration-200',
-        'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
-        'text-foreground',
-        sizeClasses[size],
-        className
-      )}
-      aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} theme`}
+      className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-all duration-200"
+      title={getTitle()}
     >
-      {theme === 'light' ? (
-        <Sun className={cn(iconSizes[size], 'text-yellow-500')} />
-      ) : (
-        <Moon className={cn(iconSizes[size], 'text-blue-500')} />
-      )}
+      {getIcon()}
     </button>
-  )
+  );
 }
 
-export default ThemeToggle
