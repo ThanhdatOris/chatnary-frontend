@@ -57,11 +57,11 @@ export function getFileIcon(fileType: string): string {
   const type = fileType.toLowerCase();
   
   if (type.includes('pdf')) iconName = 'pdf2';
-  else if (type.includes('word') || type.includes('document') || type.includes('docx')) iconName = 'word2';
+  else if (type.includes('word') || type.includes('document') || type.includes('docx')) iconName = 'word';
   else if (type.includes('text') || type.includes('txt')) iconName = 'text';
   else if (type.includes('markdown') || type.includes('md')) iconName = 'markdown';
-  else if (type.includes('excel') || type.includes('xlsx') || type.includes('xls')) iconName = 'excel2';
-  else if (type.includes('powerpoint') || type.includes('pptx') || type.includes('ppt')) iconName = 'powerpoint2';
+  else if (type.includes('excel') || type.includes('xlsx') || type.includes('xls')) iconName = 'excel';
+  else if (type.includes('powerpoint') || type.includes('pptx') || type.includes('ppt')) iconName = 'powerpoint';
   else if (type.includes('image') || type.includes('png') || type.includes('jpg') || type.includes('jpeg') || type.includes('gif') || type.includes('svg')) iconName = 'image';
   else if (type.includes('json')) iconName = 'json';
   else if (type.includes('xml')) iconName = 'xml';
