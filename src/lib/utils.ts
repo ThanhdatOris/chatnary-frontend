@@ -46,13 +46,46 @@ export function formatDateTime(dateString: string): string {
   });
 }
 
-// Get file icon based on type
+// Get file icon URL for colorful CDN icons
 export function getFileIcon(fileType: string): string {
-  if (fileType.includes('pdf')) return '📄';
-  if (fileType.includes('word') || fileType.includes('document')) return '📝';
-  if (fileType.includes('text')) return '📃';
-  if (fileType.includes('markdown')) return '📋';
-  return '📎';
+  const getIconUrl = (iconName: string) => 
+    `https://cdn.jsdelivr.net/gh/vscode-icons/vscode-icons@master/icons/file_type_${iconName}.svg`;
+  
+  let iconName = 'default';
+  
+  // Normalize fileType to lowercase for better matching
+  const type = fileType.toLowerCase();
+  
+  if (type.includes('pdf')) iconName = 'pdf2';
+  else if (type.includes('word') || type.includes('document') || type.includes('docx')) iconName = 'word2';
+  else if (type.includes('text') || type.includes('txt')) iconName = 'text';
+  else if (type.includes('markdown') || type.includes('md')) iconName = 'markdown';
+  else if (type.includes('excel') || type.includes('xlsx') || type.includes('xls')) iconName = 'excel2';
+  else if (type.includes('powerpoint') || type.includes('pptx') || type.includes('ppt')) iconName = 'powerpoint2';
+  else if (type.includes('image') || type.includes('png') || type.includes('jpg') || type.includes('jpeg') || type.includes('gif') || type.includes('svg')) iconName = 'image';
+  else if (type.includes('json')) iconName = 'json';
+  else if (type.includes('xml')) iconName = 'xml';
+  else if (type.includes('csv')) iconName = 'csv';
+  else if (type.includes('zip') || type.includes('rar') || type.includes('7z')) iconName = 'zip';
+  else if (type.includes('video') || type.includes('mp4') || type.includes('avi') || type.includes('mov')) iconName = 'video';
+  else if (type.includes('audio') || type.includes('mp3') || type.includes('wav') || type.includes('flac')) iconName = 'audio';
+  else if (type.includes('html') || type.includes('htm')) iconName = 'html';
+  else if (type.includes('css')) iconName = 'css';
+  else if (type.includes('javascript') || type.includes('js')) iconName = 'js';
+  else if (type.includes('typescript') || type.includes('ts')) iconName = 'typescript';
+  else if (type.includes('python') || type.includes('py')) iconName = 'python';
+  
+  return getIconUrl(iconName);
+}
+
+// Helper function to get file icon component props
+export function getFileIconProps(fileType: string) {
+  return {
+    src: getFileIcon(fileType),
+    alt: `${fileType} file`,
+    className: "w-8 h-8",
+    style: { minWidth: '32px', minHeight: '32px' }
+  };
 }
 
 // Truncate text

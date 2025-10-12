@@ -1,8 +1,8 @@
 'use client';
 
-import { Button, Modal, ModalFooter } from '@/components/ui';
+import { Button, FileIcon, Modal, ModalFooter } from '@/components/ui';
 import { Document } from '@/lib/types';
-import { formatDate, formatFileSize, getFileIcon } from '@/lib/utils';
+import { formatDate, formatFileSize } from '@/lib/utils';
 import { useState } from 'react';
 
 interface DocumentCardProps {
@@ -29,7 +29,10 @@ export default function DocumentCard({ document, onDelete, onChat }: DocumentCar
       <div className="group relative bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-lg transition-all">
         {/* File Icon */}
         <div className="flex items-start gap-3">
-          <div className="text-4xl">{getFileIcon(document.type)}</div>
+          <FileIcon 
+            fileType={document.type}
+            size="lg"
+          />
           
           <div className="flex-1 min-w-0">
             {/* Title */}
