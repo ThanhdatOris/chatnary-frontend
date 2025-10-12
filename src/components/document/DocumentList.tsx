@@ -7,7 +7,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 interface DocumentListProps {
   documents: Document[];
-  selectedDocument?: Document;
+  selectedDocument?: Document | null;
   onSelectDocument: (document: Document) => void;
   onDeleteDocument?: (documentId: string) => void;
   searchTerm?: string;
@@ -216,12 +216,12 @@ export default function DocumentList({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-              Tài liệu ({totalDocuments.toLocaleString()})
+              Tài liệu ({(totalDocuments || 0).toLocaleString()})
             </h2>
           </div>
           
           {/* Controls row */}
-          {totalDocuments > 0 && (
+          {(totalDocuments || 0) > 0 && (
             <div className="flex items-center gap-3">
               {/* Filter button */}
               <button
@@ -415,8 +415,8 @@ export default function DocumentList({
                           <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
                             <div>Hiển thị {(currentPage - 1) * itemsPerPage + 1}-{Math.min(currentPage * itemsPerPage, paginatedResult.pagination.total)} của {paginatedResult.pagination.total.toLocaleString()} tài liệu</div>
                             <div>Tổng {paginatedResult.pagination.totalPages} trang</div>
-                            {paginatedResult.pagination.total !== totalDocuments && (
-                              <div className="text-blue-600 dark:text-blue-400">Đã lọc từ {totalDocuments.toLocaleString()} tài liệu</div>
+                            {paginatedResult.pagination.total !== (totalDocuments || 0) && (
+                              <div className="text-blue-600 dark:text-blue-400">Đã lọc từ {(totalDocuments || 0).toLocaleString()} tài liệu</div>
                             )}
                           </div>
                         </div>

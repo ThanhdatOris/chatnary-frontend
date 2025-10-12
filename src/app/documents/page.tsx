@@ -21,7 +21,6 @@ export default function DocumentsPage() {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list'); // Default to list view
   const [isPanelCollapsed, setIsPanelCollapsed] = useState(false);
   
   // Fixed total documents count for display (simulating real app)
@@ -160,36 +159,21 @@ export default function DocumentsPage() {
             </div>
           ) : (
             <>
-              {viewMode === 'list' ? (
-                <>
-                  <DocumentList
-                    documents={documents}
-                    selectedDocument={selectedDocument}
-                    onSelectDocument={setSelectedDocument}
-                    onDeleteDocument={handleDelete}
-                    totalDocuments={totalDocuments}
-                    searchTerm={searchTerm}
-                    viewMode={viewMode}
-                    onViewModeChange={setViewMode}
-                    isPanelCollapsed={isPanelCollapsed}
-                    onPanelToggle={setIsPanelCollapsed}
-                  />
-                  {!isPanelCollapsed && (
-                    <DocumentViewer
-                      document={selectedDocument}
-                      onClose={() => setSelectedDocument(null)}
-                    />
-                  )}
-                </>
-              ) : (
-                <div className="flex-1 p-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {/* Grid view would use DocumentCard components */}
-                    <div className="text-center text-gray-500 dark:text-gray-400">
-                      Grid view đang được phát triển...
-                    </div>
-                  </div>
-                </div>
+              <DocumentList
+                documents={documents}
+                selectedDocument={selectedDocument}
+                onSelectDocument={setSelectedDocument}
+                onDeleteDocument={handleDelete}
+                totalDocuments={totalDocuments}
+                searchTerm={searchTerm}
+                isPanelCollapsed={isPanelCollapsed}
+                onPanelToggle={setIsPanelCollapsed}
+              />
+              {!isPanelCollapsed && (
+                <DocumentViewer
+                  document={selectedDocument}
+                  onClose={() => setSelectedDocument(null)}
+                />
               )}
             </>
           )}
