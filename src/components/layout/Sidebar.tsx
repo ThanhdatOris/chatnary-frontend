@@ -153,8 +153,12 @@ export default function Sidebar() {
           {!isCollapsed ? (
             <>
               <Link href="/" className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">C</span>
+                <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center">
+                  <img 
+                    src="/logo-192.png" 
+                    alt="Chatnary Logo" 
+                    className="w-8 h-8 object-contain"
+                  />
                 </div>
                 <span className="text-xl font-bold text-gray-900 dark:text-gray-100">
                   Chatnary

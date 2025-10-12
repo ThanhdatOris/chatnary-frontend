@@ -7,6 +7,14 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "Chatnary - AI Chat với Tài liệu",
   description: "Trò chuyện với AI dựa trên tài liệu của bạn",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/logo-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/logo-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: "/apple-touch-icon.png",
+  },
 };
 
 export default function RootLayout({
