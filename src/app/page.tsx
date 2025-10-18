@@ -1,13 +1,372 @@
 'use client';
 
-import { Button } from '@/components/ui';
-import ThemeToggle from '@/components/ui/ThemeToggle';
+import apiClient, { CreateProjectRequest } from '@/lib/api';
+import { Clock, FileText, MessageSquare, Plus, Trash2, Wifi, WifiOff, Edit } from 'lucide-react';
 import Link from 'next/link';
+import { useEffect, useState } from 'react';
+
+interface CreateProjectModalProps {
+  onClose: () => void;
+  onSubmit: (project: any) => void;
+}
+
+interface EditProjectModalProps {
+  project: any;
+  onClose: () => void;
+  onSubmit: (project: any) => void;
+}
+
+function CreateProjectModal({ onClose, onSubmit }: CreateProjectModalProps) {
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [selectedColor, setSelectedColor] = useState('#4ECDC4');
+  const [isLoading, setIsLoading] = useState(false);
+
+  const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD'];
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim() || isLoading) return;
+
+    setIsLoading(true);
+    
+    try {
+      const projectData: CreateProjectRequest = {
+        name: name.trim(),
+        description: description.trim() || undefined,
+      };
+
+      const response = await apiClient.createProject(projectData);
+      
+      if (response.error) {
+        alert('Lỗi khi tạo dự án: ' + response.error);
+        return;
+      }
+
+      if (response.data) {
+        const newProject = {
+          ...response.data,
+          updatedAt: response.data.createdAt,
+        };
+        onSubmit(newProject);
+      }
+    } catch (error) {
+      alert('Lỗi khi tạo dự án: ' + (error instanceof Error ? error.message : 'Lỗi không xác định'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-md w-full">
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+              Tạo Dự án Mới
+            </h2>
+            <button 
+              onClick={onClose}
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+              disabled={isLoading}
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit}>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Tên Dự án
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100"
+                placeholder="Nhập tên dự án"
+                required
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Mô tả (Tùy chọn)
+              </label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100"
+                placeholder="Nhập mô tả dự án"
+                rows={3}
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Màu Chủ đề
+              </label>
+              <div className="flex gap-2">
+                {colors.map((color) => (
+                  <button
+                    key={color}
+                    type="button"
+                    onClick={() => setSelectedColor(color)}
+                    className={`w-8 h-8 rounded-full border-2 ${
+                      selectedColor === color 
+                        ? 'border-gray-400 scale-110' 
+                        : 'border-transparent hover:scale-105'
+                    } transition-transform`}
+                    style={{ backgroundColor: color }}
+                    disabled={isLoading}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                disabled={isLoading}
+              >
+                Hủy
+              </button>
+              <button
+                type="submit"
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Đang tạo...' : 'Tạo Dự án'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function EditProjectModal({ project, onClose, onSubmit }: EditProjectModalProps) {
+  const [name, setName] = useState(project.name);
+  const [description, setDescription] = useState(project.description || '');
+  const [selectedColor, setSelectedColor] = useState(project.color);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD'];
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim() || isLoading) return;
+
+    setIsLoading(true);
+    
+    try {
+      const projectData: Partial<CreateProjectRequest> = {
+        name: name.trim(),
+        description: description.trim() || undefined,
+        color: selectedColor,
+      };
+
+      const response = await apiClient.updateProject(project.id, projectData);
+      
+      if (response.error) {
+        alert('Lỗi khi cập nhật dự án: ' + response.error);
+        return;
+      }
+
+      if (response.data) {
+        const updatedProject = {
+          ...response.data,
+          updatedAt: response.data.updatedAt,
+        };
+        onSubmit(updatedProject);
+      }
+    } catch (error) {
+      alert('Lỗi khi cập nhật dự án: ' + (error instanceof Error ? error.message : 'Lỗi không xác định'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-md w-full">
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+              Chỉnh sửa Dự án
+            </h2>
+            <button 
+              onClick={onClose}
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+              disabled={isLoading}
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit}>
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Tên Dự án
+              </label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100"
+                placeholder="Nhập tên dự án"
+                required
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Mô tả (Tùy chọn)
+              </label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-gray-100"
+                placeholder="Nhập mô tả dự án"
+                rows={3}
+                disabled={isLoading}
+              />
+            </div>
+
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Màu Chủ đề
+              </label>
+              <div className="flex gap-2">
+                {colors.map((color) => (
+                  <button
+                    key={color}
+                    type="button"
+                    onClick={() => setSelectedColor(color)}
+                    className={`w-8 h-8 rounded-full border-2 ${
+                      selectedColor === color 
+                        ? 'border-gray-400 scale-110' 
+                        : 'border-transparent hover:scale-105'
+                    } transition-transform`}
+                    style={{ backgroundColor: color }}
+                    disabled={isLoading}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                disabled={isLoading}
+              >
+                Hủy
+              </button>
+              <button
+                type="submit"
+                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+                disabled={isLoading}
+              >
+                {isLoading ? 'Đang cập nhật...' : 'Cập nhật Dự án'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function Home() {
+  const [projects, setProjects] = useState<any[]>([]);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingProject, setEditingProject] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [connectionError, setConnectionError] = useState(false);
+
+  const formatTimeAgo = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+    
+    if (diffInHours < 1) return 'Vừa xong';
+    if (diffInHours < 24) return `${diffInHours} giờ trước`;
+    if (diffInHours < 168) return `${Math.floor(diffInHours / 24)} ngày trước`;
+    return date.toLocaleDateString('vi-VN');
+  };
+
+  const handleDeleteProject = async (id: string) => {
+    if (!confirm('Bạn có chắc chắn muốn xóa dự án này không?')) return;
+    
+    setIsLoading(true);
+    try {
+      const response = await apiClient.deleteProject(id);
+      if (response.error) {
+        alert('Lỗi khi xóa dự án: ' + response.error);
+        return;
+      }
+      setProjects(projects.filter(p => p.id !== id));
+    } catch (error) {
+      alert('Lỗi khi xóa dự án');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleEditProject = (project: any) => {
+    setEditingProject(project);
+    setShowEditModal(true);
+  };
+
+  const handleUpdateProject = (updatedProject: any) => {
+    setProjects(projects.map(p => p.id === updatedProject.id ? updatedProject : p));
+    setShowEditModal(false);
+    setEditingProject(null);
+  };
+
+  // Load projects on mount
+  useEffect(() => {
+    const loadProjects = async () => {
+      setIsLoading(true);
+      setConnectionError(false);
+      try {
+        const response = await apiClient.getProjects();
+        if (response.data) {
+          const apiProjects = response.data.map(project => ({
+            ...project,
+            updatedAt: project.updatedAt,
+          }));
+          setProjects(apiProjects);
+        } else if (response.error) {
+          setConnectionError(true);
+          console.error('Lỗi API:', response.error);
+        }
+      } catch (error) {
+        setConnectionError(true);
+        console.error('Lỗi kết nối:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadProjects();
+  }, []);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
-      {/* Header */}
       <header className="container mx-auto px-4 py-6 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center">
@@ -17,149 +376,198 @@ export default function Home() {
             Chatnary
           </span>
         </div>
-        <ThemeToggle />
+        
+        {/* Connection Status */}
+        <div className="flex items-center gap-2">
+          {connectionError ? (
+            <div className="flex items-center gap-1 px-3 py-1 bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-300 rounded-full text-sm">
+              <WifiOff className="w-4 h-4" />
+              <span>Ngoại tuyến</span>
+            </div>
+          ) : (
+            <div className="flex items-center gap-1 px-3 py-1 bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300 rounded-full text-sm">
+              <Wifi className="w-4 h-4" />
+              <span>Đã kết nối</span>
+            </div>
+          )}
+        </div>
       </header>
 
-      {/* Hero Section */}
-      <main className="container mx-auto px-4 py-20">
-        <div className="max-w-4xl mx-auto text-center">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-100 dark:bg-blue-900/30 rounded-full mb-8">
-            <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
-              ✨ AI-Powered Document Chat
-            </span>
+      <main className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+              Dự án của bạn
+            </h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              Tổ chức tài liệu theo dự án và trò chuyện với AI về chúng
+            </p>
           </div>
-
-          {/* Main Heading */}
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 dark:text-gray-100 mb-6 leading-tight">
-            Trò chuyện với{' '}
-            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Tài liệu
-            </span>
-            <br />
-            của bạn
-          </h1>
-
-          {/* Description */}
-          <p className="text-xl text-gray-600 dark:text-gray-300 mb-12 max-w-2xl mx-auto">
-            Upload tài liệu của bạn và đặt câu hỏi. AI sẽ trả lời dựa trên nội dung tài liệu với trích dẫn cụ thể.
-          </p>
-
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
-            <Link href="/dashboard">
-              <Button size="lg" className="w-full sm:w-auto">
-                Bắt đầu ngay
-                <svg className="w-5 h-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                </svg>
-              </Button>
-            </Link>
-            <Link href="/documents">
-              <Button size="lg" variant="outline" className="w-full sm:w-auto">
-                Xem tài liệu mẫu
-              </Button>
-            </Link>
-          </div>
-
-          {/* Features Grid */}
-          <div className="grid md:grid-cols-3 gap-8 mt-20">
-            <div className="p-6 rounded-xl bg-white dark:bg-gray-800 shadow-lg">
-              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mb-4 mx-auto">
-                <svg className="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                Upload dễ dàng
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                Hỗ trợ PDF, DOCX, TXT, và nhiều định dạng khác
-              </p>
-            </div>
-
-            <div className="p-6 rounded-xl bg-white dark:bg-gray-800 shadow-lg">
-              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center mb-4 mx-auto">
-                <svg className="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                AI thông minh
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                Trả lời chính xác với trích dẫn nguồn cụ thể
-              </p>
-            </div>
-
-            <div className="p-6 rounded-xl bg-white dark:bg-gray-800 shadow-lg">
-              <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mb-4 mx-auto">
-                <svg className="w-6 h-6 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                Bảo mật
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                Tài liệu của bạn được mã hóa và bảo mật tuyệt đối
-              </p>
-            </div>
-          </div>
-
-          {/* How it works */}
-          <div className="mt-24">
-            <h2 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-12">
-              Cách sử dụng
-            </h2>
-            <div className="grid md:grid-cols-3 gap-8">
-              <div className="relative">
-                <div className="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">
-                  1
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                  Upload tài liệu
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Kéo thả hoặc chọn tài liệu từ máy tính của bạn
-                </p>
-              </div>
-
-              <div className="relative">
-                <div className="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">
-                  2
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                  Đặt câu hỏi
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  Hỏi bất kỳ điều gì về nội dung tài liệu
-                </p>
-              </div>
-
-              <div className="relative">
-                <div className="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center text-xl font-bold mx-auto mb-4">
-                  3
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                  Nhận câu trả lời
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400">
-                  AI phân tích và trả lời với nguồn trích dẫn
-                </p>
-              </div>
-            </div>
-          </div>
+          
+          <button 
+            onClick={() => setShowCreateModal(true)}
+            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-xl flex items-center gap-2 shadow-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={isLoading || connectionError}
+            title={connectionError ? "Không thể tạo dự án khi ngoại tuyến" : "Tạo dự án mới"}
+          >
+            <Plus className="w-5 h-5" />
+            Dự án Mới
+          </button>
         </div>
+
+        {isLoading && projects.length === 0 ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="flex items-center gap-2 text-gray-500">
+              <div className="animate-spin w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+              Đang tải dự án...
+            </div>
+          </div>
+        ) : connectionError ? (
+          <div className="flex flex-col items-center justify-center py-12">
+            <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl p-8 max-w-md text-center">
+              <WifiOff className="w-12 h-12 text-red-500 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-red-800 dark:text-red-200 mb-2">
+                Lỗi Kết nối
+              </h3>
+              <p className="text-red-600 dark:text-red-300 mb-4">
+                Không thể kết nối tới cơ sở dữ liệu. Vui lòng kiểm tra kết nối internet và thử lại.
+              </p>
+              <button 
+                onClick={() => window.location.reload()}
+                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors"
+              >
+                Thử lại
+              </button>
+            </div>
+          </div>
+        ) : projects.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12">
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-2xl p-8 max-w-md text-center">
+              <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Plus className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                Chưa có Dự án nào
+              </h3>
+              <p className="text-gray-600 dark:text-gray-400 mb-4">
+                Tạo dự án đầu tiên để bắt đầu tổ chức tài liệu và trò chuyện với AI.
+              </p>
+              <button 
+                onClick={() => setShowCreateModal(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+              >
+                Tạo Dự án Đầu tiên
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {projects.map((project) => (
+              <div key={project.id} className="group bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-200 border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div className="h-1" style={{ backgroundColor: project.color }} />
+                
+                <div className="p-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                        {project.name}
+                      </h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
+                        {project.description || 'Không có mô tả'}
+                      </p>
+                    </div>
+                    
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleEditProject(project);
+                        }}
+                        className="p-2 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg"
+                        disabled={isLoading}
+                        title="Chỉnh sửa dự án"
+                      >
+                        <Edit className="w-4 h-4 text-blue-500" />
+                      </button>
+                      <button 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          handleDeleteProject(project.id);
+                        }}
+                        className="p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg"
+                        disabled={isLoading}
+                        title="Xóa dự án"
+                      >
+                        <Trash2 className="w-4 h-4 text-red-500" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400">
+                      <FileText className="w-4 h-4" />
+                      <span>{project.documentsCount} tài liệu</span>
+                    </div>
+                    <div className="flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400">
+                      <MessageSquare className="w-4 h-4" />
+                      <span>{project.chatsCount} cuộc trò chuyện</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+                      <Clock className="w-3 h-3" />
+                      <span>{formatTimeAgo(project.updatedAt)}</span>
+                    </div>
+                    
+                    <Link href={`/dashboard?project=${project.id}`}>
+                      <button className="px-3 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg text-sm font-medium hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors">
+                        Mở
+                      </button>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            ))}
+            
+            <div 
+              onClick={() => setShowCreateModal(true)}
+              className="group border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-2xl p-6 cursor-pointer hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200 flex flex-col items-center justify-center min-h-[200px]"
+            >
+              <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-xl flex items-center justify-center mb-4 group-hover:bg-blue-500 group-hover:text-white transition-colors">
+                <Plus className="w-6 h-6" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
+                Tạo Dự án Mới
+              </h3>
+              <p className="text-gray-500 dark:text-gray-400 text-center text-sm">
+                Bắt đầu tổ chức tài liệu và trò chuyện với AI
+              </p>
+            </div>
+          </div>
+        )}
+
+        {showCreateModal && !connectionError && (
+          <CreateProjectModal 
+            onClose={() => setShowCreateModal(false)}
+            onSubmit={(newProject) => {
+              setProjects([newProject, ...projects]);
+              setShowCreateModal(false);
+            }}
+          />
+        )}
+
+        {showEditModal && editingProject && !connectionError && (
+          <EditProjectModal 
+            project={editingProject}
+            onClose={() => {
+              setShowEditModal(false);
+              setEditingProject(null);
+            }}
+            onSubmit={handleUpdateProject}
+          />
+        )}
       </main>
-
-      {/* Footer */}
-      <footer className="container mx-auto px-4 py-8 mt-20 border-t border-gray-200 dark:border-gray-700">
-        <div className="text-center text-gray-600 dark:text-gray-400">
-          <p>© 2024 Chatnary. All rights reserved.</p>
-        </div>
-      </footer>
     </div>
   );
 }
-

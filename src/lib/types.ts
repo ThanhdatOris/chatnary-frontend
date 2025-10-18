@@ -3,7 +3,7 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  createdAt: string;
+  createdAt?: string;
 }
 
 export interface AuthResponse {
@@ -22,8 +22,47 @@ export interface RegisterRequest {
   name: string;
 }
 
+// ==================== PROJECT ====================
+export interface Project {
+  id: string;
+  name: string;
+  description?: string;
+  color: string;
+  documentsCount: number;
+  chatsCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateProjectRequest {
+  name: string;
+  description?: string;
+  color?: string;
+}
+
+export interface UpdateProjectRequest {
+  name?: string;
+  description?: string;
+  color?: string;
+}
+
+export interface ProjectStats {
+  projectId: string;
+  documents: {
+    total: number;
+    processed: number;
+    processing: number;
+    errors: number;
+  };
+  chats: {
+    total: number;
+    totalMessages: number;
+  };
+  lastActivity: string;
+}
+
 // ==================== DOCUMENT ====================
-export type DocumentStatus = 'processing' | 'completed' | 'failed';
+export type DocumentStatus = 'uploading' | 'processing' | 'processed' | 'error';
 
 export interface DocumentMetadata {
   title?: string;
@@ -34,17 +73,17 @@ export interface DocumentMetadata {
 export interface Document {
   id: string;
   name: string;
-  originalName: string;
-  size: number;
-  type: string;
-  url: string;
+  originalFilename: string;
+  projectId: string;
+  projectName?: string;
+  fileSize?: number;
+  mimeType?: string;
   status: DocumentStatus;
-  uploadedAt: string;
-  processedAt: string | null;
-  pageCount: number | null;
-  wordCount: number | null;
-  chatCount?: number;
-  metadata?: DocumentMetadata;
+  uploadedBy: string;
+  createdAt: string;
+  updatedAt: string;
+  processingError?: string;
+  hasContent?: boolean;
 }
 
 export interface DocumentContent {
@@ -88,28 +127,20 @@ export interface Message {
 export interface ChatSession {
   id: string;
   title: string;
-  documentIds: string[];
-  documents?: Array<{
-    id: string;
-    name: string;
-    type?: string;
-  }>;
-  lastMessage?: {
-    content: string;
-    createdAt: string;
-  };
-  messageCount: number;
+  projectId: string;
+  projectName?: string;
+  createdBy: string;
+  messagesCount: number;
   createdAt: string;
   updatedAt: string;
 }
 
 export interface SendMessageRequest {
   content: string;
-  stream?: boolean;
 }
 
 export interface CreateChatRequest {
-  documentIds: string[];
+  projectId: string;
   title?: string;
 }
 
