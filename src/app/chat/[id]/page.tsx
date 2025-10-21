@@ -167,8 +167,8 @@ export default function ChatPage() {
     <MainLayout>
       <div className="h-full flex flex-col">
         {/* Header */}
-        <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 py-4 px-6 flex-shrink-0">
-          <div className="flex items-center justify-between max-w-4xl mx-auto">
+        <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 h-16 px-6 flex-shrink-0">
+          <div className="flex items-center justify-between max-w-4xl mx-auto h-full">
             <div className="flex items-center space-x-3">
               <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
                 {chat?.title || 'Đang tải...'}
@@ -184,16 +184,6 @@ export default function ChatPage() {
                   </svg>
                 </button>
               )}
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => router.push(`/chat?project=${projectId}`)}
-              >
-                Quay lại
-              </Button>
             </div>
           </div>
         </div>
