@@ -3,8 +3,10 @@
 import ChatInput from '@/components/chat/ChatInput';
 import ChatMessage from '@/components/chat/ChatMessage';
 import ChatNotFound from '@/components/chat/ChatNotFound';
+import ChatRenameModal from '@/components/chat/ChatRenameModal';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button, EmptyState, LoadingState } from '@/components/ui';
+import { useChats } from '@/contexts/ChatContext';
 import { useChat } from '@/hooks/useChat';
 import { suggestionsApi } from '@/lib/api';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
@@ -24,12 +26,25 @@ export default function ChatPage() {
     sending,
     error: chatError,
     sendMessage,
+    updateChatLocal,
     refreshChat,
     refreshMessages,
   } = useChat({ chatId, projectId: projectId || undefined });
   
+  const { updateChat, chats } = useChats();
   const [suggestions, setSuggestions] = useState<string[]>([]);
+  const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Sync chat title từ context khi có thay đổi từ sidebar
+  useEffect(() => {
+    if (chatId && chats.length > 0) {
+      const updatedChatFromContext = chats.find(c => c.id === chatId);
+      if (updatedChatFromContext && chat && updatedChatFromContext.title !== chat.title) {
+        updateChatLocal(updatedChatFromContext);
+      }
+    }
+  }, [chats, chatId, chat, updateChatLocal]);
 
   const fetchSuggestions = useCallback(async () => {
     try {
@@ -70,6 +85,13 @@ export default function ChatPage() {
 
   const handleSuggestionSelect = (suggestion: string) => {
     handleSendMessage(suggestion);
+  };
+
+  const handleChatUpdate = (updatedChat: any) => {
+    // Cập nhật ngay lập tức local state (header sẽ update ngay)
+    updateChatLocal(updatedChat);
+    // Cập nhật trong context (sẽ sync với sidebar)
+    updateChat(updatedChat);
   };
 
   if (loading && !chat) {
@@ -151,6 +173,17 @@ export default function ChatPage() {
               <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
                 {chat?.title || 'Đang tải...'}
               </h1>
+              {chat && (
+                <button
+                  onClick={() => setIsRenameModalOpen(true)}
+                  className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                  aria-label="Đổi tên cuộc trò chuyện"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </button>
+              )}
             </div>
             
             <div className="flex items-center space-x-2">
@@ -197,6 +230,14 @@ export default function ChatPage() {
           </div>
         </div>
       </div>
+      
+      {/* Chat Rename Modal */}
+      <ChatRenameModal
+        isOpen={isRenameModalOpen}
+        chat={chat}
+        onClose={() => setIsRenameModalOpen(false)}
+        onUpdate={handleChatUpdate}
+      />
     </MainLayout>
   );
 }

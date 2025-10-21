@@ -1,5 +1,5 @@
 // API client for Phase 1 backend
-import { ChatSession, CreateChatRequest, Document, Message, SendMessageRequest } from '@/lib/types';
+import { ChatSession, CreateChatRequest, Document, Message, SendMessageRequest, UpdateChatRequest } from '@/lib/types';
 
 const API_BASE_URL = 'http://localhost:8000';
 
@@ -219,6 +219,16 @@ class ApiClient {
     });
   }
 
+  async updateChat(chatId: string, request: UpdateChatRequest): Promise<ApiResponse<ChatSession>> {
+    return this.request<ChatSession>(`/api/chats/${chatId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(request),
+    });
+  }
+
   async getChats(projectId?: string, page: number = 1, limit: number = 20): Promise<ApiResponse<ListChatsResponse>> {
     const params = new URLSearchParams();
     params.append('page', page.toString());
@@ -317,7 +327,7 @@ export const chatsApi = {
   createChat: (request: CreateChatRequest) => apiClient.createChat(request),
   getChats: (projectId?: string, page?: number, limit?: number) => apiClient.getChats(projectId, page, limit),
   getChat: (chatId: string) => apiClient.getChat(chatId),
-  updateChat: (chatId: string, updates: { title?: string }) => apiClient.updateChat(chatId, updates),
+  updateChat: (chatId: string, request: UpdateChatRequest) => apiClient.updateChat(chatId, request),
   deleteChat: (chatId: string) => apiClient.deleteChat(chatId),
   getProjectChats: (projectId: string) => apiClient.getProjectChats(projectId),
 };
@@ -346,6 +356,6 @@ export const suggestionsApi = {
 
 export default apiClient;
 export type {
-    ApiResponse, ChatSession, CreateChatRequest, CreateProjectRequest, Document, ListChatsResponse, ListDocumentsResponse, Message, Project, SendMessageRequest, UploadDocumentRequest
+  ApiResponse, ChatSession, CreateChatRequest, CreateProjectRequest, Document, ListChatsResponse, ListDocumentsResponse, Message, Project, SendMessageRequest, UpdateChatRequest, UploadDocumentRequest
 };
 

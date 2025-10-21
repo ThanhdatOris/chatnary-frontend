@@ -144,6 +144,10 @@ export interface CreateChatRequest {
   title?: string;
 }
 
+export interface UpdateChatRequest {
+  title: string;
+}
+
 // ==================== STATS ====================
 export interface ActivityItem {
   type: 'document_upload' | 'chat_created' | 'message_sent';

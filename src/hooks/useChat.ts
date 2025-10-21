@@ -17,6 +17,7 @@ interface UseChatReturn {
   sending: boolean;
   error: string | null;
   sendMessage: (content: string) => Promise<void>;
+  updateChatLocal: (updatedChat: ChatSession) => void;
   refreshChat: () => Promise<void>;
   refreshMessages: () => Promise<void>;
 }
@@ -110,6 +111,10 @@ export function useChat({ chatId, projectId, autoFetch = true }: UseChatOptions 
   }, [chatId, fetchMessages]);  const refreshChat = useCallback(() => fetchChat(), [fetchChat]);
   const refreshMessages = useCallback(() => fetchMessages(), [fetchMessages]);
 
+  const updateChatLocal = useCallback((updatedChat: ChatSession) => {
+    setChat(updatedChat);
+  }, []);
+
   useEffect(() => {
     if (autoFetch && chatId) {
       fetchChat();
@@ -124,6 +129,7 @@ export function useChat({ chatId, projectId, autoFetch = true }: UseChatOptions 
     sending,
     error,
     sendMessage,
+    updateChatLocal,
     refreshChat,
     refreshMessages,
   };

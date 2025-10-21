@@ -8,6 +8,7 @@ interface ChatContextType {
   chats: ChatSession[];
   loading: boolean;
   addChat: (chat: ChatSession) => void;
+  updateChat: (updatedChat: ChatSession) => void;
   removeChat: (chatId: string) => void;
   refreshChats: (projectId?: string) => Promise<void>;
   getChatsByProject: (projectId: string) => Promise<ChatSession[]>;
@@ -74,6 +75,13 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     }, 1500);
   };
 
+  const updateChat = (updatedChat: ChatSession) => {
+    // Optimistic update - UI update ngay lập tức
+    setChats(prev => prev.map(chat => 
+      chat.id === updatedChat.id ? updatedChat : chat
+    ));
+  };
+
   const removeChat = (chatId: string) => {
     // Optimistic update - UI update ngay lập tức
     setChats(prev => prev.filter(c => c.id !== chatId));
@@ -93,6 +101,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       chats, 
       loading, 
       addChat, 
+      updateChat,
       removeChat, 
       refreshChats, 
       getChatsByProject 
