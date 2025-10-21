@@ -3,34 +3,70 @@
 import MainLayout from '@/components/layout/MainLayout';
 import { Button, Card, FileIcon, Loading } from '@/components/ui';
 import { useChats } from '@/contexts/ChatContext';
-import { chatsApi, documentsApi } from '@/lib/api';
-import { Document } from '@/lib/types';
-import { useRouter } from 'next/navigation';
+import apiClient, { chatsApi, Document, documentsApi } from '@/lib/api';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 export default function ChatPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const projectId = searchParams.get('project');
   const { addChat } = useChats();
   const [documents, setDocuments] = useState<Document[]>([]);
   const [selectedDocs, setSelectedDocs] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [availableProjects, setAvailableProjects] = useState<any[]>([]);
+  const [loadingProjects, setLoadingProjects] = useState(false);
+
+  // Auto-select first project if no project is specified
+  useEffect(() => {
+    const loadProjects = async () => {
+      if (!projectId) {
+        try {
+          setLoadingProjects(true);
+          const response = await apiClient.getProjects();
+          
+          if (response.success && response.data && response.data.length > 0) {
+            setAvailableProjects(response.data);
+            // Auto-redirect to first project
+            const firstProject = response.data[0];
+            router.push(`/chat?project=${firstProject.id}`);
+          } else {
+            // No projects available, redirect to home
+            router.push('/');
+          }
+        } catch (err) {
+          console.error('Failed to load projects:', err);
+          router.push('/');
+        } finally {
+          setLoadingProjects(false);
+        }
+      }
+    };
+
+    loadProjects();
+  }, [projectId, router]);
 
   useEffect(() => {
-    fetchDocuments();
-  }, []);
+    if (projectId) {
+      fetchDocuments();
+    }
+  }, [projectId]);
 
   const fetchDocuments = async () => {
+    if (!projectId) return;
+    
     setLoading(true);
     try {
-      // For now, get documents from the first project (this should be improved)
-      // TODO: Get projectId from URL params or context
-      const response = await documentsApi.getProjectDocuments('1'); // Temporary hardcoded project
+      console.log('Fetching documents for project:', projectId);
+      const response = await documentsApi.getProjectDocuments(projectId);
       
       if (response.success && response.data) {
         const completedDocs = response.data.filter(doc => doc.status === 'processed');
         setDocuments(completedDocs);
+        console.log('Loaded documents:', completedDocs.length);
       }
     } catch (error) {
       console.error('Failed to fetch documents:', error);
@@ -48,25 +84,57 @@ export default function ChatPage() {
   };
 
   const handleCreateChat = async () => {
-    if (selectedDocs.length === 0) return;
+    if (selectedDocs.length === 0 || !projectId) {
+      console.error('Cannot create chat: missing selectedDocs or projectId', {
+        selectedDocs: selectedDocs.length,
+        projectId
+      });
+      return;
+    }
 
     setCreating(true);
     try {
-      const response = await chatsApi.createChat({
-        projectId: '1', // TODO: Get actual project ID from context
+      console.log('Creating chat for project:', projectId);
+      console.log('Request payload:', {
+        project_id: projectId,
         title: 'Chat mới',
       });
       
+      const response = await chatsApi.createChat({
+        project_id: projectId,
+        title: 'Chat mới',
+      });
+      
+      console.log('Create chat response:', response);
+      
       if (response.success && response.data) {
         addChat(response.data); // Add to global state
-        router.push(`/chat/${response.data.id}`);
+        console.log('Chat created successfully:', response.data.id);
+        router.push(`/chat/${response.data.id}?project=${projectId}`);
+      } else {
+        console.error('Create chat failed:', response.error);
       }
     } catch (error) {
       console.error('Failed to create chat:', error);
+      // Log more details about the error
+      if (error instanceof Error) {
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+      }
     } finally {
       setCreating(false);
     }
   };
+
+  if (!projectId || loadingProjects) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Loading size="lg" text="Đang tải..." />
+        </div>
+      </MainLayout>
+    );
+  }
 
   if (loading) {
     return (

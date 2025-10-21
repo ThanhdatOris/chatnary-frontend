@@ -8,7 +8,7 @@ import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Button, Modal, ModalFooter } from '../ui';
+import { Button, Modal, ModalFooter, Toast } from '../ui';
 import ThemeToggle from '../ui/ThemeToggle';
 
 interface NavItem {
@@ -90,6 +90,12 @@ export default function Sidebar() {
     isOpen: false,
     chatId: null,
   });
+  
+  const [toast, setToast] = useState<{ visible: boolean; message: string; type: 'success' | 'error' }>({
+    visible: false,
+    message: '',
+    type: 'success'
+  });
   const searchParams = useSearchParams();
   const currentProjectId = searchParams.get('project');
   
@@ -138,9 +144,23 @@ export default function Sidebar() {
       if (response.success) {
         removeChat(deleteModal.chatId);
         setDeleteModal({ isOpen: false, chatId: null });
+        
+        // Show success toast
+        setToast({
+          visible: true,
+          message: 'Đã xóa cuộc trò chuyện thành công',
+          type: 'success'
+        });
       }
     } catch (error) {
       console.error('Failed to delete chat:', error);
+      
+      // Show error toast
+      setToast({
+        visible: true,
+        message: 'Không thể xóa cuộc trò chuyện. Vui lòng thử lại.',
+        type: 'error'
+      });
     }
   };
 
@@ -570,6 +590,16 @@ export default function Sidebar() {
           </Button>
         </ModalFooter>
       </Modal>
+
+      {/* Toast Notification */}
+      {toast.visible && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          visible={toast.visible}
+          onClose={() => setToast({ ...toast, visible: false })}
+        />
+      )}
     </>
   );
 }

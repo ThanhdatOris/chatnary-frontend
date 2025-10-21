@@ -9,7 +9,8 @@ interface ChatContextType {
   loading: boolean;
   addChat: (chat: ChatSession) => void;
   removeChat: (chatId: string) => void;
-  refreshChats: () => Promise<void>;
+  refreshChats: (projectId?: string) => Promise<void>;
+  getChatsByProject: (projectId: string) => Promise<ChatSession[]>;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -36,10 +37,10 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const refreshChats = async () => {
+  const refreshChats = async (projectId?: string) => {
     setLoading(true);
     try {
-      const response = await chatsApi.getChats();
+      const response = await chatsApi.getChats(projectId);
       if (response.success && response.data) {
         setChats(response.data.chats);
       }
@@ -47,6 +48,19 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       console.error('Failed to refresh chats:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const getChatsByProject = async (projectId: string): Promise<ChatSession[]> => {
+    try {
+      const response = await chatsApi.getProjectChats(projectId);
+      if (response.success && response.data) {
+        return response.data;
+      }
+      return [];
+    } catch (error) {
+      console.error('Failed to get chats by project:', error);
+      return [];
     }
   };
 
@@ -75,7 +89,14 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <ChatContext.Provider value={{ chats, loading, addChat, removeChat, refreshChats }}>
+    <ChatContext.Provider value={{ 
+      chats, 
+      loading, 
+      addChat, 
+      removeChat, 
+      refreshChats, 
+      getChatsByProject 
+    }}>
       {children}
     </ChatContext.Provider>
   );

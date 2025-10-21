@@ -84,14 +84,21 @@ class ApiClient {
         ...options,
       };
 
+      console.log('API Request:', { url, config });
+      
       const response = await fetch(url, config);
+      
+      console.log('API Response Status:', response.status);
       
       if (!response.ok) {
         const errorText = await response.text();
+        console.error('API Error Response:', errorText);
         return this.createErrorResponse(`HTTP ${response.status}: ${errorText}`);
       }
 
       const backendResponse: BackendApiResponse<T> = await response.json();
+      
+      console.log('API Response Data:', backendResponse);
       
       if (!backendResponse.success) {
         return this.createErrorResponse(backendResponse.error || 'Unknown error');
@@ -262,7 +269,10 @@ class ApiClient {
 
   // Message API methods
   async getMessages(chatId: string): Promise<ApiResponse<Message[]>> {
-    const response = await this.request<{ messages: Message[] }>(`/api/chats/${chatId}/messages`);
+    console.log('Getting messages for chat:', chatId);
+    const response = await this.request<{ messages: Message[], chatId: string, total: number }>(`/api/chats/${chatId}/messages`);
+    console.log('Get messages response:', response);
+    
     if (response.error) {
       return this.createErrorResponse(response.error);
     }
@@ -270,13 +280,33 @@ class ApiClient {
   }
 
   async sendMessage(chatId: string, request: SendMessageRequest): Promise<ApiResponse<Message>> {
-    return this.request<Message>(`/api/chats/${chatId}/messages`, {
+    console.log('Sending message API call:', { chatId, request });
+    const response = await this.request<any>(`/api/chats/${chatId}/messages`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(request),
     });
+    
+    console.log('Send message API response:', response);
+    
+    // Backend returns { userMessage, aiMessage, chatId } but we need to return the user message
+    if (response.success && response.data) {
+      const userMessage = response.data.userMessage;
+      if (userMessage) {
+        return this.createSuccessResponse({
+          id: userMessage.id,
+          content: userMessage.content,
+          role: 'user',
+          chatId: chatId,
+          createdAt: userMessage.createdAt,
+          updatedAt: userMessage.createdAt
+        });
+      }
+    }
+    
+    return response;
   }
 }
 

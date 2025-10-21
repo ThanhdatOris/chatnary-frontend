@@ -140,7 +140,7 @@ export interface SendMessageRequest {
 }
 
 export interface CreateChatRequest {
-  projectId: string;
+  project_id: string;
   title?: string;
 }
 
