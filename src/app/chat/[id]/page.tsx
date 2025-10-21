@@ -3,9 +3,8 @@
 import ChatInput from '@/components/chat/ChatInput';
 import ChatMessage from '@/components/chat/ChatMessage';
 import ChatNotFound from '@/components/chat/ChatNotFound';
-import SuggestionChips from '@/components/chat/SuggestionChips';
 import MainLayout from '@/components/layout/MainLayout';
-import { Button, EmptyState, Loading, LoadingState } from '@/components/ui';
+import { Button, EmptyState, LoadingState } from '@/components/ui';
 import { useChat } from '@/hooks/useChat';
 import { suggestionsApi } from '@/lib/api';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
