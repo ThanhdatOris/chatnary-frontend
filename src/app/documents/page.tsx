@@ -240,6 +240,79 @@ export default function DocumentsPage() {
                   onChat={() => handleChatWithDocument(selectedDocument.id)}
                 />
               )}
+              
+              {/* Preview khi chưa chọn tài liệu */}
+              {!selectedDocument && !isPanelCollapsed && (
+                <div className="flex-1 flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+                  <div className="text-center max-w-lg px-6">
+                    {/* Project Info */}
+                    <div className="mb-8">
+                      <div className="flex items-center justify-center gap-3 mb-4">
+                        <div 
+                          className="w-4 h-4 rounded-full" 
+                          style={{ backgroundColor: project?.color || '#6366f1' }}
+                        />
+                        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                          {project?.name || 'Đang tải...'}
+                        </h2>
+                      </div>
+                      {project?.description && (
+                        <p className="text-gray-600 dark:text-gray-400 mb-6">
+                          {project.description}
+                        </p>
+                      )}
+                    </div>
+                    
+                    {/* Document Stats */}
+                    <div className="bg-white dark:bg-gray-800 rounded-lg p-6 mb-8 shadow-sm border border-gray-200 dark:border-gray-700">
+                      <div className="grid grid-cols-1 gap-4">
+                        <div className="text-center">
+                          <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">
+                            {documents.length}
+                          </div>
+                          <div className="text-sm text-gray-600 dark:text-gray-400">
+                            Tài liệu trong project
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Instructions */}
+                    <div className="w-20 h-20 mx-auto mb-6 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                      <svg className="w-10 h-10 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                    </div>
+                    <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+                      Chọn tài liệu để xem trước
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">
+                      Click vào một tài liệu bên trái để xem nội dung chi tiết và có thể bắt đầu trò chuyện với AI về tài liệu đó.
+                    </p>
+                    <div className="space-y-3 text-sm text-gray-500 dark:text-gray-400">
+                      <div className="flex items-center justify-center gap-2">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        <span>Xem trước nội dung tài liệu</span>
+                      </div>
+                      <div className="flex items-center justify-center gap-2">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                        </svg>
+                        <span>Bắt đầu trò chuyện với AI</span>
+                      </div>
+                      <div className="flex items-center justify-center gap-2">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        <span>Download tài liệu gốc</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </>
           )}
         </div>
