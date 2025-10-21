@@ -24,13 +24,12 @@ export default function ChatPage() {
   const fetchDocuments = async () => {
     setLoading(true);
     try {
-      const response = await documentsApi.getDocuments({
-        sortBy: 'uploadedAt',
-        sortOrder: 'desc',
-      });
+      // For now, get documents from the first project (this should be improved)
+      // TODO: Get projectId from URL params or context
+      const response = await documentsApi.getProjectDocuments('1'); // Temporary hardcoded project
       
       if (response.success && response.data) {
-        const completedDocs = response.data.items.filter(doc => doc.status === 'completed');
+        const completedDocs = response.data.filter(doc => doc.status === 'processed');
         setDocuments(completedDocs);
       }
     } catch (error) {
@@ -54,7 +53,7 @@ export default function ChatPage() {
     setCreating(true);
     try {
       const response = await chatsApi.createChat({
-        documentIds: selectedDocs,
+        projectId: '1', // TODO: Get actual project ID from context
         title: 'Chat mới',
       });
       
@@ -135,7 +134,7 @@ export default function ChatPage() {
                       />
                     </div>
                     <FileIcon 
-                      fileType={doc.type}
+                      fileType={doc.mimeType || 'unknown'}
                       size="md"
                       className="flex-shrink-0"
                     />
@@ -144,7 +143,7 @@ export default function ChatPage() {
                         {doc.name}
                       </h3>
                       <p className="text-sm text-gray-500 dark:text-gray-400">
-                        {doc.pageCount} trang
+                        Tài liệu
                       </p>
                     </div>
                   </div>

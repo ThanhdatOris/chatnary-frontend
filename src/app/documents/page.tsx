@@ -5,94 +5,141 @@ import DocumentViewer from '@/components/document/DocumentViewer';
 import FileUploadZone from '@/components/document/FileUploadZone';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button, Input, Loading, Modal } from '@/components/ui';
-import { useChats } from '@/contexts/ChatContext';
-import { chatsApi, documentsApi } from '@/lib/api';
-import { allMockDocuments } from '@/lib/mockData';
-import { Document } from '@/lib/types';
-import { useRouter } from 'next/navigation';
+import useDocuments from '@/hooks/useDocuments';
+import { useProject } from '@/hooks/useProject';
+import apiClient, { Document } from '@/lib/api';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 export default function DocumentsPage() {
   const router = useRouter();
-  const { addChat } = useChats();
-  const [documents, setDocuments] = useState<Document[]>(allMockDocuments);
-  const [loading, setLoading] = useState(false); // Set to false since we're using mock data directly
+  const searchParams = useSearchParams();
+  const projectId = searchParams.get('project');
+  const { project, isLoading: projectLoading } = useProject();
+  const { 
+    documents, 
+    loading, 
+    error, 
+    uploading, 
+    uploadDocument, 
+    deleteDocument, 
+    refreshDocuments 
+  } = useDocuments({ projectId: projectId || undefined });
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [showUploadModal, setShowUploadModal] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
   const [isPanelCollapsed, setIsPanelCollapsed] = useState(false);
-  
-  // Fixed total documents count for display (simulating real app)
-  const totalDocuments = allMockDocuments.length;
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [availableProjects, setAvailableProjects] = useState<any[]>([]);
+  const [loadingProjects, setLoadingProjects] = useState(false);
 
+  // Auto-select first project if no project is specified
   useEffect(() => {
-    fetchDocuments();
-  }, [searchTerm]);
-
-  const fetchDocuments = async () => {
-    setLoading(true);
-    try {
-      const response = await documentsApi.getDocuments({
-        search: searchTerm,
-        sortBy: 'uploadedAt',
-        sortOrder: 'desc',
-      });
-      
-      if (response.success && response.data) {
-        setDocuments(response.data.items);
+    const loadProjects = async () => {
+      if (!projectId) {
+        try {
+          setLoadingProjects(true);
+          const response = await apiClient.getProjects();
+          
+          if (response.success && response.data && response.data.length > 0) {
+            setAvailableProjects(response.data);
+            // Auto-redirect to first project
+            const firstProject = response.data[0];
+            router.push(`/documents?project=${firstProject.id}`);
+          } else {
+            // No projects available, redirect to home
+            router.push('/');
+          }
+        } catch (err) {
+          console.error('Failed to load projects:', err);
+          router.push('/');
+        } finally {
+          setLoadingProjects(false);
+        }
       }
-    } catch (error) {
-      console.error('Failed to fetch documents:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
+
+    loadProjects();
+  }, [projectId, router]);
 
   const handleUpload = async (file: File) => {
-    setIsUploading(true);
+    console.log('DocumentsPage: handleUpload called with file:', file.name);
     try {
-      const response = await documentsApi.uploadDocument(file);
-      
-      if (response.success && response.data) {
-        setDocuments(prev => [response.data!, ...prev]);
-        setShowUploadModal(false);
-        // Show success message
-      }
-    } catch (error) {
-      console.error('Upload failed:', error);
-    } finally {
-      setIsUploading(false);
+      setUploadError(null); // Clear previous errors
+      console.log('DocumentsPage: Calling uploadDocument...');
+      await uploadDocument(file);
+      console.log('DocumentsPage: Upload successful, closing modal');
+      setShowUploadModal(false);
+    } catch (err) {
+      console.error('DocumentsPage: Upload failed:', err);
+      setUploadError(err instanceof Error ? err.message : 'Có lỗi xảy ra khi upload file');
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDeleteDocument = async (id: string) => {
     try {
-      const response = await documentsApi.deleteDocument(id);
-      
-      if (response.success) {
-        setDocuments(prev => prev.filter(doc => doc.id !== id));
+      await deleteDocument(id);
+      // Clear selection if deleted document was selected
+      if (selectedDocument?.id === id) {
+        setSelectedDocument(null);
       }
-    } catch (error) {
-      console.error('Delete failed:', error);
+    } catch (err) {
+      console.error('Delete failed:', err);
     }
   };
 
-  const handleChat = async (documentId: string) => {
-    try {
-      const response = await chatsApi.createChat({
-        documentIds: [documentId],
-        title: 'Chat mới',
-      });
-      
-      if (response.success && response.data) {
-        addChat(response.data); // Add to global state
-        router.push(`/chat/${response.data.id}`);
-      }
-    } catch (error) {
-      console.error('Failed to create chat:', error);
-    }
+  const handleChatWithDocument = async (documentId: string) => {
+    if (!projectId) return;
+    
+    // Create a new chat session for this document
+    router.push(`/chat?project=${projectId}&document=${documentId}`);
   };
+
+  // Filter documents based on search term
+  const filteredDocuments = documents.filter(doc =>
+    (doc.originalFilename || doc.name).toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  if (!projectId || loadingProjects) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center h-full">
+          <Loading size="lg" />
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (projectLoading) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center h-full">
+          <Loading size="lg" />
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (!project) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center h-full">
+          <div className="text-center">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+              Project không tìm thấy
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              Project bạn đang tìm kiếm không tồn tại hoặc đã bị xóa.
+            </p>
+            <Button onClick={() => router.push('/')}>
+              Quay về trang chủ
+            </Button>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout>
@@ -105,15 +152,15 @@ export default function DocumentsPage() {
                 Tài liệu
               </h1>
               <p className="text-gray-600 dark:text-gray-400 mt-1">
-                Quản lý và xem tài liệu của bạn
+                Quản lý tài liệu trong project "{project.name}"
               </p>
             </div>
             <div className="flex items-center gap-4">
-              <Button onClick={() => setShowUploadModal(true)}>
+              <Button onClick={() => setShowUploadModal(true)} disabled={uploading}>
                 <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
-                Upload tài liệu
+                {uploading ? 'Đang upload...' : 'Upload tài liệu'}
               </Button>
             </div>
           </div>
@@ -128,27 +175,41 @@ export default function DocumentsPage() {
           </div>
         </div>
 
+        {/* Error Display */}
+        {error && (
+          <div className="p-4 bg-red-50 border-l-4 border-red-400 text-red-700">
+            <p className="font-medium">Lỗi: {error}</p>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={refreshDocuments}
+              className="mt-2"
+            >
+              Thử lại
+            </Button>
+          </div>
+        )}
+
         {/* Content */}
         <div className="flex-1 flex min-h-0">
           {loading ? (
             <div className="flex-1 flex items-center justify-center">
               <Loading size="lg" text="Đang tải tài liệu..." />
             </div>
-          ) : documents.length === 0 ? (
+          ) : filteredDocuments.length === 0 ? (
             <div className="flex-1 flex items-center justify-center">
-              <div className="text-center py-16">
-                <div className="w-24 h-24 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-12 h-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                  {searchTerm ? 'Không tìm thấy tài liệu' : 'Chưa có tài liệu nào'}
+              <div className="text-center">
+                <svg className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+                  {searchTerm ? 'Không tìm thấy tài liệu' : 'Chưa có tài liệu'}
                 </h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-6">
-                  {searchTerm
-                    ? 'Thử tìm kiếm với từ khóa khác'
-                    : 'Upload tài liệu đầu tiên để bắt đầu'}
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
+                  {searchTerm 
+                    ? `Không có tài liệu nào khớp với "${searchTerm}"`
+                    : 'Hãy upload tài liệu đầu tiên của bạn'
+                  }
                 </p>
                 {!searchTerm && (
                   <Button onClick={() => setShowUploadModal(true)}>
@@ -159,37 +220,60 @@ export default function DocumentsPage() {
             </div>
           ) : (
             <>
+              {/* Document List */}
               <DocumentList
-                documents={documents}
+                documents={filteredDocuments}
                 selectedDocument={selectedDocument}
                 onSelectDocument={setSelectedDocument}
-                onDeleteDocument={handleDelete}
-                totalDocuments={totalDocuments}
+                onDeleteDocument={handleDeleteDocument}
                 searchTerm={searchTerm}
+                totalDocuments={documents.length}
                 isPanelCollapsed={isPanelCollapsed}
                 onPanelToggle={setIsPanelCollapsed}
               />
-              {!isPanelCollapsed && (
+              
+              {/* Document Viewer */}
+              {selectedDocument && !isPanelCollapsed && (
                 <DocumentViewer
                   document={selectedDocument}
                   onClose={() => setSelectedDocument(null)}
+                  onChat={() => handleChatWithDocument(selectedDocument.id)}
                 />
               )}
             </>
           )}
         </div>
-      </div>
 
-      {/* Upload Modal */}
-      <Modal
-        isOpen={showUploadModal}
-        onClose={() => !isUploading && setShowUploadModal(false)}
-        title="Upload tài liệu"
-        size="lg"
-      >
-        <FileUploadZone onUpload={handleUpload} isUploading={isUploading} />
-      </Modal>
+        {/* Upload Modal */}
+        <Modal
+          isOpen={showUploadModal}
+          title="Upload tài liệu"
+          onClose={() => {
+            if (!uploading) {
+              setShowUploadModal(false);
+              setUploadError(null); // Clear error when closing
+            }
+          }}
+        >
+          <div className="p-6">
+            <FileUploadZone onUpload={handleUpload} isUploading={uploading} />
+            
+            {/* Display upload error */}
+            {uploadError && (
+              <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                <p className="text-sm text-red-600 dark:text-red-400">{uploadError}</p>
+              </div>
+            )}
+            
+            {/* Display general documents error */}
+            {error && (
+              <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+                <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+              </div>
+            )}
+          </div>
+        </Modal>
+      </div>
     </MainLayout>
   );
 }
-

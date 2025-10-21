@@ -36,8 +36,8 @@ export default function ChatPage() {
       ]);
 
       if (chatRes.success && chatRes.data) setChat(chatRes.data);
-      if (messagesRes.success && messagesRes.data) setMessages(messagesRes.data.items);
-      if (suggestionsRes.success && suggestionsRes.data) setSuggestions(suggestionsRes.data.suggestions);
+      if (messagesRes.success && messagesRes.data) setMessages(messagesRes.data);
+      if (suggestionsRes.success && suggestionsRes.data) setSuggestions(suggestionsRes.data);
     } catch (error) {
       console.error('Failed to fetch chat data:', error);
     } finally {
@@ -84,7 +84,7 @@ export default function ChatPage() {
         // Refresh messages
         const messagesRes = await messagesApi.getMessages(chatId);
         if (messagesRes.success && messagesRes.data) {
-          setMessages(messagesRes.data.items);
+          setMessages(messagesRes.data);
         }
       }
     } catch (error) {

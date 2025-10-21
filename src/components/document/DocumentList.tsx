@@ -1,7 +1,7 @@
 'use client';
 
 import { FileIcon } from '@/components/ui';
-import { Document } from '@/lib/types';
+import { Document } from '@/lib/api';
 import { cn, formatDate, formatFileSize, paginateArray } from '@/lib/utils';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
@@ -99,7 +99,7 @@ export default function DocumentList({
     // Filter by file type
     if (filters.fileType) {
       filteredDocuments = filteredDocuments.filter(doc => 
-        doc.type.toLowerCase().includes(filters.fileType.toLowerCase())
+        (doc.mimeType?.toLowerCase() || '').includes(filters.fileType.toLowerCase())
       );
     }
     
@@ -113,7 +113,7 @@ export default function DocumentList({
     // Filter by date range
     if (filters.dateRange) {
       const now = new Date();
-      const uploadDate = (doc: Document) => new Date(doc.uploadedAt);
+      const uploadDate = (doc: Document) => new Date(doc.createdAt);
       
       filteredDocuments = filteredDocuments.filter(doc => {
         const docDate = uploadDate(doc);
@@ -537,7 +537,7 @@ export default function DocumentList({
                 <div className="flex items-start gap-3">
                   {/* File Icon */}
                   <div className="flex-shrink-0 mt-1">
-                    <FileIcon fileType={document.type} size="md" />
+                    <FileIcon fileType={document.mimeType || 'unknown'} size="md" />
                   </div>
 
                   {/* Content */}
@@ -548,25 +548,19 @@ export default function DocumentList({
                           {document.name}
                         </h3>
                         <div className="flex items-center gap-2 mt-1 text-xs text-gray-500 dark:text-gray-400">
-                          <span>{formatFileSize(document.size)}</span>
+                          <span>{formatFileSize(document.fileSize || 0)}</span>
                           <span>•</span>
-                          <span>{formatDate(document.uploadedAt)}</span>
-                          {document.pageCount && (
-                            <>
-                              <span>•</span>
-                              <span>{document.pageCount} trang</span>
-                            </>
-                          )}
+                          <span>{formatDate(document.createdAt)}</span>
                           <span>•</span>
                           <span className={cn(
                             'px-2 py-1 rounded-full',
-                            document.status === 'completed' 
+                            document.status === 'processed' 
                               ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                               : document.status === 'processing'
                               ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
                               : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
                           )}>
-                            {document.status === 'completed' ? 'Đã xử lý' : 
+                            {document.status === 'processed' ? 'Đã xử lý' : 
                              document.status === 'processing' ? 'Đang xử lý' : 'Lỗi'}
                           </span>
                         </div>
@@ -641,7 +635,7 @@ export default function DocumentList({
                 >
                   {/* File Icon */}
                   <div className="flex justify-center mb-3">
-                    <FileIcon fileType={document.type} size="lg" />
+                    <FileIcon fileType={document.mimeType || 'unknown'} size="lg" />
                   </div>
 
                   {/* Document Info */}
@@ -651,22 +645,22 @@ export default function DocumentList({
                     </h3>
                     
                     <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
-                      <div>{formatFileSize(document.size)}</div>
-                      <div>{formatDate(document.uploadedAt)}</div>
+                      <div>{formatFileSize(document.fileSize || 0)}</div>
+                      <div>{formatDate(document.createdAt)}</div>
                     </div>
 
                     {/* Status Badge */}
                     <span
                       className={cn(
                         'inline-block px-2 py-1 text-xs rounded-full',
-                        document.status === 'completed'
+                        document.status === 'processed'
                           ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                           : document.status === 'processing'
                           ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
                           : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
                       )}
                     >
-                      {document.status === 'completed' ? 'Đã xử lý' :
+                      {document.status === 'processed' ? 'Đã xử lý' :
                        document.status === 'processing' ? 'Đang xử lý' : 'Lỗi'}
                     </span>
                   </div>

@@ -31,8 +31,21 @@ export default function FileUploadZone({ onUpload, isUploading }: FileUploadZone
   };
 
   const handleFile = (file: File) => {
+    console.log('FileUploadZone: File selected:', { 
+      name: file.name, 
+      size: file.size, 
+      type: file.type 
+    });
+    
     if (validateFile(file)) {
+      console.log('FileUploadZone: File validation passed, calling onUpload');
       onUpload(file);
+      // Clear the file input after upload to prevent showing the dialog again
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    } else {
+      console.log('FileUploadZone: File validation failed');
     }
   };
 
@@ -121,7 +134,13 @@ export default function FileUploadZone({ onUpload, isUploading }: FileUploadZone
           </div>
 
           {!isUploading && (
-            <Button variant="outline" onClick={handleClick}>
+            <Button 
+              variant="outline" 
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent parent div click
+                handleClick();
+              }}
+            >
               Chọn file
             </Button>
           )}

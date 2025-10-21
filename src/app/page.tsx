@@ -1,7 +1,7 @@
 'use client';
 
 import apiClient, { CreateProjectRequest } from '@/lib/api';
-import { Clock, FileText, MessageSquare, Plus, Trash2, Wifi, WifiOff, Edit } from 'lucide-react';
+import { Clock, Edit, FileText, MessageSquare, Plus, Trash2, Wifi, WifiOff } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 

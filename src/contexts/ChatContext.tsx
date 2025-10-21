@@ -26,7 +26,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     try {
       const response = await chatsApi.getChats();
       if (response.success && response.data) {
-        setChats(response.data.items);
+        setChats(response.data.chats);
         setHasFetched(true);
       }
     } catch (error) {
@@ -41,7 +41,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     try {
       const response = await chatsApi.getChats();
       if (response.success && response.data) {
-        setChats(response.data.items);
+        setChats(response.data.chats);
       }
     } catch (error) {
       console.error('Failed to refresh chats:', error);
