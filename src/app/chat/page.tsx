@@ -1,37 +1,79 @@
 'use client';
 
+import HeaderButton from '@/components/layout/HeaderButton';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button, Card, FileIcon, Loading } from '@/components/ui';
 import { useChats } from '@/contexts/ChatContext';
-import { chatsApi, documentsApi } from '@/lib/api';
-import { Document } from '@/lib/types';
-import { useRouter } from 'next/navigation';
+import useProjectBreadcrumb from '@/hooks/useProjectBreadcrumb';
+import apiClient, { chatsApi, Document, documentsApi } from '@/lib/api';
+import { MessageSquare } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 export default function ChatPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const projectId = searchParams.get('project');
   const { addChat } = useChats();
+  
+  // Set project name for breadcrumb
+  useProjectBreadcrumb();
+  
   const [documents, setDocuments] = useState<Document[]>([]);
   const [selectedDocs, setSelectedDocs] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [availableProjects, setAvailableProjects] = useState<any[]>([]);
+  const [loadingProjects, setLoadingProjects] = useState(false);
+
+  // Auto-select first project if no project is specified
+  useEffect(() => {
+    const loadProjects = async () => {
+      if (!projectId) {
+        try {
+          setLoadingProjects(true);
+          const response = await apiClient.getProjects();
+          
+          if (response.success && response.data && response.data.length > 0) {
+            setAvailableProjects(response.data);
+            // Auto-redirect to first project
+            const firstProject = response.data[0];
+            router.push(`/chat?project=${firstProject.id}`);
+          } else {
+            // No projects available, redirect to home
+            router.push('/');
+          }
+        } catch (err) {
+          console.error('Failed to load projects:', err);
+          router.push('/');
+        } finally {
+          setLoadingProjects(false);
+        }
+      }
+    };
+
+    loadProjects();
+  }, [projectId, router]);
 
   useEffect(() => {
-    fetchDocuments();
-  }, []);
+    if (projectId) {
+      fetchDocuments();
+    }
+  }, [projectId]);
 
   const fetchDocuments = async () => {
+    if (!projectId) return;
+    
     setLoading(true);
     try {
-      const response = await documentsApi.getDocuments({
-        sortBy: 'uploadedAt',
-        sortOrder: 'desc',
-      });
+      console.log('Fetching documents for project:', projectId);
+      const response = await documentsApi.getProjectDocuments(projectId);
       
       if (response.success && response.data) {
-        const completedDocs = response.data.items.filter(doc => doc.status === 'completed');
+        const completedDocs = response.data.filter(doc => doc.status === 'processed');
         setDocuments(completedDocs);
+        console.log('Loaded documents:', completedDocs.length);
       }
     } catch (error) {
       console.error('Failed to fetch documents:', error);
@@ -49,29 +91,64 @@ export default function ChatPage() {
   };
 
   const handleCreateChat = async () => {
-    if (selectedDocs.length === 0) return;
+    if (selectedDocs.length === 0 || !projectId) {
+      console.error('Cannot create chat: missing selectedDocs or projectId', {
+        selectedDocs: selectedDocs.length,
+        projectId
+      });
+      return;
+    }
 
     setCreating(true);
     try {
-      const response = await chatsApi.createChat({
-        documentIds: selectedDocs,
+      console.log('Creating chat for project:', projectId);
+      console.log('Request payload:', {
+        project_id: projectId,
         title: 'Chat mới',
       });
       
+      const response = await chatsApi.createChat({
+        project_id: projectId,
+        title: 'Chat mới',
+      });
+      
+      console.log('Create chat response:', response);
+      
       if (response.success && response.data) {
         addChat(response.data); // Add to global state
-        router.push(`/chat/${response.data.id}`);
+        console.log('Chat created successfully:', response.data.id);
+        router.push(`/chat/${response.data.id}?project=${projectId}`);
+      } else {
+        console.error('Create chat failed:', response.error);
       }
     } catch (error) {
       console.error('Failed to create chat:', error);
+      // Log more details about the error
+      if (error instanceof Error) {
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+      }
     } finally {
       setCreating(false);
     }
   };
 
-  if (loading) {
+  if (!projectId || loadingProjects) {
     return (
       <MainLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Loading size="lg" text="Đang tải..." />
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (loading) {
+    return (
+      <MainLayout
+        headerTitle="Tạo cuộc trò chuyện mới"
+        headerSubtitle="Chọn tài liệu bạn muốn trò chuyện"
+      >
         <div className="flex items-center justify-center min-h-[60vh]">
           <Loading size="lg" text="Đang tải tài liệu..." />
         </div>
@@ -79,18 +156,28 @@ export default function ChatPage() {
     );
   }
 
+  const actionButton = (
+    <HeaderButton
+      variant="primary"
+      icon={<MessageSquare className="w-4 h-4" />}
+      onClick={handleCreateChat}
+      disabled={selectedDocs.length === 0 || creating}
+      isLoading={creating}
+    >
+      {selectedDocs.length === 0
+        ? 'Chọn tài liệu'
+        : `Bắt đầu chat với ${selectedDocs.length} tài liệu`}
+    </HeaderButton>
+  );
+
   return (
-    <MainLayout>
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-            Tạo cuộc trò chuyện mới
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Chọn tài liệu bạn muốn trò chuyện
-          </p>
-        </div>
+    <MainLayout
+      headerTitle="Tạo cuộc trò chuyện mới"
+      headerSubtitle="Chọn tài liệu bạn muốn trò chuyện"
+      headerActions={selectedDocs.length > 0 ? actionButton : undefined}
+    >
+      <div className="flex-1 p-6 overflow-auto">
+        <div className="max-w-4xl mx-auto space-y-6">
 
         {documents.length === 0 ? (
           <Card variant="bordered" className="text-center py-16">
@@ -122,20 +209,23 @@ export default function ChatPage() {
                       ? 'ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/20'
                       : 'hover:shadow-md'
                   }`}
-                  onClick={() => handleToggleDoc(doc.id)}
                 >
-                  <div className="flex items-start gap-3 p-4">
-                    <div className="flex-shrink-0">
+                  <label 
+                    className="flex items-start gap-3 p-4 cursor-pointer w-full"
+                    htmlFor={`doc-${doc.id}`}
+                  >
+                    <div className="flex-shrink-0 mt-1">
                       <input
+                        id={`doc-${doc.id}`}
                         type="checkbox"
                         checked={selectedDocs.includes(doc.id)}
                         onChange={() => handleToggleDoc(doc.id)}
-                        className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
+                        className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 focus:ring-2"
                         aria-label={`Chọn tài liệu ${doc.name}`}
                       />
                     </div>
                     <FileIcon 
-                      fileType={doc.type}
+                      fileType={doc.mimeType || 'unknown'}
                       size="md"
                       className="flex-shrink-0"
                     />
@@ -144,29 +234,16 @@ export default function ChatPage() {
                         {doc.name}
                       </h3>
                       <p className="text-sm text-gray-500 dark:text-gray-400">
-                        {doc.pageCount} trang
+                        Tài liệu
                       </p>
                     </div>
-                  </div>
+                  </label>
                 </Card>
               ))}
             </div>
-
-            {/* Action Button */}
-            <div className="flex justify-center pt-4">
-              <Button
-                size="lg"
-                onClick={handleCreateChat}
-                disabled={selectedDocs.length === 0 || creating}
-                isLoading={creating}
-              >
-                {selectedDocs.length === 0
-                  ? 'Chọn tài liệu'
-                  : `Bắt đầu chat với ${selectedDocs.length} tài liệu`}
-              </Button>
-            </div>
           </>
         )}
+        </div>
       </div>
     </MainLayout>
   );

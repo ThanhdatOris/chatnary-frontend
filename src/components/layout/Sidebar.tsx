@@ -6,9 +6,10 @@ import { chatsApi } from '@/lib/api';
 import { ChatSession } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Button, Modal, ModalFooter } from '../ui';
+import ChatListItem from '../chat/ChatListItem';
+import { Button, Modal, ModalFooter, Toast } from '../ui';
 import ThemeToggle from '../ui/ThemeToggle';
 
 interface NavItem {
@@ -22,13 +23,14 @@ interface NavSection {
   items: NavItem[];
 }
 
-const navSections: NavSection[] = [
+// Function to generate navigation items with project context
+const getNavSections = (projectId?: string): NavSection[] => [
   {
     title: '',
     items: [
       {
         name: 'Dashboard',
-        href: '/dashboard',
+        href: projectId ? `/dashboard?project=${projectId}` : '/dashboard',
         icon: (
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
@@ -37,7 +39,7 @@ const navSections: NavSection[] = [
       },
       {
         name: 'Tài liệu',
-        href: '/documents',
+        href: projectId ? `/documents?project=${projectId}` : '/documents',
         icon: (
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -70,7 +72,7 @@ function groupChatsByTime(chats: ChatSession[]) {
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const { chats, loading, removeChat } = useChats();
+  const { chats, loading, updateChat, removeChat } = useChats();
   const { sidebarWidth, setSidebarWidth, isCollapsed, setIsCollapsed } = useSidebar();
   const [displayLimit, setDisplayLimit] = useState(20);
   const [isResizing, setIsResizing] = useState(false);
@@ -80,6 +82,17 @@ export default function Sidebar() {
     isOpen: false,
     chatId: null,
   });
+  
+  const [toast, setToast] = useState<{ visible: boolean; message: string; type: 'success' | 'error' }>({
+    visible: false,
+    message: '',
+    type: 'success'
+  });
+  const searchParams = useSearchParams();
+  const currentProjectId = searchParams.get('project');
+  
+  // Get navigation sections with current project context
+  const navSections = getNavSections(currentProjectId || undefined);
 
   useEffect(() => {
     if (isResizing) {
@@ -123,9 +136,23 @@ export default function Sidebar() {
       if (response.success) {
         removeChat(deleteModal.chatId);
         setDeleteModal({ isOpen: false, chatId: null });
+        
+        // Show success toast
+        setToast({
+          visible: true,
+          message: 'Đã xóa cuộc trò chuyện thành công',
+          type: 'success'
+        });
       }
     } catch (error) {
       console.error('Failed to delete chat:', error);
+      
+      // Show error toast
+      setToast({
+        visible: true,
+        message: 'Không thể xóa cuộc trò chuyện. Vui lòng thử lại.',
+        type: 'error'
+      });
     }
   };
 
@@ -176,16 +203,30 @@ export default function Sidebar() {
               </button>
             </>
           ) : (
-            <button
-              onClick={() => setIsCollapsed(false)}
-              className="w-full flex justify-center p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              title="Mở rộng sidebar"
-            >
-              <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path fillRule="evenodd" d="M7.22 14.47L9.69 12 7.22 9.53a.75.75 0 111.06-1.06l3 3a.75.75 0 010 1.06l-3 3a.75.75 0 01-1.06-1.06z"/>
-                <path fillRule="evenodd" d="M3.75 2A1.75 1.75 0 002 3.75v16.5c0 .966.784 1.75 1.75 1.75h16.5A1.75 1.75 0 0022 20.25V3.75A1.75 1.75 0 0020.25 2H3.75zM3.5 3.75a.25.25 0 01.25-.25H15v17H3.75a.25.25 0 01-.25-.25V3.75zm13 16.75v-17h3.75a.25.25 0 01.25.25v16.5a.25.25 0 01-.25.25H16.5z"/>
-              </svg>
-            </button>
+            <div className="w-full flex justify-center group">
+              <button
+                onClick={() => setIsCollapsed(false)}
+                className="relative w-10 h-10 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center justify-center"
+                title="Mở rộng sidebar"
+              >
+                {/* Logo luôn hiển thị */}
+                <div className="w-6 h-6 rounded overflow-hidden flex items-center justify-center">
+                  <img 
+                    src="/logo-192.png" 
+                    alt="Chatnary Logo" 
+                    className="w-6 h-6 object-contain"
+                  />
+                </div>
+                
+                {/* Icon expand chỉ hiện khi hover */}
+                <div className="absolute inset-0 bg-gray-100 dark:bg-gray-800 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <svg className="w-4 h-4 text-gray-600 dark:text-gray-400" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path fillRule="evenodd" d="M7.22 14.47L9.69 12 7.22 9.53a.75.75 0 111.06-1.06l3 3a.75.75 0 010 1.06l-3 3a.75.75 0 01-1.06-1.06z"/>
+                    <path fillRule="evenodd" d="M3.75 2A1.75 1.75 0 002 3.75v16.5c0 .966.784 1.75 1.75 1.75h16.5A1.75 1.75 0 0022 20.25V3.75A1.75 1.75 0 0020.25 2H3.75zM3.5 3.75a.25.25 0 01.25-.25H15v17H3.75a.25.25 0 01-.25-.25V3.75zm13 16.75v-17h3.75a.25.25 0 01.25.25v16.5a.25.25 0 01-.25.25H16.5z"/>
+                  </svg>
+                </div>
+              </button>
+            </div>
           )}
         </div>
 
@@ -248,19 +289,53 @@ export default function Sidebar() {
                     </Link>
                   );
                 })}
+                
+                {/* New Chat Button - Consistent collapsed mode */}
+                <div className="mt-4 pt-2 border-t border-gray-200 dark:border-gray-700">
+                  <Link href={currentProjectId ? `/chat?project=${currentProjectId}` : '/chat'}>
+                    <button 
+                      className="group relative w-full flex items-center justify-center p-2.5 rounded-lg bg-gradient-to-r from-violet-500 via-purple-500 to-indigo-600 text-white hover:from-violet-600 hover:via-purple-600 hover:to-indigo-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:shadow-violet-500/20 transform hover:scale-105 border border-white/10 overflow-hidden"
+                      title="Tạo Chat mới"
+                    >
+                      {/* Background pulse effect */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-violet-400/15 via-purple-400/15 to-indigo-400/15 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      
+                      {/* Icon consistent size */}
+                      <svg className="w-4 h-4 relative z-10 transition-transform duration-300 group-hover:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                      
+                      {/* Subtle sparkle effects */}
+                      <div className="absolute top-1 right-1 w-0.5 h-0.5 bg-white/80 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:animate-ping delay-0"></div>
+                      <div className="absolute bottom-1 left-1 w-0.5 h-0.5 bg-yellow-200/60 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:animate-pulse delay-200"></div>
+                    </button>
+                  </Link>
+                </div>
               </div>
             </>
           )}
 
-          {/* New Chat Button */}
+          {/* New Chat Button - Consistent with nav items */}
           {!isCollapsed && (
-            <div className="mt-6">
-              <Link href="/chat">
-                <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 transition-all text-sm font-medium shadow-sm">
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="mt-6 px-3">
+              <Link href={currentProjectId ? `/chat?project=${currentProjectId}` : '/chat'}>
+                <button className="group w-full flex items-center gap-3 px-3 py-2.5 rounded-lg bg-gradient-to-r from-violet-500 via-purple-500 to-indigo-600 text-white hover:from-violet-600 hover:via-purple-600 hover:to-indigo-700 transition-all duration-300 text-sm font-medium shadow-lg hover:shadow-xl hover:shadow-violet-500/20 transform hover:scale-[1.02] border border-white/10 backdrop-blur-sm relative overflow-hidden">
+                  {/* Background glow effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-violet-400/15 via-purple-400/15 to-indigo-400/15 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  
+                  {/* Icon consistent with nav items */}
+                  <svg className="w-4 h-4 relative z-10 transition-transform duration-300 group-hover:rotate-90 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                   </svg>
-                  <span>Chat mới</span>
+                  
+                  {/* Text consistent with nav items */}
+                  <span className="relative z-10 font-medium">
+                    Tạo Chat mới
+                  </span>
+                  
+                  {/* Subtle sparkle effects */}
+                  <div className="absolute top-1.5 right-2 w-0.5 h-0.5 bg-white/80 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:animate-ping delay-0"></div>
+                  <div className="absolute bottom-1.5 right-3 w-1 h-1 bg-yellow-200/60 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:animate-pulse delay-200"></div>
                 </button>
               </Link>
             </div>
@@ -337,34 +412,13 @@ export default function Sidebar() {
                             const isActive = pathname === `/chat/${chat.id}`;
                             
                             return (
-                              <Link
+                              <ChatListItem
                                 key={chat.id}
-                                href={`/chat/${chat.id}`}
-                                className={cn(
-                                  'group flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm',
-                                  isActive
-                                    ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
-                                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50'
-                                )}
-                              >
-                                <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                </svg>
-                                <span className="truncate flex-1">{chat.title}</span>
-                                  <button
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      e.stopPropagation();
-                                      setDeleteModal({ isOpen: true, chatId: chat.id });
-                                    }}
-                                  className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-all"
-                                  aria-label="Xóa chat"
-                                >
-                                  <svg className="w-3.5 h-3.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                  </svg>
-                                </button>
-                              </Link>
+                                chat={chat}
+                                isActive={isActive}
+                                onUpdate={updateChat}
+                                onDelete={(chatId) => setDeleteModal({ isOpen: true, chatId })}
+                              />
                             );
                           })}
                         </div>
@@ -382,34 +436,13 @@ export default function Sidebar() {
                             const isActive = pathname === `/chat/${chat.id}`;
                             
                             return (
-                              <Link
+                              <ChatListItem
                                 key={chat.id}
-                                href={`/chat/${chat.id}`}
-                                className={cn(
-                                  'group flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm',
-                                  isActive
-                                    ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
-                                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50'
-                                )}
-                              >
-                                <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                                </svg>
-                                <span className="truncate flex-1">{chat.title}</span>
-                                  <button
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      e.stopPropagation();
-                                      setDeleteModal({ isOpen: true, chatId: chat.id });
-                                    }}
-                                  className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-all"
-                                  aria-label="Xóa chat"
-                                >
-                                  <svg className="w-3.5 h-3.5 text-gray-400 hover:text-red-600 dark:hover:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                  </svg>
-                                </button>
-                              </Link>
+                                chat={chat}
+                                isActive={isActive}
+                                onUpdate={updateChat}
+                                onDelete={(chatId) => setDeleteModal({ isOpen: true, chatId })}
+                              />
                             );
                           })}
                         </div>
@@ -555,6 +588,16 @@ export default function Sidebar() {
           </Button>
         </ModalFooter>
       </Modal>
+
+      {/* Toast Notification */}
+      {toast.visible && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          visible={toast.visible}
+          onClose={() => setToast({ ...toast, visible: false })}
+        />
+      )}
     </>
   );
 }

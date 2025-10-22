@@ -1,7 +1,7 @@
 'use client';
 
 import { Button, FileIcon, Modal, ModalFooter } from '@/components/ui';
-import { Document } from '@/lib/types';
+import { Document } from '@/lib/api';
 import { formatDate, formatFileSize } from '@/lib/utils';
 import { useState } from 'react';
 
@@ -30,47 +30,39 @@ export default function DocumentCard({ document, onDelete, onChat }: DocumentCar
         {/* File Icon */}
         <div className="flex items-start gap-3">
           <FileIcon 
-            fileType={document.type}
+            fileType={document.mimeType || 'unknown'}
             size="lg"
           />
           
           <div className="flex-1 min-w-0">
             {/* Title */}
             <h3 className="font-medium text-gray-900 dark:text-gray-100 truncate mb-1">
-              {document.name}
+              {document.originalFilename || document.name}
             </h3>
             
             {/* Meta */}
             <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-2">
-              <span>{formatFileSize(document.size)}</span>
+              <span>{formatFileSize(document.fileSize || 0)}</span>
               <span>•</span>
-              <span>{formatDate(document.uploadedAt)}</span>
+              <span>{formatDate(document.createdAt || document.updatedAt || '')}</span>
             </div>
             
             {/* Status & Info */}
             <div className="flex items-center gap-2 flex-wrap">
               <span className={`px-2 py-1 rounded text-xs font-medium ${
-                document.status === 'completed'
+                document.status === 'processed'
                   ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
                   : document.status === 'processing'
                   ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                  : document.status === 'uploading'
+                  ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
                   : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
               }`}>
-                {document.status === 'completed' ? 'Hoàn tất' :
-                 document.status === 'processing' ? 'Đang xử lý' : 'Thất bại'}
+                {document.status === 'processed' ? 'Hoàn tất' :
+                 document.status === 'processing' ? 'Đang xử lý' : 
+                 document.status === 'uploading' ? 'Đang upload' : 'Thất bại'}
               </span>
-              
-              {document.pageCount && (
-                <span className="text-xs text-gray-500 dark:text-gray-400">
-                  {document.pageCount} trang
-                </span>
-              )}
-              
-              {document.chatCount !== undefined && document.chatCount > 0 && (
-                <span className="text-xs text-gray-500 dark:text-gray-400">
-                  {document.chatCount} chat
-                </span>
-              )}
+              {/* Metadata removed for now - not available in current Document interface */}
             </div>
           </div>
           
@@ -93,7 +85,7 @@ export default function DocumentCard({ document, onDelete, onChat }: DocumentCar
                   onClick={() => setShowMenu(false)}
                 />
                 <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-20">
-                  {document.status === 'completed' && (
+                  {document.status === 'processed' && (
                     <button
                       onClick={handleChat}
                       className="w-full px-4 py-2 text-left text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center gap-2"
@@ -123,7 +115,7 @@ export default function DocumentCard({ document, onDelete, onChat }: DocumentCar
         </div>
         
         {/* Actions on hover */}
-        {document.status === 'completed' && (
+        {document.status === 'processed' && (
           <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700 opacity-0 group-hover:opacity-100 transition-opacity">
             <Button
               size="sm"
@@ -148,7 +140,7 @@ export default function DocumentCard({ document, onDelete, onChat }: DocumentCar
         size="sm"
       >
         <p className="text-gray-600 dark:text-gray-400 mb-4">
-          Bạn có chắc chắn muốn xóa tài liệu <strong>{document.name}</strong>?
+          Bạn có chắc chắn muốn xóa tài liệu <strong>{document.originalFilename || document.name}</strong>?
           Hành động này không thể hoàn tác.
         </p>
         <ModalFooter>

@@ -6,10 +6,12 @@ import { ChangeEvent, DragEvent, useRef, useState } from 'react';
 
 interface FileUploadZoneProps {
   onUpload: (file: File) => void;
+  onMultipleUpload?: (files: File[]) => void;
   isUploading?: boolean;
+  allowMultiple?: boolean;
 }
 
-export default function FileUploadZone({ onUpload, isUploading }: FileUploadZoneProps) {
+export default function FileUploadZone({ onUpload, onMultipleUpload, isUploading, allowMultiple = false }: FileUploadZoneProps) {
   const [isDragOver, setIsDragOver] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -30,10 +32,57 @@ export default function FileUploadZone({ onUpload, isUploading }: FileUploadZone
     return true;
   };
 
-  const handleFile = (file: File) => {
-    if (validateFile(file)) {
-      onUpload(file);
+  const handleFiles = (files: FileList | File[]) => {
+    const fileArray = Array.from(files);
+    console.log('FileUploadZone: Files selected:', fileArray.map(f => ({ 
+      name: f.name, 
+      size: f.size, 
+      type: f.type 
+    })));
+    
+    if (allowMultiple && onMultipleUpload) {
+      // Multiple file upload mode
+      const validFiles: File[] = [];
+      const errors: string[] = [];
+      
+      fileArray.forEach(file => {
+        if (validateFile(file)) {
+          validFiles.push(file);
+        } else {
+          errors.push(`${file.name}: ${error}`);
+        }
+      });
+      
+      if (validFiles.length > 0) {
+        console.log('FileUploadZone: Valid files for multiple upload:', validFiles.length);
+        onMultipleUpload(validFiles);
+        
+        // Show errors for invalid files if any
+        if (errors.length > 0) {
+          setError(`Một số file không hợp lệ: ${errors.join(', ')}`);
+        }
+      } else {
+        console.log('FileUploadZone: No valid files for multiple upload');
+      }
+    } else {
+      // Single file upload mode
+      const file = fileArray[0];
+      if (file && validateFile(file)) {
+        console.log('FileUploadZone: File validation passed, calling onUpload');
+        onUpload(file);
+      } else {
+        console.log('FileUploadZone: File validation failed');
+      }
     }
+    
+    // Clear the file input after upload
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleFile = (file: File) => {
+    handleFiles([file]);
   };
 
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
@@ -52,14 +101,14 @@ export default function FileUploadZone({ onUpload, isUploading }: FileUploadZone
 
     const files = e.dataTransfer.files;
     if (files.length > 0) {
-      handleFile(files[0]);
+      handleFiles(files);
     }
   };
 
   const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
-      handleFile(files[0]);
+      handleFiles(files);
     }
   };
 
@@ -91,7 +140,8 @@ export default function FileUploadZone({ onUpload, isUploading }: FileUploadZone
           accept=".pdf,.doc,.docx,.txt,.md"
           onChange={handleFileSelect}
           disabled={isUploading}
-          aria-label="Chọn file để tải lên"
+          multiple={allowMultiple}
+          aria-label={allowMultiple ? "Chọn file để tải lên (có thể chọn nhiều)" : "Chọn file để tải lên"}
         />
 
         <div className="flex flex-col items-center gap-4">
@@ -113,16 +163,25 @@ export default function FileUploadZone({ onUpload, isUploading }: FileUploadZone
 
           <div>
             <p className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-1">
-              {isDragOver ? 'Thả file tại đây' : 'Kéo thả file hoặc click để chọn'}
+              {isDragOver 
+                ? (allowMultiple ? 'Thả file tại đây' : 'Thả file tại đây')
+                : (allowMultiple ? 'Kéo thả file hoặc click để chọn (có thể chọn nhiều)' : 'Kéo thả file hoặc click để chọn')
+              }
             </p>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Hỗ trợ: PDF, DOCX, TXT, MD (tối đa 50MB)
+              Hỗ trợ: PDF, DOCX, TXT, MD (tối đa 50MB{allowMultiple ? ' mỗi file' : ''})
             </p>
           </div>
 
           {!isUploading && (
-            <Button variant="outline" onClick={handleClick}>
-              Chọn file
+            <Button 
+              variant="outline" 
+              onClick={(e) => {
+                e.stopPropagation(); // Prevent parent div click
+                handleClick();
+              }}
+            >
+              {allowMultiple ? 'Chọn nhiều file' : 'Chọn file'}
             </Button>
           )}
 

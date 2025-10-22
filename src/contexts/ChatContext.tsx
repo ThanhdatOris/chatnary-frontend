@@ -8,8 +8,10 @@ interface ChatContextType {
   chats: ChatSession[];
   loading: boolean;
   addChat: (chat: ChatSession) => void;
+  updateChat: (updatedChat: ChatSession) => void;
   removeChat: (chatId: string) => void;
-  refreshChats: () => Promise<void>;
+  refreshChats: (projectId?: string) => Promise<void>;
+  getChatsByProject: (projectId: string) => Promise<ChatSession[]>;
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined);
@@ -26,7 +28,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     try {
       const response = await chatsApi.getChats();
       if (response.success && response.data) {
-        setChats(response.data.items);
+        setChats(response.data.chats);
         setHasFetched(true);
       }
     } catch (error) {
@@ -36,17 +38,30 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const refreshChats = async () => {
+  const refreshChats = async (projectId?: string) => {
     setLoading(true);
     try {
-      const response = await chatsApi.getChats();
+      const response = await chatsApi.getChats(projectId);
       if (response.success && response.data) {
-        setChats(response.data.items);
+        setChats(response.data.chats);
       }
     } catch (error) {
       console.error('Failed to refresh chats:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const getChatsByProject = async (projectId: string): Promise<ChatSession[]> => {
+    try {
+      const response = await chatsApi.getProjectChats(projectId);
+      if (response.success && response.data) {
+        return response.data;
+      }
+      return [];
+    } catch (error) {
+      console.error('Failed to get chats by project:', error);
+      return [];
     }
   };
 
@@ -58,6 +73,13 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     setTimeout(() => {
       refreshChats();
     }, 1500);
+  };
+
+  const updateChat = (updatedChat: ChatSession) => {
+    // Optimistic update - UI update ngay lập tức
+    setChats(prev => prev.map(chat => 
+      chat.id === updatedChat.id ? updatedChat : chat
+    ));
   };
 
   const removeChat = (chatId: string) => {
@@ -75,7 +97,15 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <ChatContext.Provider value={{ chats, loading, addChat, removeChat, refreshChats }}>
+    <ChatContext.Provider value={{ 
+      chats, 
+      loading, 
+      addChat, 
+      updateChat,
+      removeChat, 
+      refreshChats, 
+      getChatsByProject 
+    }}>
       {children}
     </ChatContext.Provider>
   );

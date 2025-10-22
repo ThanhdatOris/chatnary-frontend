@@ -2,107 +2,175 @@
 
 import ChatInput from '@/components/chat/ChatInput';
 import ChatMessage from '@/components/chat/ChatMessage';
-import SuggestionChips from '@/components/chat/SuggestionChips';
+import ChatNotFound from '@/components/chat/ChatNotFound';
+import ChatRenameModal from '@/components/chat/ChatRenameModal';
+import HeaderButton from '@/components/layout/HeaderButton';
 import MainLayout from '@/components/layout/MainLayout';
-import { Button, Loading } from '@/components/ui';
-import { chatsApi, messagesApi, suggestionsApi } from '@/lib/api';
-import { ChatSession, Message } from '@/lib/types';
-import { useParams, useRouter } from 'next/navigation';
+import { Button, EmptyState, LoadingState } from '@/components/ui';
+import { useChats } from '@/contexts/ChatContext';
+import { useChat } from '@/hooks/useChat';
+import useProjectBreadcrumb from '@/hooks/useProjectBreadcrumb';
+import { suggestionsApi } from '@/lib/api';
+import { Edit2, Share, Trash2 } from 'lucide-react';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
 export default function ChatPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const chatId = params.id as string;
+  const projectId = searchParams.get('project');
   
-  const [chat, setChat] = useState<ChatSession | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
+  // Set project name for breadcrumb
+  useProjectBreadcrumb();
+  
+  const {
+    chat,
+    messages,
+    loading,
+    sending,
+    error: chatError,
+    sendMessage,
+    updateChatLocal,
+  } = useChat({ chatId, projectId: projectId || undefined });
+  
+  const { updateChat, chats } = useChats();
   const [suggestions, setSuggestions] = useState<string[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [sending, setSending] = useState(false);
-  const [selectedModel, setSelectedModel] = useState('GPT-4');
-  const [showModelMenu, setShowModelMenu] = useState(false);
-  const [showChatMenu, setShowChatMenu] = useState(false);
-  
+  const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const fetchChatData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [chatRes, messagesRes, suggestionsRes] = await Promise.all([
-        chatsApi.getChat(chatId),
-        messagesApi.getMessages(chatId),
-        suggestionsApi.getSuggestions(chatId),
-      ]);
+  // Sync chat title từ context khi có thay đổi từ sidebar
+  useEffect(() => {
+    if (chatId && chats.length > 0) {
+      const updatedChatFromContext = chats.find(c => c.id === chatId);
+      if (updatedChatFromContext && chat && updatedChatFromContext.title !== chat.title) {
+        updateChatLocal(updatedChatFromContext);
+      }
+    }
+  }, [chats, chatId, chat, updateChatLocal]);
 
-      if (chatRes.success && chatRes.data) setChat(chatRes.data);
-      if (messagesRes.success && messagesRes.data) setMessages(messagesRes.data.items);
-      if (suggestionsRes.success && suggestionsRes.data) setSuggestions(suggestionsRes.data.suggestions);
+  const fetchSuggestions = useCallback(async () => {
+    try {
+      const response = await suggestionsApi.getSuggestions(chatId);
+      if (response.success && response.data) {
+        setSuggestions(response.data);
+      }
     } catch (error) {
-      console.error('Failed to fetch chat data:', error);
-    } finally {
-      setLoading(false);
+      console.error('Failed to fetch suggestions:', error);
     }
   }, [chatId]);
 
   useEffect(() => {
     if (chatId) {
-      fetchChatData();
+      fetchSuggestions();
     }
-  }, [chatId, fetchChatData]);
+  }, [chatId, fetchSuggestions]);
 
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
 
-  // Close dropdowns when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-      if (!target.closest('.model-menu-container')) {
-        setShowModelMenu(false);
-      }
-      if (!target.closest('.chat-menu-container')) {
-        setShowChatMenu(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const handleSend = async (content: string) => {
-    setSending(true);
+  const handleSendMessage = async (content: string) => {
     try {
-      const response = await messagesApi.sendMessage(chatId, { content });
-      
-      if (response.success && response.data) {
-        // Refresh messages
-        const messagesRes = await messagesApi.getMessages(chatId);
-        if (messagesRes.success && messagesRes.data) {
-          setMessages(messagesRes.data.items);
-        }
-      }
+      console.log('Chat page sending message:', content);
+      await sendMessage(content);
+      scrollToBottom();
     } catch (error) {
-      console.error('Failed to send message:', error);
-    } finally {
-      setSending(false);
+      console.error('Failed to send message in chat page:', error);
+      // Show error message to user
+      alert('Có lỗi xảy ra khi gửi tin nhắn. Vui lòng thử lại.');
     }
   };
 
   const handleSuggestionSelect = (suggestion: string) => {
-    handleSend(suggestion);
+    handleSendMessage(suggestion);
+  };
+
+  const handleChatUpdate = (updatedChat: typeof chat) => {
+    if (updatedChat) {
+      updateChatLocal(updatedChat);
+      updateChat(updatedChat);
+    }
   };
 
   if (loading) {
     return (
-      <MainLayout>
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <Loading size="lg" text="Đang tải cuộc trò chuyện..." />
+      <MainLayout
+        headerTitle="Đang tải..."
+        headerSubtitle="Đang lấy thông tin cuộc trò chuyện"
+      >
+        <LoadingState 
+          title="Đang tải cuộc trò chuyện"
+          message="Đang lấy thông tin chat và tin nhắn..."
+        />
+      </MainLayout>
+    );
+  }
+
+  if (chatError) {
+    // Kiểm tra nếu là lỗi 404 (Chat not found)
+    if (chatError.includes('Chat not found') || chatError.includes('404')) {
+      return (
+        <MainLayout
+          headerTitle="Chat không tìm thấy"
+          headerSubtitle="Cuộc trò chuyện này có thể đã bị xóa"
+        >
+          <ChatNotFound />
+        </MainLayout>
+      );
+    }
+
+    // Lỗi khác
+    return (
+      <MainLayout
+        headerTitle="Có lỗi xảy ra"
+        headerSubtitle="Không thể tải cuộc trò chuyện"
+        headerActions={
+          <HeaderButton
+            onClick={() => window.location.reload()}
+            variant="primary"
+          >
+            🔄 Thử lại
+          </HeaderButton>
+        }
+      >
+        <div className="min-h-[60vh] flex items-center justify-center px-4">
+          <div className="max-w-md w-full text-center">
+            <div className="mx-auto w-16 h-16 mb-6">
+              <div className="w-full h-full rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center">
+                <svg className="w-8 h-8 text-red-500 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+            </div>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+              Có lỗi xảy ra
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              {chatError}
+            </p>
+            <div className="space-y-3">
+              <Button 
+                onClick={() => window.location.reload()}
+                variant="primary"
+                className="w-full"
+              >
+                🔄 Thử lại
+              </Button>
+              <Button 
+                onClick={() => router.push(`/chat?project=${projectId}`)}
+                variant="secondary"
+                className="w-full"
+              >
+                Tạo cuộc trò chuyện mới
+              </Button>
+            </div>
+          </div>
         </div>
       </MainLayout>
     );
@@ -110,143 +178,97 @@ export default function ChatPage() {
 
   if (!chat) {
     return (
-      <MainLayout>
-        <div className="text-center py-16">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-            Không tìm thấy cuộc trò chuyện
-          </h2>
-          <Button onClick={() => router.push('/chat')}>
-            Tạo cuộc trò chuyện mới
-          </Button>
-        </div>
+      <MainLayout
+        headerTitle="Chat không tìm thấy"
+        headerSubtitle="Cuộc trò chuyện này có thể đã bị xóa hoặc bạn không có quyền truy cập"
+      >
+        <ChatNotFound />
       </MainLayout>
     );
   }
 
+  // Prepare header actions
+  const headerActions = (
+    <>
+      <HeaderButton
+        icon={<Edit2 className="w-4 h-4" />}
+        onClick={() => setIsRenameModalOpen(true)}
+        tooltip="Đổi tên cuộc trò chuyện"
+      >
+        Đổi tên
+      </HeaderButton>
+      <HeaderButton
+        icon={<Share className="w-4 h-4" />}
+        onClick={() => {
+          // TODO: Implement share functionality
+          console.log('Share chat');
+        }}
+        variant="secondary"
+        tooltip="Chia sẻ cuộc trò chuyện"
+      >
+        Chia sẻ
+      </HeaderButton>
+      <HeaderButton
+        icon={<Trash2 className="w-4 h-4" />}
+        onClick={() => {
+          // TODO: Implement delete functionality
+          if (confirm('Bạn có chắc muốn xóa cuộc trò chuyện này?')) {
+            console.log('Delete chat');
+          }
+        }}
+        variant="danger"
+        tooltip="Xóa cuộc trò chuyện"
+      >
+        Xóa
+      </HeaderButton>
+    </>
+  );
+
   return (
-    <MainLayout>
-      <div className="fixed inset-0 flex flex-col" style={{ marginLeft: 'inherit', top: 0, bottom: 0 }}>
-        {/* Header - ChatGPT Style */}
-        <div className="flex-shrink-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between px-4 h-14">
-            {/* Model Selector */}
-            <div className="relative model-menu-container">
-              <button
-                onClick={() => setShowModelMenu(!showModelMenu)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-sm font-medium text-gray-900 dark:text-gray-100"
-              >
-                <span>{selectedModel}</span>
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-
-              {/* Model Dropdown */}
-              {showModelMenu && (
-                <div className="absolute top-full left-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50">
-                  {['GPT-4', 'GPT-3.5', 'Claude', 'Gemini'].map((model) => (
-                    <button
-                      key={model}
-                      onClick={() => {
-                        setSelectedModel(model);
-                        setShowModelMenu(false);
-                      }}
-                      className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100"
-                    >
-                      {model}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Chat Menu */}
-            <div className="relative chat-menu-container">
-              <button
-                onClick={() => setShowChatMenu(!showChatMenu)}
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                aria-label="Menu chat"
-              >
-                <svg className="w-5 h-5 text-gray-600 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                </svg>
-              </button>
-
-              {/* Menu Dropdown */}
-              {showChatMenu && (
-                <div className="absolute top-full right-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-50">
-                  <button 
-                    onClick={() => setShowChatMenu(false)}
-                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100"
-                  >
-                    Đổi tên
-                  </button>
-                  <button 
-                    onClick={() => setShowChatMenu(false)}
-                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-900 dark:text-gray-100"
-                  >
-                    Chia sẻ
-                  </button>
-                  <button 
-                    onClick={() => setShowChatMenu(false)}
-                    className="w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700 text-red-600 dark:text-red-400"
-                  >
-                    Xóa chat
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
+    <MainLayout
+      headerTitle={chat?.title || 'Đang tải...'}
+      headerSubtitle={`Chat AI • ${messages.length} tin nhắn • ID: ${chatId.substring(0, 8)}`}
+      headerActions={headerActions}
+    >
+      <div className="h-full flex flex-col">
         {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto bg-white dark:bg-gray-900 pt-0">
-          <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
+        <div className="flex-1 overflow-y-auto bg-white dark:bg-gray-900">
+          <div className="max-w-4xl mx-auto h-full">
             {messages.length === 0 ? (
-              <div className="text-center py-16">
-                <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-8 h-8 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                  Bắt đầu cuộc trò chuyện
-                </h3>
-                <p className="text-gray-600 dark:text-gray-400 mb-6">
-                  Đặt câu hỏi về tài liệu của bạn
-                </p>
-                {suggestions.length > 0 && (
-                  <div className="max-w-2xl mx-auto">
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-                      Gợi ý câu hỏi:
-                    </p>
-                    <SuggestionChips
-                      suggestions={suggestions}
-                      onSelect={handleSuggestionSelect}
-                    />
-                  </div>
-                )}
-              </div>
+              <EmptyState
+                title="Bắt đầu cuộc trò chuyện"
+                description="Đặt câu hỏi về tài liệu trong dự án này. AI sẽ phân tích và trả lời dựa trên nội dung tài liệu."
+                suggestions={suggestions}
+                onSuggestionClick={handleSuggestionSelect}
+              />
             ) : (
-              <>
+              <div className="px-4 py-6 space-y-6">
                 {messages.map((message) => (
                   <ChatMessage key={message.id} message={message} />
                 ))}
                 <div ref={messagesEndRef} />
-              </>
+              </div>
             )}
           </div>
         </div>
 
         {/* Input Area */}
-        <div className="flex-shrink-0">
+        <div className="flex-shrink-0 relative bg-white dark:bg-gray-900 shadow-[0_-15px_30px_2px_rgba(255,255,255,1),0_-30px_60px_0px_rgba(255,255,255,0.8),0_-45px_90px_-10px_rgba(255,255,255,0.6)] dark:shadow-[0_-15px_30px_2px_rgba(17,24,39,1),0_-30px_60px_0px_rgba(17,24,39,0.8),0_-45px_90px_-10px_rgba(17,24,39,0.6)]">
           <ChatInput
-            onSend={handleSend}
+            onSend={handleSendMessage}
             disabled={sending}
             placeholder="Hỏi gì về tài liệu này..."
           />
         </div>
       </div>
+      
+      {/* Chat Rename Modal */}
+      <ChatRenameModal
+        isOpen={isRenameModalOpen}
+        chat={chat}
+        onClose={() => setIsRenameModalOpen(false)}
+        onUpdate={handleChatUpdate}
+      />
     </MainLayout>
   );
 }

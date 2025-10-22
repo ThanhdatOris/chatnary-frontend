@@ -1,7 +1,7 @@
 'use client';
 
 import { FileIcon } from '@/components/ui';
-import { Document } from '@/lib/types';
+import { Document } from '@/lib/api';
 import { cn, formatDate, formatFileSize, paginateArray } from '@/lib/utils';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
@@ -99,7 +99,7 @@ export default function DocumentList({
     // Filter by file type
     if (filters.fileType) {
       filteredDocuments = filteredDocuments.filter(doc => 
-        doc.type.toLowerCase().includes(filters.fileType.toLowerCase())
+        (doc.mimeType?.toLowerCase() || '').includes(filters.fileType.toLowerCase())
       );
     }
     
@@ -113,7 +113,7 @@ export default function DocumentList({
     // Filter by date range
     if (filters.dateRange) {
       const now = new Date();
-      const uploadDate = (doc: Document) => new Date(doc.uploadedAt);
+      const uploadDate = (doc: Document) => new Date(doc.createdAt);
       
       filteredDocuments = filteredDocuments.filter(doc => {
         const docDate = uploadDate(doc);
@@ -247,7 +247,7 @@ export default function DocumentList({
                   <div 
                     ref={settingsRef}
                     onClick={handlePopupClick}
-                    className="absolute top-full right-0 mt-2 w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl z-50 overflow-hidden"
+                    className="absolute top-full right-0 mt-2 w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl z-[9999] overflow-hidden"
                   >
                     <div className="p-4">
                       {/* Header */}
@@ -537,7 +537,7 @@ export default function DocumentList({
                 <div className="flex items-start gap-3">
                   {/* File Icon */}
                   <div className="flex-shrink-0 mt-1">
-                    <FileIcon fileType={document.type} size="md" />
+                    <FileIcon fileType={document.mimeType || 'unknown'} size="md" />
                   </div>
 
                   {/* Content */}
@@ -548,25 +548,19 @@ export default function DocumentList({
                           {document.name}
                         </h3>
                         <div className="flex items-center gap-2 mt-1 text-xs text-gray-500 dark:text-gray-400">
-                          <span>{formatFileSize(document.size)}</span>
+                          <span>{formatFileSize(document.fileSize || 0)}</span>
                           <span>•</span>
-                          <span>{formatDate(document.uploadedAt)}</span>
-                          {document.pageCount && (
-                            <>
-                              <span>•</span>
-                              <span>{document.pageCount} trang</span>
-                            </>
-                          )}
+                          <span>{formatDate(document.createdAt)}</span>
                           <span>•</span>
                           <span className={cn(
                             'px-2 py-1 rounded-full',
-                            document.status === 'completed' 
+                            document.status === 'processed' 
                               ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                               : document.status === 'processing'
                               ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
                               : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
                           )}>
-                            {document.status === 'completed' ? 'Đã xử lý' : 
+                            {document.status === 'processed' ? 'Đã xử lý' : 
                              document.status === 'processing' ? 'Đang xử lý' : 'Lỗi'}
                           </span>
                         </div>
@@ -579,26 +573,13 @@ export default function DocumentList({
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        // Handle chat action
-                      }}
-                      className="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-                      title="Bắt đầu chat"
-                    >
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                      </svg>
-                    </button>
-                    
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
                         // Handle download action  
                       }}
                       className="p-1 text-gray-400 hover:text-green-600 dark:hover:text-green-400 transition-colors"
                       title="Tải xuống"
                     >
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-2-2m2 2l2-2m-2 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                       </svg>
                     </button>
 
@@ -641,7 +622,7 @@ export default function DocumentList({
                 >
                   {/* File Icon */}
                   <div className="flex justify-center mb-3">
-                    <FileIcon fileType={document.type} size="lg" />
+                    <FileIcon fileType={document.mimeType || 'unknown'} size="lg" />
                   </div>
 
                   {/* Document Info */}
@@ -651,22 +632,22 @@ export default function DocumentList({
                     </h3>
                     
                     <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
-                      <div>{formatFileSize(document.size)}</div>
-                      <div>{formatDate(document.uploadedAt)}</div>
+                      <div>{formatFileSize(document.fileSize || 0)}</div>
+                      <div>{formatDate(document.createdAt)}</div>
                     </div>
 
                     {/* Status Badge */}
                     <span
                       className={cn(
                         'inline-block px-2 py-1 text-xs rounded-full',
-                        document.status === 'completed'
+                        document.status === 'processed'
                           ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                           : document.status === 'processing'
                           ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
                           : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
                       )}
                     >
-                      {document.status === 'completed' ? 'Đã xử lý' :
+                      {document.status === 'processed' ? 'Đã xử lý' :
                        document.status === 'processing' ? 'Đang xử lý' : 'Lỗi'}
                     </span>
                   </div>
