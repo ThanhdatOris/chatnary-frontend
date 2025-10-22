@@ -30,7 +30,7 @@ export default function Breadcrumb({ className, showProjectName = true }: Breadc
   return (
     <nav 
       className={cn(
-        'flex items-center gap-2 px-6 py-2 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700',
+        'flex items-center gap-2 px-6 py-1.5 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700',
         className
       )}
       aria-label="Breadcrumb"
