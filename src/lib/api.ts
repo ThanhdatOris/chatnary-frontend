@@ -263,16 +263,6 @@ class ApiClient {
     return this.request<ChatSession>(`/api/chats/${chatId}`);
   }
 
-  async updateChat(chatId: string, updates: { title?: string }): Promise<ApiResponse<ChatSession>> {
-    return this.request<ChatSession>(`/api/chats/${chatId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(updates),
-    });
-  }
-
   async deleteChat(chatId: string): Promise<ApiResponse<void>> {
     return this.request<void>(`/api/chats/${chatId}`, {
       method: 'DELETE',
@@ -366,6 +356,6 @@ export const suggestionsApi = {
 
 export default apiClient;
 export type {
-    ApiResponse, ChatSession, CreateChatRequest, CreateProjectRequest, Document, ListChatsResponse, ListDocumentsResponse, Message, Project, SendMessageRequest, UpdateChatRequest, UploadDocumentRequest
+  ApiResponse, ChatSession, CreateChatRequest, CreateProjectRequest, Document, ListChatsResponse, ListDocumentsResponse, Message, Project, SendMessageRequest, UpdateChatRequest, UploadDocumentRequest
 };
 

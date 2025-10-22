@@ -5,11 +5,11 @@ import DocumentViewer from '@/components/document/DocumentViewer';
 import FileUploadZone from '@/components/document/FileUploadZone';
 import HeaderButton from '@/components/layout/HeaderButton';
 import MainLayout from '@/components/layout/MainLayout';
-import { Button, FileIcon, Input, Loading, Modal } from '@/components/ui';
+import { Button, FileIcon, Loading, Modal } from '@/components/ui';
 import useDocuments from '@/hooks/useDocuments';
 import { useProject } from '@/hooks/useProject';
 import apiClient, { Document } from '@/lib/api';
-import { Upload, Search } from 'lucide-react';
+import { Search, Upload } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 

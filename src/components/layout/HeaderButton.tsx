@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { ReactNode, useState, useRef, useEffect } from 'react';
+import { ReactNode, useEffect, useRef, useState } from 'react';
 
 interface HeaderButtonProps {
   children: ReactNode;
