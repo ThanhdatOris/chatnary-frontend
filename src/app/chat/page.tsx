@@ -1,6 +1,7 @@
 'use client';
 
 import MainLayout from '@/components/layout/MainLayout';
+import HeaderButton from '@/components/layout/HeaderButton';
 import { Button, Card, FileIcon, Loading } from '@/components/ui';
 import { useChats } from '@/contexts/ChatContext';
 import apiClient, { chatsApi, Document, documentsApi } from '@/lib/api';
@@ -138,7 +139,10 @@ export default function ChatPage() {
 
   if (loading) {
     return (
-      <MainLayout>
+      <MainLayout
+        headerTitle="Tạo cuộc trò chuyện mới"
+        headerSubtitle="Chọn tài liệu bạn muốn trò chuyện"
+      >
         <div className="flex items-center justify-center min-h-[60vh]">
           <Loading size="lg" text="Đang tải tài liệu..." />
         </div>
@@ -146,18 +150,27 @@ export default function ChatPage() {
     );
   }
 
+  const actionButton = (
+    <HeaderButton
+      variant="primary"
+      onClick={handleCreateChat}
+      disabled={selectedDocs.length === 0 || creating}
+      isLoading={creating}
+    >
+      {selectedDocs.length === 0
+        ? 'Chọn tài liệu'
+        : `Bắt đầu chat với ${selectedDocs.length} tài liệu`}
+    </HeaderButton>
+  );
+
   return (
-    <MainLayout>
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-            Tạo cuộc trò chuyện mới
-          </h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Chọn tài liệu bạn muốn trò chuyện
-          </p>
-        </div>
+    <MainLayout
+      headerTitle="Tạo cuộc trò chuyện mới"
+      headerSubtitle="Chọn tài liệu bạn muốn trò chuyện"
+      headerActions={selectedDocs.length > 0 ? actionButton : undefined}
+    >
+      <div className="flex-1 p-6 overflow-auto">
+        <div className="max-w-4xl mx-auto space-y-6">
 
         {documents.length === 0 ? (
           <Card variant="bordered" className="text-center py-16">
@@ -189,15 +202,18 @@ export default function ChatPage() {
                       ? 'ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/20'
                       : 'hover:shadow-md'
                   }`}
-                  onClick={() => handleToggleDoc(doc.id)}
                 >
-                  <div className="flex items-start gap-3 p-4">
-                    <div className="flex-shrink-0">
+                  <label 
+                    className="flex items-start gap-3 p-4 cursor-pointer w-full"
+                    htmlFor={`doc-${doc.id}`}
+                  >
+                    <div className="flex-shrink-0 mt-1">
                       <input
+                        id={`doc-${doc.id}`}
                         type="checkbox"
                         checked={selectedDocs.includes(doc.id)}
                         onChange={() => handleToggleDoc(doc.id)}
-                        className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
+                        className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 focus:ring-2"
                         aria-label={`Chọn tài liệu ${doc.name}`}
                       />
                     </div>
@@ -214,26 +230,13 @@ export default function ChatPage() {
                         Tài liệu
                       </p>
                     </div>
-                  </div>
+                  </label>
                 </Card>
               ))}
             </div>
-
-            {/* Action Button */}
-            <div className="flex justify-center pt-4">
-              <Button
-                size="lg"
-                onClick={handleCreateChat}
-                disabled={selectedDocs.length === 0 || creating}
-                isLoading={creating}
-              >
-                {selectedDocs.length === 0
-                  ? 'Chọn tài liệu'
-                  : `Bắt đầu chat với ${selectedDocs.length} tài liệu`}
-              </Button>
-            </div>
           </>
         )}
+        </div>
       </div>
     </MainLayout>
   );

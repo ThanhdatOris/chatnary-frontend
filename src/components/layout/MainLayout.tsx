@@ -3,30 +3,64 @@
 import { useSidebar } from '@/contexts/SidebarContext';
 import { usePathname } from 'next/navigation';
 import { ReactNode } from 'react';
+import PageHeader from './PageHeader';
 import Sidebar from './Sidebar';
 
 interface MainLayoutProps {
   children: ReactNode;
+  // Optional header props - if provided, will render consistent header
+  headerTitle?: string;
+  headerSubtitle?: string;
+  headerActions?: ReactNode;
+  showHeaderBorder?: boolean;
+  // Additional content between header and main content (like search bars)
+  headerExtras?: ReactNode;
 }
 
-export default function MainLayout({ children }: MainLayoutProps) {
+export default function MainLayout({ 
+  children, 
+  headerTitle,
+  headerSubtitle,
+  headerActions,
+  showHeaderBorder = true,
+  headerExtras
+}: MainLayoutProps) {
   const { sidebarWidth, isCollapsed } = useSidebar();
   const pathname = usePathname();
   
   // Chat pages use custom full-height layout without padding
-  const isChatPage = pathname?.startsWith('/chat/');
+  const isChatPage = pathname?.startsWith('/chat');
   const isDocumentsPage = pathname?.startsWith('/documents');
-  const useFullHeight = isChatPage || isDocumentsPage;
+  const isDashboardPage = pathname?.startsWith('/dashboard');
+  const useFullHeight = isChatPage || isDocumentsPage || isDashboardPage;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       <Sidebar />
       <main 
         style={{ marginLeft: isCollapsed ? '64px' : `${sidebarWidth}px` }} 
-        className={`transition-[margin] duration-200 ${useFullHeight ? 'h-screen overflow-hidden' : ''}`}
+        className={`transition-[margin] duration-200 ${useFullHeight ? 'h-screen overflow-hidden flex flex-col' : ''}`}
       >
         {useFullHeight ? (
-          children
+          <div className="h-full flex flex-col">
+            {/* Render header if title provided */}
+            {headerTitle && (
+              <PageHeader
+                title={headerTitle}
+                subtitle={headerSubtitle}
+                actions={headerActions}
+                showBorder={showHeaderBorder}
+              />
+            )}
+            
+            {/* Header extras like search bars */}
+            {headerExtras}
+            
+            {/* Main content */}
+            <div className="flex-1 overflow-hidden">
+              {children}
+            </div>
+          </div>
         ) : (
           <div className="p-4 lg:p-6">
             {children}

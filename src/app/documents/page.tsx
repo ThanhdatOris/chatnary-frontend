@@ -4,12 +4,14 @@ import DocumentList from '@/components/document/DocumentList';
 import DocumentViewer from '@/components/document/DocumentViewer';
 import FileUploadZone from '@/components/document/FileUploadZone';
 import MainLayout from '@/components/layout/MainLayout';
+import HeaderButton from '@/components/layout/HeaderButton';
 import { Button, Input, Loading, Modal } from '@/components/ui';
 import useDocuments from '@/hooks/useDocuments';
 import { useProject } from '@/hooks/useProject';
 import apiClient, { Document } from '@/lib/api';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { Upload } from 'lucide-react';
 
 export default function DocumentsPage() {
   const router = useRouter();
@@ -141,57 +143,49 @@ export default function DocumentsPage() {
     );
   }
 
+  const headerActions = (
+    <HeaderButton variant="primary" onClick={() => setShowUploadModal(true)} disabled={uploading}>
+      <Upload className="w-4 h-4 mr-2" />
+      {uploading ? 'Đang upload...' : 'Upload tài liệu'}
+    </HeaderButton>
+  );
+
+  const searchBar = (
+    <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="max-w-md">
+        <Input
+          placeholder="Tìm kiếm tài liệu..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+    </div>
+  );
+
   return (
-    <MainLayout>
-      <div className="h-full flex flex-col">
-        {/* Header */}
-        <div className="min-h-16 p-6 border-b border-gray-200 dark:border-gray-700">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-                Tài liệu
-              </h1>
-              <p className="text-gray-600 dark:text-gray-400 mt-1">
-                Quản lý tài liệu trong project "{project.name}"
-              </p>
-            </div>
-            <div className="flex items-center gap-4">
-              <Button onClick={() => setShowUploadModal(true)} disabled={uploading}>
-                <svg className="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                {uploading ? 'Đang upload...' : 'Upload tài liệu'}
-              </Button>
-            </div>
-          </div>
-
-          {/* Search */}
-          <div className="mt-4 max-w-md">
-            <Input
-              placeholder="Tìm kiếm tài liệu..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
+    <MainLayout
+      headerTitle="Tài liệu"
+      headerSubtitle={`Quản lý tài liệu trong project "${project.name}"`}
+      headerActions={headerActions}
+      headerExtras={searchBar}
+    >
+      {/* Error Display */}
+      {error && (
+        <div className="p-4 bg-red-50 border-l-4 border-red-400 text-red-700">
+          <p className="font-medium">Lỗi: {error}</p>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={refreshDocuments}
+            className="mt-2"
+          >
+            Thử lại
+          </Button>
         </div>
+      )}
 
-        {/* Error Display */}
-        {error && (
-          <div className="p-4 bg-red-50 border-l-4 border-red-400 text-red-700">
-            <p className="font-medium">Lỗi: {error}</p>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={refreshDocuments}
-              className="mt-2"
-            >
-              Thử lại
-            </Button>
-          </div>
-        )}
-
-        {/* Content */}
-        <div className="flex-1 flex min-h-0">
+      {/* Content */}
+      <div className="flex-1 flex min-h-0">
           {loading ? (
             <div className="flex-1 flex items-center justify-center">
               <Loading size="lg" text="Đang tải tài liệu..." />
@@ -346,7 +340,6 @@ export default function DocumentsPage() {
             )}
           </div>
         </Modal>
-      </div>
     </MainLayout>
   );
 }

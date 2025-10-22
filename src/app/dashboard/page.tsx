@@ -1,6 +1,7 @@
 'use client';
 
 import MainLayout from '@/components/layout/MainLayout';
+import HeaderButton from '@/components/layout/HeaderButton';
 import { useProject } from '@/hooks/useProject';
 import { Clock, FileText, FolderOpen, MessageSquare, Upload } from 'lucide-react';
 import Link from 'next/link';
@@ -46,83 +47,88 @@ export default function DashboardPage() {
     );
   }
 
+  const headerActions = (
+    <>
+      <Link href={`/documents?project=${project.id}`}>
+        <HeaderButton
+          variant="primary"
+        >
+          <Upload className="w-4 h-4 mr-2" />
+          Upload tài liệu
+        </HeaderButton>
+      </Link>
+      <Link href={`/chat?project=${project.id}`}>
+        <HeaderButton
+          variant="primary"
+          className="bg-purple-600 hover:bg-purple-700 text-white"
+        >
+          <MessageSquare className="w-4 h-4 mr-2" />
+          Tạo Chat mới
+        </HeaderButton>
+      </Link>
+    </>
+  );
+
   return (
-    <MainLayout>
-      {/* Project Header */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4 mb-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Link href="/" className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
-              ← Tất cả dự án
-            </Link>
-            <div className="w-px h-4 bg-gray-300 dark:bg-gray-600"></div>
-            <div className="flex items-center gap-2">
-              <div 
-                className="w-3 h-3 rounded-full" 
-                style={{ backgroundColor: project.color }}
-              />
-              <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                {project.name}
-              </h1>
+    <MainLayout
+      headerTitle="Dashboard"
+      headerSubtitle={`Project "${project.name}" • ${project.documentsCount} tài liệu • ${project.chatsCount} trò chuyện`}
+      headerActions={headerActions}
+    >
+      {/* Content Area */}
+      <div className="flex-1 p-6 overflow-auto">
+        <div className="max-w-6xl mx-auto">
+          {/* Welcome Section */}
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+              <FolderOpen className="w-8 h-8 text-blue-600 dark:text-blue-400" />
             </div>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+              Chào mừng đến với {project.name}!
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+              Bắt đầu bằng cách upload tài liệu hoặc tạo cuộc trò chuyện đầu tiên.
+            </p>
           </div>
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-500 dark:text-gray-400">
-              {project.documentsCount} tài liệu • {project.chatsCount} trò chuyện
-            </span>
-            <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition-colors">
-              + Tạo mới
-            </button>
-          </div>
-        </div>
-      </div>
 
-      {/* Welcome Content */}
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-12">
-          <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-            <FolderOpen className="w-8 h-8 text-blue-600 dark:text-blue-400" />
-          </div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-            Chào mừng đến với {project.name}!
-          </h2>
-          <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-            Bắt đầu bằng cách upload tài liệu hoặc tạo cuộc trò chuyện đầu tiên.
-          </p>
-        </div>
-
+            {/* Quick Actions Grid */}
             <div className="grid md:grid-cols-2 gap-6 mb-8">
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 text-center hover:shadow-md transition-shadow">
-                <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Upload className="w-6 h-6 text-green-600 dark:text-green-400" />
+              <Link href={`/documents?project=${project.id}`}>
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 text-center hover:shadow-md transition-all hover:scale-[1.02] cursor-pointer">
+                  <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Upload className="w-6 h-6 text-green-600 dark:text-green-400" />
+                  </div>
+                  <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                    Upload Tài liệu
+                  </h4>
+                  <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm">
+                    Thêm PDF, Word, hoặc text files để AI phân tích.
+                  </p>
+                  <div className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors inline-block">
+                    Chọn Tài liệu
+                  </div>
                 </div>
-                <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                  Upload Tài liệu
-                </h4>
-                <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm">
-                  Thêm PDF, Word, hoặc text files để AI phân tích.
-                </p>
-                <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-                  Chọn Tài liệu
-                </button>
-              </div>
+              </Link>
 
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 text-center hover:shadow-md transition-shadow">
-                <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <MessageSquare className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+              <Link href={`/chat?project=${project.id}`}>
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 text-center hover:shadow-md transition-all hover:scale-[1.02] cursor-pointer">
+                  <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <MessageSquare className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                  </div>
+                  <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                    Bắt đầu Chat
+                  </h4>
+                  <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm">
+                    Tạo cuộc trò chuyện với AI về tài liệu.
+                  </p>
+                  <div className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors inline-block">
+                    Tạo Chat Mới
+                  </div>
                 </div>
-                <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                  Bắt đầu Chat
-                </h4>
-                <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm">
-                  Tạo cuộc trò chuyện với AI về tài liệu.
-                </p>
-                <button className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
-                  Tạo Chat Mới
-                </button>
-              </div>
+              </Link>
             </div>
 
+            {/* Features Section */}
             <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-6">
               <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 text-center">
                 Tính năng nổi bật
@@ -151,7 +157,8 @@ export default function DashboardPage() {
                 </div>
               </div>
             </div>
-      </div>
+          </div>
+        </div>
     </MainLayout>
   );
 }

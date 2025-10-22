@@ -46,15 +46,6 @@ const getNavSections = (projectId?: string): NavSection[] => [
           </svg>
         ),
       },
-      {
-        name: 'Trò chuyện',
-        href: projectId ? `/chat?project=${projectId}` : '/chat',
-        icon: (
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-          </svg>
-        ),
-      },
     ],
   },
 ];
@@ -298,19 +289,53 @@ export default function Sidebar() {
                     </Link>
                   );
                 })}
+                
+                {/* New Chat Button - Consistent collapsed mode */}
+                <div className="mt-4 pt-2 border-t border-gray-200 dark:border-gray-700">
+                  <Link href={currentProjectId ? `/chat?project=${currentProjectId}` : '/chat'}>
+                    <button 
+                      className="group relative w-full flex items-center justify-center p-2.5 rounded-lg bg-gradient-to-r from-violet-500 via-purple-500 to-indigo-600 text-white hover:from-violet-600 hover:via-purple-600 hover:to-indigo-700 transition-all duration-300 shadow-lg hover:shadow-xl hover:shadow-violet-500/20 transform hover:scale-105 border border-white/10 overflow-hidden"
+                      title="Tạo Chat mới"
+                    >
+                      {/* Background pulse effect */}
+                      <div className="absolute inset-0 bg-gradient-to-r from-violet-400/15 via-purple-400/15 to-indigo-400/15 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      
+                      {/* Icon consistent size */}
+                      <svg className="w-4 h-4 relative z-10 transition-transform duration-300 group-hover:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      </svg>
+                      
+                      {/* Subtle sparkle effects */}
+                      <div className="absolute top-1 right-1 w-0.5 h-0.5 bg-white/80 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:animate-ping delay-0"></div>
+                      <div className="absolute bottom-1 left-1 w-0.5 h-0.5 bg-yellow-200/60 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:animate-pulse delay-200"></div>
+                    </button>
+                  </Link>
+                </div>
               </div>
             </>
           )}
 
-          {/* New Chat Button */}
+          {/* New Chat Button - Consistent with nav items */}
           {!isCollapsed && (
-            <div className="mt-6">
-              <Link href="/chat">
-                <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 transition-all text-sm font-medium shadow-sm">
-                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div className="mt-6 px-3">
+              <Link href={currentProjectId ? `/chat?project=${currentProjectId}` : '/chat'}>
+                <button className="group w-full flex items-center gap-3 px-3 py-2.5 rounded-lg bg-gradient-to-r from-violet-500 via-purple-500 to-indigo-600 text-white hover:from-violet-600 hover:via-purple-600 hover:to-indigo-700 transition-all duration-300 text-sm font-medium shadow-lg hover:shadow-xl hover:shadow-violet-500/20 transform hover:scale-[1.02] border border-white/10 backdrop-blur-sm relative overflow-hidden">
+                  {/* Background glow effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-violet-400/15 via-purple-400/15 to-indigo-400/15 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  
+                  {/* Icon consistent with nav items */}
+                  <svg className="w-4 h-4 relative z-10 transition-transform duration-300 group-hover:rotate-90 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                   </svg>
-                  <span>Chat mới</span>
+                  
+                  {/* Text consistent with nav items */}
+                  <span className="relative z-10 font-medium">
+                    Tạo Chat mới
+                  </span>
+                  
+                  {/* Subtle sparkle effects */}
+                  <div className="absolute top-1.5 right-2 w-0.5 h-0.5 bg-white/80 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:animate-ping delay-0"></div>
+                  <div className="absolute bottom-1.5 right-3 w-1 h-1 bg-yellow-200/60 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:animate-pulse delay-200"></div>
                 </button>
               </Link>
             </div>

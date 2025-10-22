@@ -166,25 +166,23 @@ export default function ChatPage() {
   return (
     <MainLayout>
       <div className="h-full flex flex-col">
-        {/* Header */}
-        <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 h-16 px-6 flex-shrink-0">
-          <div className="flex items-center justify-between max-w-4xl mx-auto h-full">
-            <div className="flex items-center space-x-3">
-              <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                {chat?.title || 'Đang tải...'}
-              </h1>
-              {chat && (
-                <button
-                  onClick={() => setIsRenameModalOpen(true)}
-                  className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-                  aria-label="Đổi tên cuộc trò chuyện"
-                >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                </button>
-              )}
-            </div>
+        {/* Header - aligned with other pages */}
+        <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 h-16 px-6 py-3 flex items-center flex-shrink-0">
+          <div className="flex items-center justify-between w-full max-w-4xl mx-auto">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+              {chat?.title || 'Đang tải...'}
+            </h1>
+            {chat && (
+              <button
+                onClick={() => setIsRenameModalOpen(true)}
+                className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                aria-label="Đổi tên cuộc trò chuyện"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+              </button>
+            )}
           </div>
         </div>
 
