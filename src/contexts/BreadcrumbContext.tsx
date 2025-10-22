@@ -16,7 +16,9 @@ interface BreadcrumbContextType {
   updateBreadcrumb: (index: number, item: Partial<BreadcrumbItem>) => void;
   clearBreadcrumbs: () => void;
   projectName?: string;
+  projectColor?: string;
   setProjectName: (name: string) => void;
+  setProjectColor: (color: string) => void;
 }
 
 const BreadcrumbContext = createContext<BreadcrumbContextType | undefined>(undefined);
@@ -28,6 +30,7 @@ interface BreadcrumbProviderProps {
 export function BreadcrumbProvider({ children }: BreadcrumbProviderProps) {
   const [breadcrumbs, setBreadcrumbs] = useState<BreadcrumbItem[]>([]);
   const [projectName, setProjectName] = useState<string>();
+  const [projectColor, setProjectColor] = useState<string>('#3b82f6'); // default blue
 
   const addBreadcrumb = (item: BreadcrumbItem) => {
     setBreadcrumbs(prev => [...prev, item]);
@@ -51,7 +54,9 @@ export function BreadcrumbProvider({ children }: BreadcrumbProviderProps) {
       updateBreadcrumb,
       clearBreadcrumbs,
       projectName,
+      projectColor,
       setProjectName,
+      setProjectColor,
     }}>
       {children}
     </BreadcrumbContext.Provider>

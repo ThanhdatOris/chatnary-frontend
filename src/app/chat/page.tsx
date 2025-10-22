@@ -3,8 +3,9 @@
 import HeaderButton from '@/components/layout/HeaderButton';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button, Card, FileIcon, Loading } from '@/components/ui';
+import { useBreadcrumb } from '@/contexts/BreadcrumbContext';
 import { useChats } from '@/contexts/ChatContext';
-import useProjectBreadcrumb from '@/hooks/useProjectBreadcrumb';
+import { useProject } from '@/hooks/useProject';
 import apiClient, { chatsApi, Document, documentsApi } from '@/lib/api';
 import { MessageSquare } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -16,8 +17,9 @@ export default function ChatPage() {
   const projectId = searchParams.get('project');
   const { addChat } = useChats();
   
-  // Set project name for breadcrumb
-  useProjectBreadcrumb();
+  // Get project data and set breadcrumb context  
+  const { project } = useProject();
+  const { setProjectName, setProjectColor } = useBreadcrumb();
   
   const [documents, setDocuments] = useState<Document[]>([]);
   const [selectedDocs, setSelectedDocs] = useState<string[]>([]);
@@ -26,6 +28,16 @@ export default function ChatPage() {
   const [creating, setCreating] = useState(false);
   const [availableProjects, setAvailableProjects] = useState<any[]>([]);
   const [loadingProjects, setLoadingProjects] = useState(false);
+
+  // Set project name and color for breadcrumb when project loads
+  useEffect(() => {
+    if (project?.name) {
+      setProjectName(project.name);
+    }
+    if (project?.color) {
+      setProjectColor(project.color);
+    }
+  }, [project, setProjectName, setProjectColor]);
 
   // Auto-select first project if no project is specified
   useEffect(() => {
@@ -192,7 +204,7 @@ export default function ChatPage() {
             <p className="text-gray-600 dark:text-gray-400 mb-6">
               Upload tài liệu để bắt đầu trò chuyện
             </p>
-            <Button onClick={() => router.push('/documents')}>
+            <Button onClick={() => router.push(`/documents?project=${projectId}`)}>
               Upload tài liệu
             </Button>
           </Card>

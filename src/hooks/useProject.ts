@@ -1,17 +1,7 @@
 import apiClient from '@/lib/api';
+import { Project } from '@/lib/types';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-
-export interface Project {
-  id: string;
-  name: string;
-  description?: string;
-  color: string;
-  documentsCount: number;
-  chatsCount: number;
-  createdAt: string;
-  updatedAt: string;
-}
 
 export function useProject() {
   const searchParams = useSearchParams();

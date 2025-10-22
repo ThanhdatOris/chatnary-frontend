@@ -8,6 +8,7 @@ interface Project {
   name: string;
   description: string;
   color: string;
+  icon?: string;
   documentsCount: number;
   chatsCount: number;
   createdAt: string;
@@ -18,6 +19,7 @@ interface CreateProjectRequest {
   name: string;
   description?: string;
   color?: string;
+  icon?: string;
 }
 
 interface UploadDocumentRequest {

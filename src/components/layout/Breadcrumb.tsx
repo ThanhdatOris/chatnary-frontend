@@ -2,8 +2,9 @@
 
 import { useBreadcrumb } from '@/contexts/BreadcrumbContext';
 import { cn } from '@/lib/utils';
-import { ChevronRight, FileText } from 'lucide-react';
+import { ChevronRight, Edit2 } from 'lucide-react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 
 interface BreadcrumbProps {
   className?: string;
@@ -11,7 +12,15 @@ interface BreadcrumbProps {
 }
 
 export default function Breadcrumb({ className, showProjectName = true }: BreadcrumbProps) {
-  const { breadcrumbs, projectName } = useBreadcrumb();
+  const { breadcrumbs, projectName, projectColor } = useBreadcrumb();
+  const searchParams = useSearchParams();
+  const projectId = searchParams.get('project');
+
+  const handleProjectEdit = () => {
+    // Redirect to settings page where project management UI exists with project context
+    const settingsUrl = projectId ? `/settings?project=${projectId}` : '/settings';
+    window.location.href = settingsUrl;
+  };
 
   // Chỉ hiển thị khi có breadcrumb hoặc có project name
   if (breadcrumbs.length === 0 && !projectName) {
@@ -65,9 +74,25 @@ export default function Breadcrumb({ className, showProjectName = true }: Breadc
         
         {/* Project name displayed on the right */}
         {showProjectName && projectName && (
-          <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-            <FileText className="w-4 h-4" />
-            <span className="font-medium">{projectName}</span>
+          <div className="flex items-center text-sm">
+            <div 
+              className="flex items-center px-3 py-1.5 rounded-lg font-medium shadow-sm bg-transparent border-2 group cursor-pointer transition-all duration-200 hover:shadow-md overflow-hidden"
+              style={{ 
+                borderColor: projectColor || '#3b82f6',
+                color: projectColor || '#3b82f6'
+              }}
+            >
+              <span className="whitespace-nowrap">{projectName}</span>
+              <div className="overflow-hidden transition-all duration-200 w-0 group-hover:w-3 group-hover:ml-1">
+                <button
+                  onClick={handleProjectEdit}
+                  className="transition-all duration-200 hover:scale-110 w-full h-3 flex items-center justify-center opacity-0 group-hover:opacity-100"
+                  title="Chỉnh sửa thông tin project"
+                >
+                  <Edit2 className="w-3 h-3" />
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </div>

@@ -37,7 +37,8 @@ export default function MainLayout({
   const isChatPage = pathname?.startsWith('/chat');
   const isDocumentsPage = pathname?.startsWith('/documents');
   const isDashboardPage = pathname?.startsWith('/dashboard');
-  const useFullHeight = isChatPage || isDocumentsPage || isDashboardPage;
+  const isSettingsPage = pathname?.startsWith('/settings');
+  const useFullHeight = isChatPage || isDocumentsPage || isDashboardPage || isSettingsPage;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
@@ -71,11 +72,15 @@ export default function MainLayout({
           </div>
         ) : (
           <div>
+            {/* Show breadcrumb at top for settings page */}
+            {isSettingsPage && <Breadcrumb />}
+            
             <div className="p-4 lg:p-6">
               {children}
             </div>
-            {/* Breadcrumb navigation for non-full-height pages */}
-            <Breadcrumb />
+            
+            {/* Breadcrumb navigation for non-full-height pages (except settings) */}
+            {!isSettingsPage && <Breadcrumb />}
           </div>
         )}
       </main>

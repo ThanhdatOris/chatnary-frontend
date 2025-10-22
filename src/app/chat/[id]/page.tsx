@@ -7,9 +7,10 @@ import ChatRenameModal from '@/components/chat/ChatRenameModal';
 import HeaderButton from '@/components/layout/HeaderButton';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button, EmptyState, LoadingState } from '@/components/ui';
+import { useBreadcrumb } from '@/contexts/BreadcrumbContext';
 import { useChats } from '@/contexts/ChatContext';
 import { useChat } from '@/hooks/useChat';
-import useProjectBreadcrumb from '@/hooks/useProjectBreadcrumb';
+import { useProject } from '@/hooks/useProject';
 import { suggestionsApi } from '@/lib/api';
 import { Edit2, Share, Trash2 } from 'lucide-react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
@@ -22,8 +23,9 @@ export default function ChatPage() {
   const chatId = params.id as string;
   const projectId = searchParams.get('project');
   
-  // Set project name for breadcrumb
-  useProjectBreadcrumb();
+  // Get project data and set breadcrumb context
+  const { project } = useProject();
+  const { setProjectName, setProjectColor } = useBreadcrumb();
   
   const {
     chat,
@@ -39,6 +41,16 @@ export default function ChatPage() {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Set project name and color for breadcrumb when project loads
+  useEffect(() => {
+    if (project?.name) {
+      setProjectName(project.name);
+    }
+    if (project?.color) {
+      setProjectColor(project.color);
+    }
+  }, [project, setProjectName, setProjectColor]);
 
   // Sync chat title từ context khi có thay đổi từ sidebar
   useEffect(() => {

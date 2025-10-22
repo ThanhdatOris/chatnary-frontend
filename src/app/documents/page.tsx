@@ -19,7 +19,7 @@ export default function DocumentsPage() {
   const searchParams = useSearchParams();
   const projectId = searchParams.get('project');
   const { project, isLoading: projectLoading } = useProject();
-  const { setProjectName } = useBreadcrumb();
+  const { setProjectName, setProjectColor } = useBreadcrumb();
   const { 
     documents, 
     loading, 
@@ -30,12 +30,15 @@ export default function DocumentsPage() {
     refreshDocuments 
   } = useDocuments({ projectId: projectId || undefined });
 
-  // Set project name for breadcrumb when project loads
+  // Set project name and color for breadcrumb when project loads
   useEffect(() => {
     if (project?.name) {
       setProjectName(project.name);
     }
-  }, [project, setProjectName]);
+    if (project?.color) {
+      setProjectColor(project.color);
+    }
+  }, [project, setProjectName, setProjectColor]);
   
   const [searchTerm, setSearchTerm] = useState('');
   const [showUploadModal, setShowUploadModal] = useState(false);

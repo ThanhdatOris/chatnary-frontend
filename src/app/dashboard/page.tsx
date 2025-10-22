@@ -10,14 +10,17 @@ import { useEffect } from 'react';
 
 export default function DashboardPage() {
   const { project, isLoading, error } = useProject();
-  const { setProjectName } = useBreadcrumb();
+  const { setProjectName, setProjectColor } = useBreadcrumb();
 
-  // Set project name for breadcrumb when project loads
+  // Set project name and color for breadcrumb when project loads
   useEffect(() => {
     if (project?.name) {
       setProjectName(project.name);
     }
-  }, [project, setProjectName]);
+    if (project?.color) {
+      setProjectColor(project.color);
+    }
+  }, [project, setProjectName, setProjectColor]);
 
   if (isLoading) {
     return (

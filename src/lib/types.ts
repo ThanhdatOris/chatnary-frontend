@@ -28,6 +28,7 @@ export interface Project {
   name: string;
   description?: string;
   color: string;
+  icon?: string;
   documentsCount: number;
   chatsCount: number;
   createdAt: string;
@@ -38,12 +39,14 @@ export interface CreateProjectRequest {
   name: string;
   description?: string;
   color?: string;
+  icon?: string;
 }
 
 export interface UpdateProjectRequest {
   name?: string;
   description?: string;
   color?: string;
+  icon?: string;
 }
 
 export interface ProjectStats {
