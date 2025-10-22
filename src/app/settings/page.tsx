@@ -109,6 +109,7 @@ export default function SettingsPage() {
     <MainLayout
       headerTitle="Cài đặt"
       headerSubtitle="Quản lý project và tùy chỉnh ứng dụng"
+      showProjectStats={true}
     >
       <div className="h-full overflow-y-auto">
         {/* Content - Căn giữa với responsive grid layout */}

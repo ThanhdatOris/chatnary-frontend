@@ -1,7 +1,10 @@
 'use client';
 
+import { HeaderBadge } from '@/components/ui';
 import { useSidebar } from '@/contexts/SidebarContext';
 import useBreadcrumbNavigation from '@/hooks/useBreadcrumb';
+import { useProject } from '@/hooks/useProject';
+import { FileText, MessageSquare } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { ReactNode } from 'react';
 import Breadcrumb from './Breadcrumb';
@@ -17,6 +20,8 @@ interface MainLayoutProps {
   showHeaderBorder?: boolean;
   // Additional content between header and main content (like search bars)
   headerExtras?: ReactNode;
+  // Project statistics in header
+  showProjectStats?: boolean;
 }
 
 export default function MainLayout({ 
@@ -25,13 +30,51 @@ export default function MainLayout({
   headerSubtitle,
   headerActions,
   showHeaderBorder = true,
-  headerExtras
+  headerExtras,
+  showProjectStats = false
 }: MainLayoutProps) {
   const { sidebarWidth, isCollapsed } = useSidebar();
   const pathname = usePathname();
+  const { project } = useProject();
   
   // Initialize breadcrumb navigation
   useBreadcrumbNavigation();
+  
+  // Create project stats component
+  const projectStats = showProjectStats && project ? (
+    <div className="flex items-center gap-3">
+      <HeaderBadge
+        label="tài liệu"
+        value={project.documentsCount || 0}
+        icon={<FileText className="w-4 h-4" />}
+        variant="info"
+        size="md"
+        tooltip="Số lượng tài liệu trong project"
+        onClick={() => {
+          window.location.href = `/documents?project=${project.id}`;
+        }}
+      />
+      <HeaderBadge
+        label="cuộc trò chuyện"
+        value={project.chatsCount || 0}
+        icon={<MessageSquare className="w-4 h-4" />}
+        variant="success"
+        size="md"
+        tooltip="Số lượng cuộc trò chuyện trong project"
+        onClick={() => {
+          window.location.href = `/history?project=${project.id}`;
+        }}
+      />
+    </div>
+  ) : null;
+  
+  // Combine header actions with project stats
+  const combinedHeaderActions = (
+    <div className="flex items-center gap-3">
+      {projectStats}
+      {headerActions}
+    </div>
+  );
   
   // Chat pages use custom full-height layout without padding
   const isChatPage = pathname?.startsWith('/chat');
@@ -54,7 +97,7 @@ export default function MainLayout({
               <PageHeader
                 title={headerTitle}
                 subtitle={headerSubtitle}
-                actions={headerActions}
+                actions={combinedHeaderActions}
                 showBorder={showHeaderBorder}
               />
             )}

@@ -4,6 +4,7 @@ export { default as ColorPicker } from './ColorPicker';
 export { default as EmptyState } from './EmptyState';
 export { default as ErrorPage } from './ErrorPage';
 export { default as FileIcon } from './FileIcon';
+export { default as HeaderBadge } from './HeaderBadge';
 export { DEFAULT_ICONS, default as IconPicker, type IconOption } from './IconPicker';
 export { default as Input } from './Input';
 export { default as Loading, Skeleton } from './Loading';
