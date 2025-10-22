@@ -1,8 +1,8 @@
 'use client';
 
-import apiClient, { CreateProjectRequest } from '@/lib/api';
 import ColorPicker from '@/components/ui/ColorPicker';
 import IconPicker from '@/components/ui/IconPicker';
+import apiClient, { CreateProjectRequest } from '@/lib/api';
 import { Clock, Edit, FileText, MessageSquare, Plus, Trash2, Wifi, WifiOff } from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
