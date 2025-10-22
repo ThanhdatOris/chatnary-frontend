@@ -194,6 +194,16 @@ class ApiClient {
     });
   }
 
+  // Helper method to get document preview URL (inline display)
+  getDocumentPreviewUrl(documentId: string): string {
+    return `${this.baseUrl}/api/documents/${documentId}/download?inline=true`;
+  }
+
+  // Helper method to get document download URL (force download)
+  getDocumentDownloadUrl(documentId: string): string {
+    return `${this.baseUrl}/api/documents/${documentId}/download`;
+  }
+
   async searchDocuments(query: string, projectId?: string): Promise<ApiResponse<Document[]>> {
     const params = new URLSearchParams();
     params.append('query', query);
@@ -356,6 +366,6 @@ export const suggestionsApi = {
 
 export default apiClient;
 export type {
-  ApiResponse, ChatSession, CreateChatRequest, CreateProjectRequest, Document, ListChatsResponse, ListDocumentsResponse, Message, Project, SendMessageRequest, UpdateChatRequest, UploadDocumentRequest
+    ApiResponse, ChatSession, CreateChatRequest, CreateProjectRequest, Document, ListChatsResponse, ListDocumentsResponse, Message, Project, SendMessageRequest, UpdateChatRequest, UploadDocumentRequest
 };
 

@@ -1,18 +1,30 @@
 'use client';
 
 import { Button } from '@/components/ui';
-import { Document } from '@/lib/api';
+import apiClient, { Document } from '@/lib/api';
 import { formatDate, formatFileSize } from '@/lib/utils';
 import { useState } from 'react';
 
 interface DocumentViewerProps {
   document: Document | null;
   onClose: () => void;
-  onChat?: () => void;
 }
 
-export default function DocumentViewer({ document, onClose, onChat }: DocumentViewerProps) {
+export default function DocumentViewer({ document, onClose }: DocumentViewerProps) {
   const [isLoading, setIsLoading] = useState(false);
+
+  // Handle download
+  const handleDownload = () => {
+    if (document) {
+      const downloadUrl = apiClient.getDocumentDownloadUrl(document.id);
+      const link = window.document.createElement('a');
+      link.href = downloadUrl;
+      link.download = document.originalFilename || document.name;
+      window.document.body.appendChild(link);
+      link.click();
+      window.document.body.removeChild(link);
+    }
+  };
 
   if (!document) {
     return (
@@ -57,7 +69,7 @@ export default function DocumentViewer({ document, onClose, onChat }: DocumentVi
           <div className="p-4">
             {fileType.includes('pdf') && (
               <iframe
-                src={`/api/documents/${document.id}/preview`}
+                src={apiClient.getDocumentPreviewUrl(document.id)}
                 title={`Preview of ${displayName}`}
                 className="w-full h-96 border border-gray-200 dark:border-gray-700 rounded"
                 onLoad={() => setIsLoading(false)}
@@ -65,7 +77,7 @@ export default function DocumentViewer({ document, onClose, onChat }: DocumentVi
             )}
             {fileType.includes('image') && (
               <img
-                src={`/api/documents/${document.id}/preview`}
+                src={apiClient.getDocumentPreviewUrl(document.id)}
                 alt={displayName}
                 className="max-w-full h-auto rounded border border-gray-200 dark:border-gray-700"
                 onLoad={() => setIsLoading(false)}
@@ -85,7 +97,7 @@ export default function DocumentViewer({ document, onClose, onChat }: DocumentVi
             <p className="text-gray-600 dark:text-gray-400 mb-4">
               Định dạng tài liệu này không hỗ trợ xem trước trực tiếp
             </p>
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="sm" onClick={handleDownload}>
               <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
@@ -143,17 +155,7 @@ export default function DocumentViewer({ document, onClose, onChat }: DocumentVi
           {/* Metadata removed - not available in current Document interface */}
         </div>
 
-        {/* Action Buttons */}
-        {document.status === 'processed' && onChat && (
-          <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-            <Button onClick={onChat} className="w-full">
-              <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-              </svg>
-              Chat với tài liệu này
-            </Button>
-          </div>
-        )}
+        {/* Action Buttons section removed - no more chat button */}
       </div>
     </div>
   );

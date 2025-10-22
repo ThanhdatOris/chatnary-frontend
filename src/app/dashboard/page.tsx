@@ -1,7 +1,7 @@
 'use client';
 
-import MainLayout from '@/components/layout/MainLayout';
 import HeaderButton from '@/components/layout/HeaderButton';
+import MainLayout from '@/components/layout/MainLayout';
 import { useProject } from '@/hooks/useProject';
 import { Clock, FileText, FolderOpen, MessageSquare, Upload } from 'lucide-react';
 import Link from 'next/link';
@@ -52,17 +52,17 @@ export default function DashboardPage() {
       <Link href={`/documents?project=${project.id}`}>
         <HeaderButton
           variant="primary"
+          icon={<Upload className="w-4 h-4" />}
         >
-          <Upload className="w-4 h-4 mr-2" />
           Upload tài liệu
         </HeaderButton>
       </Link>
       <Link href={`/chat?project=${project.id}`}>
         <HeaderButton
           variant="primary"
+          icon={<MessageSquare className="w-4 h-4" />}
           className="bg-purple-600 hover:bg-purple-700 text-white"
         >
-          <MessageSquare className="w-4 h-4 mr-2" />
           Tạo Chat mới
         </HeaderButton>
       </Link>

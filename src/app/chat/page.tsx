@@ -1,10 +1,11 @@
 'use client';
 
-import MainLayout from '@/components/layout/MainLayout';
 import HeaderButton from '@/components/layout/HeaderButton';
+import MainLayout from '@/components/layout/MainLayout';
 import { Button, Card, FileIcon, Loading } from '@/components/ui';
 import { useChats } from '@/contexts/ChatContext';
 import apiClient, { chatsApi, Document, documentsApi } from '@/lib/api';
+import { MessageSquare } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
@@ -153,6 +154,7 @@ export default function ChatPage() {
   const actionButton = (
     <HeaderButton
       variant="primary"
+      icon={<MessageSquare className="w-4 h-4" />}
       onClick={handleCreateChat}
       disabled={selectedDocs.length === 0 || creating}
       isLoading={creating}
