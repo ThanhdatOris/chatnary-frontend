@@ -2,12 +2,22 @@
 
 import HeaderButton from '@/components/layout/HeaderButton';
 import MainLayout from '@/components/layout/MainLayout';
+import { useBreadcrumb } from '@/contexts/BreadcrumbContext';
 import { useProject } from '@/hooks/useProject';
 import { Clock, FileText, FolderOpen, MessageSquare, Upload } from 'lucide-react';
 import Link from 'next/link';
+import { useEffect } from 'react';
 
 export default function DashboardPage() {
   const { project, isLoading, error } = useProject();
+  const { setProjectName } = useBreadcrumb();
+
+  // Set project name for breadcrumb when project loads
+  useEffect(() => {
+    if (project?.name) {
+      setProjectName(project.name);
+    }
+  }, [project, setProjectName]);
 
   if (isLoading) {
     return (

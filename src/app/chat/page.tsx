@@ -4,6 +4,7 @@ import HeaderButton from '@/components/layout/HeaderButton';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button, Card, FileIcon, Loading } from '@/components/ui';
 import { useChats } from '@/contexts/ChatContext';
+import useProjectBreadcrumb from '@/hooks/useProjectBreadcrumb';
 import apiClient, { chatsApi, Document, documentsApi } from '@/lib/api';
 import { MessageSquare } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -14,6 +15,10 @@ export default function ChatPage() {
   const searchParams = useSearchParams();
   const projectId = searchParams.get('project');
   const { addChat } = useChats();
+  
+  // Set project name for breadcrumb
+  useProjectBreadcrumb();
+  
   const [documents, setDocuments] = useState<Document[]>([]);
   const [selectedDocs, setSelectedDocs] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);

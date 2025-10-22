@@ -1,8 +1,10 @@
 'use client';
 
 import { useSidebar } from '@/contexts/SidebarContext';
+import useBreadcrumbNavigation from '@/hooks/useBreadcrumb';
 import { usePathname } from 'next/navigation';
 import { ReactNode } from 'react';
+import Breadcrumb from './Breadcrumb';
 import PageHeader from './PageHeader';
 import Sidebar from './Sidebar';
 
@@ -27,6 +29,9 @@ export default function MainLayout({
 }: MainLayoutProps) {
   const { sidebarWidth, isCollapsed } = useSidebar();
   const pathname = usePathname();
+  
+  // Initialize breadcrumb navigation
+  useBreadcrumbNavigation();
   
   // Chat pages use custom full-height layout without padding
   const isChatPage = pathname?.startsWith('/chat');
@@ -60,10 +65,17 @@ export default function MainLayout({
             <div className="flex-1 overflow-hidden">
               {children}
             </div>
+            
+            {/* Breadcrumb navigation - positioned after content */}
+            <Breadcrumb />
           </div>
         ) : (
-          <div className="p-4 lg:p-6">
-            {children}
+          <div>
+            <div className="p-4 lg:p-6">
+              {children}
+            </div>
+            {/* Breadcrumb navigation for non-full-height pages */}
+            <Breadcrumb />
           </div>
         )}
       </main>

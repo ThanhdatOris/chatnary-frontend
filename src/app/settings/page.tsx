@@ -3,10 +3,15 @@
 import MainLayout from '@/components/layout/MainLayout';
 import { Button, Card, CardContent, CardHeader, CardTitle, Input } from '@/components/ui';
 import { useTheme } from '@/contexts/ThemeContext';
+import useProjectBreadcrumb from '@/hooks/useProjectBreadcrumb';
 import { useState } from 'react';
 
 export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
+  
+  // Set project name for breadcrumb
+  useProjectBreadcrumb();
+  
   const [settings, setSettings] = useState({
     displayName: 'Người dùng Demo',
     timezone: 'Asia/Ho_Chi_Minh',

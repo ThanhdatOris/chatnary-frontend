@@ -5,6 +5,7 @@ import { copyToClipboard, formatDateTime } from '@/lib/utils';
 import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import CitationCard from './CitationCard';
 
 interface ChatMessageProps {
   message: Message;
@@ -12,6 +13,7 @@ interface ChatMessageProps {
 
 export default function ChatMessage({ message }: ChatMessageProps) {
   const [copied, setCopied] = useState(false);
+  const [showCitations, setShowCitations] = useState(false);
 
   const handleCopy = async () => {
     const success = await copyToClipboard(message.content);
@@ -61,7 +63,7 @@ export default function ChatMessage({ message }: ChatMessageProps) {
                   ul: ({children}) => <ul className="my-4 list-disc list-inside space-y-1">{children}</ul>,
                   ol: ({children}) => <ol className="my-4 list-decimal list-inside space-y-1">{children}</ol>,
                   // ReactMarkdown ensures li is wrapped in ul/ol
-                  li: ({children}) => <li className="my-1">{children}</li>,
+                  li: ({children}) => <span className="block my-1">{children}</span>,
                   a: ({children, href}) => (
                     <a href={href} className="text-blue-600 dark:text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer">
                       {children}
@@ -80,37 +82,44 @@ export default function ChatMessage({ message }: ChatMessageProps) {
             </div>
           )}
 
-          {/* Sources - Only for AI messages */}
+          {/* Sources - Only for AI messages - Icon First Design */}
           {!isUser && message.sources && message.sources.length > 0 && (
-            <div className="mt-4 space-y-2">
-              <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-2">
-                📚 Nguồn tham khảo:
-              </p>
-              <div className="space-y-2">
-                {message.sources.map((source, idx) => (
-                  <div
-                    key={idx}
-                    className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700"
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
-                        📄 {source.documentName}
-                      </span>
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                        Trang {source.pageNumber}
-                      </span>
-                    </div>
-                    <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
-                      &quot;{source.content}&quot;
-                    </p>
-                    <div className="mt-1">
-                      <span className="text-xs text-gray-500 dark:text-gray-400">
-                        Độ chính xác: {Math.round(source.score * 100)}%
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+            <div className="mt-4">
+              {/* Compact citation trigger */}
+              <button
+                onClick={() => setShowCitations(!showCitations)}
+                className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800 transition-all duration-200 text-sm"
+              >
+                <div className="w-4 h-4 rounded bg-blue-100 dark:bg-blue-800 flex items-center justify-center">
+                  <svg className="w-2.5 h-2.5 text-blue-600 dark:text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <span className="text-blue-700 dark:text-blue-300 font-medium">
+                  {message.sources.length} nguồn
+                </span>
+                <svg 
+                  className={`w-3 h-3 text-blue-600 dark:text-blue-400 transition-transform ${showCitations ? 'rotate-180' : ''}`} 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {/* Expanded citations */}
+              {showCitations && (
+                <div className="mt-3 space-y-2 animate-in slide-in-from-top-2 duration-200">
+                  {message.sources.map((source, idx) => (
+                    <CitationCard 
+                      key={`${source.documentId}-${source.chunkId}-${idx}`}
+                      source={source} 
+                      index={idx} 
+                    />
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>

@@ -1,3 +1,4 @@
+import { BreadcrumbProvider } from "@/contexts/BreadcrumbContext";
 import { ChatProvider } from "@/contexts/ChatContext";
 import { SidebarProvider } from "@/contexts/SidebarContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
@@ -27,9 +28,11 @@ export default function RootLayout({
       <body>
         <ThemeProvider>
           <SidebarProvider>
-            <ChatProvider>
-              {children}
-            </ChatProvider>
+            <BreadcrumbProvider>
+              <ChatProvider>
+                {children}
+              </ChatProvider>
+            </BreadcrumbProvider>
           </SidebarProvider>
         </ThemeProvider>
       </body>

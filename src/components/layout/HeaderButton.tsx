@@ -90,12 +90,18 @@ export default function HeaderButton({
     };
   }, [isSearchExpanded]);
 
-  const baseStyles = 'relative rounded-lg text-sm font-medium transition-all duration-300 flex items-center disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg';
+  const baseStyles = 'relative rounded-lg font-medium transition-all duration-300 flex items-center disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg';
   
   const sizeStyles = {
     sm: 'px-2 py-1.5 text-xs',
     md: 'px-3 py-2 text-sm',
-    lg: 'px-4 py-2.5 text-base'
+    lg: 'px-4 py-2.5 text-sm'
+  };
+
+  const gapStyles = {
+    sm: 'gap-1.5',
+    md: 'gap-2',
+    lg: 'gap-2'
   };
   
   const variantStyles = {
@@ -137,6 +143,7 @@ export default function HeaderButton({
             baseStyles,
             sizeStyles[size],
             variantStyles[variant],
+            (isExpanded || isSearchExpanded) && gapStyles[size],
             isSearchExpanded ? 'rounded-r-none' : '',
             className
           )}
@@ -152,7 +159,7 @@ export default function HeaderButton({
           {/* Text appears on hover or when search is expanded */}
           <span className={cn(
             'overflow-hidden transition-all duration-300 whitespace-nowrap',
-            (isExpanded || isSearchExpanded) ? 'max-w-32 ml-2 opacity-100' : 'max-w-0 ml-0 opacity-0'
+            (isExpanded || isSearchExpanded) ? 'max-w-32 opacity-100' : 'max-w-0 opacity-0'
           )}>
             {children}
           </span>
@@ -203,6 +210,7 @@ export default function HeaderButton({
         baseStyles,
         sizeStyles[size],
         variantStyles[variant],
+        isExpanded && gapStyles[size],
         className
       )}
       title={tooltip}
@@ -217,7 +225,7 @@ export default function HeaderButton({
       {/* Text appears on hover */}
       <span className={cn(
         'overflow-hidden transition-all duration-300 whitespace-nowrap',
-        isExpanded ? 'max-w-32 ml-2 opacity-100' : 'max-w-0 ml-0 opacity-0'
+        isExpanded ? 'max-w-32 opacity-100' : 'max-w-0 opacity-0'
       )}>
         {children}
       </span>

@@ -6,6 +6,7 @@ import FileUploadZone from '@/components/document/FileUploadZone';
 import HeaderButton from '@/components/layout/HeaderButton';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button, FileIcon, Loading, Modal } from '@/components/ui';
+import { useBreadcrumb } from '@/contexts/BreadcrumbContext';
 import useDocuments from '@/hooks/useDocuments';
 import { useProject } from '@/hooks/useProject';
 import apiClient, { Document } from '@/lib/api';
@@ -18,6 +19,7 @@ export default function DocumentsPage() {
   const searchParams = useSearchParams();
   const projectId = searchParams.get('project');
   const { project, isLoading: projectLoading } = useProject();
+  const { setProjectName } = useBreadcrumb();
   const { 
     documents, 
     loading, 
@@ -27,6 +29,13 @@ export default function DocumentsPage() {
     deleteDocument, 
     refreshDocuments 
   } = useDocuments({ projectId: projectId || undefined });
+
+  // Set project name for breadcrumb when project loads
+  useEffect(() => {
+    if (project?.name) {
+      setProjectName(project.name);
+    }
+  }, [project, setProjectName]);
   
   const [searchTerm, setSearchTerm] = useState('');
   const [showUploadModal, setShowUploadModal] = useState(false);
