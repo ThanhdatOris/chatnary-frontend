@@ -115,6 +115,16 @@ export function useChat({ chatId, projectId, autoFetch = true }: UseChatOptions 
     setChat(updatedChat);
   }, []);
 
+  // Reset state when chatId changes
+  useEffect(() => {
+    if (chatId) {
+      setLoading(true);
+      setChat(null);
+      setMessages([]);
+      setError(null);
+    }
+  }, [chatId]);
+
   useEffect(() => {
     if (autoFetch && chatId) {
       fetchChat();

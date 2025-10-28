@@ -150,6 +150,15 @@ export function useDocuments({ projectId, autoFetch = true }: UseDocumentsOption
     await fetchDocuments();
   }, [fetchDocuments]);
 
+  // Reset state immediately when projectId changes
+  useEffect(() => {
+    if (projectId) {
+      setLoading(true);
+      setDocuments([]);
+      setError(null);
+    }
+  }, [projectId]);
+
   // Auto-fetch documents when projectId changes
   useEffect(() => {
     if (autoFetch && projectId) {

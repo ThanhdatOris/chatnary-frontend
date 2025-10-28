@@ -11,6 +11,15 @@ export function useProject() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Reset state immediately when projectId changes
+  useEffect(() => {
+    if (projectId) {
+      setIsLoading(true);
+      setProject(null);
+      setError(null);
+    }
+  }, [projectId]);
+
   useEffect(() => {
     if (!projectId) {
       setError('Không tìm thấy ID dự án');
