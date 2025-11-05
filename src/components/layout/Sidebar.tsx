@@ -242,7 +242,10 @@ export default function Sidebar() {
                   )}
                   <div className="space-y-1">
                     {section.items.map((item) => {
-                      const isActive = pathname === item.href;
+                      // Extract path from href (remove query string)
+                      const itemPath = item.href.split('?')[0];
+                      // Check if current pathname matches the item path
+                      const isActive = pathname === itemPath || pathname?.startsWith(itemPath + '/');
                       
                       return (
                         <Link
@@ -251,8 +254,8 @@ export default function Sidebar() {
                           className={cn(
                             'flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm',
                             isActive
-                              ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium'
-                              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                              ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50'
                           )}
                         >
                           {item.icon}
@@ -269,7 +272,10 @@ export default function Sidebar() {
               {/* Collapsed Navigation - Icons Only */}
               <div className="space-y-2">
                 {navSections.flatMap(section => section.items).map((item) => {
-                  const isActive = pathname === item.href;
+                  // Extract path from href (remove query string)
+                  const itemPath = item.href.split('?')[0];
+                  // Check if current pathname matches the item path
+                  const isActive = pathname === itemPath || pathname?.startsWith(itemPath + '/');
                   
                   return (
                     <Link
@@ -278,8 +284,8 @@ export default function Sidebar() {
                       className={cn(
                         'flex items-center justify-center p-2.5 rounded-lg transition-colors',
                         isActive
-                          ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
-                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                          ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                          : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50'
                       )}
                       title={item.name}
                     >
