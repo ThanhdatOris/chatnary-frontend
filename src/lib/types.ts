@@ -28,8 +28,9 @@ export interface Project {
   name: string;
   description?: string;
   color: string;
-  documentsCount: number;
-  chatsCount: number;
+  isArchived?: boolean;
+  documentsCount?: number;
+  chatsCount?: number;
   createdAt: string;
   updatedAt: string;
 }

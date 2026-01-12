@@ -1,30 +1,51 @@
-'use client';
+"use client";
 
-import ChatInput from '@/components/chat/ChatInput';
-import ChatMessage from '@/components/chat/ChatMessage';
-import ChatNotFound from '@/components/chat/ChatNotFound';
-import ChatRenameModal from '@/components/chat/ChatRenameModal';
-import HeaderButton from '@/components/layout/HeaderButton';
-import MainLayout from '@/components/layout/MainLayout';
-import { Button, EmptyState, LoadingState } from '@/components/ui';
-import { useChats } from '@/contexts/ChatContext';
-import { useChat } from '@/hooks/useChat';
-import useProjectBreadcrumb from '@/hooks/useProjectBreadcrumb';
-import { suggestionsApi } from '@/lib/api';
-import { Edit2, Share, Trash2 } from 'lucide-react';
-import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import ChatInput from "@/components/chat/ChatInput";
+import ChatMessage from "@/components/chat/ChatMessage";
+import ChatNotFound from "@/components/chat/ChatNotFound";
+import ChatRenameModal from "@/components/chat/ChatRenameModal";
+import HeaderButton from "@/components/layout/HeaderButton";
+import MainLayout from "@/components/layout/MainLayout";
+import { Button, EmptyState, LoadingState } from "@/components/ui";
+import { useChats } from "@/contexts/ChatContext";
+import { useChat } from "@/hooks/useChat";
+import useProjectBreadcrumb from "@/hooks/useProjectBreadcrumb";
+import { suggestionsApi } from "@/lib/api";
+import { Edit2, Share, Trash2 } from "lucide-react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 
+// Wrapper component with Suspense boundary for useSearchParams
 export default function ChatPage() {
+  return (
+    <Suspense
+      fallback={
+        <MainLayout
+          headerTitle="Đang tải..."
+          headerSubtitle="Đang lấy thông tin cuộc trò chuyện"
+        >
+          <LoadingState
+            title="Đang tải cuộc trò chuyện"
+            message="Đang lấy thông tin chat và tin nhắn..."
+          />
+        </MainLayout>
+      }
+    >
+      <ChatPageContent />
+    </Suspense>
+  );
+}
+
+function ChatPageContent() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
   const chatId = params.id as string;
-  const projectId = searchParams.get('project');
-  
+  const projectId = searchParams.get("project");
+
   // Set project name for breadcrumb
   useProjectBreadcrumb();
-  
+
   const {
     chat,
     messages,
@@ -34,7 +55,7 @@ export default function ChatPage() {
     sendMessage,
     updateChatLocal,
   } = useChat({ chatId, projectId: projectId || undefined });
-  
+
   const { updateChat, chats } = useChats();
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
@@ -43,8 +64,12 @@ export default function ChatPage() {
   // Sync chat title từ context khi có thay đổi từ sidebar
   useEffect(() => {
     if (chatId && chats.length > 0) {
-      const updatedChatFromContext = chats.find(c => c.id === chatId);
-      if (updatedChatFromContext && chat && updatedChatFromContext.title !== chat.title) {
+      const updatedChatFromContext = chats.find((c) => c.id === chatId);
+      if (
+        updatedChatFromContext &&
+        chat &&
+        updatedChatFromContext.title !== chat.title
+      ) {
         updateChatLocal(updatedChatFromContext);
       }
     }
@@ -57,7 +82,7 @@ export default function ChatPage() {
         setSuggestions(response.data);
       }
     } catch (error) {
-      console.error('Failed to fetch suggestions:', error);
+      console.error("Failed to fetch suggestions:", error);
     }
   }, [chatId]);
 
@@ -72,18 +97,18 @@ export default function ChatPage() {
   }, [messages]);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   const handleSendMessage = async (content: string) => {
     try {
-      console.log('Chat page sending message:', content);
+      console.log("Chat page sending message:", content);
       await sendMessage(content);
       scrollToBottom();
     } catch (error) {
-      console.error('Failed to send message in chat page:', error);
+      console.error("Failed to send message in chat page:", error);
       // Show error message to user
-      alert('Có lỗi xảy ra khi gửi tin nhắn. Vui lòng thử lại.');
+      alert("Có lỗi xảy ra khi gửi tin nhắn. Vui lòng thử lại.");
     }
   };
 
@@ -104,7 +129,7 @@ export default function ChatPage() {
         headerTitle="Đang tải..."
         headerSubtitle="Đang lấy thông tin cuộc trò chuyện"
       >
-        <LoadingState 
+        <LoadingState
           title="Đang tải cuộc trò chuyện"
           message="Đang lấy thông tin chat và tin nhắn..."
         />
@@ -114,7 +139,7 @@ export default function ChatPage() {
 
   if (chatError) {
     // Kiểm tra nếu là lỗi 404 (Chat not found)
-    if (chatError.includes('Chat not found') || chatError.includes('404')) {
+    if (chatError.includes("Chat not found") || chatError.includes("404")) {
       return (
         <MainLayout
           headerTitle="Chat không tìm thấy"
@@ -143,26 +168,34 @@ export default function ChatPage() {
           <div className="max-w-md w-full text-center">
             <div className="mx-auto w-16 h-16 mb-6">
               <div className="w-full h-full rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center">
-                <svg className="w-8 h-8 text-red-500 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <svg
+                  className="w-8 h-8 text-red-500 dark:text-red-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
                 </svg>
               </div>
             </div>
             <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
               Có lỗi xảy ra
             </h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              {chatError}
-            </p>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">{chatError}</p>
             <div className="space-y-3">
-              <Button 
+              <Button
                 onClick={() => window.location.reload()}
                 variant="primary"
                 className="w-full"
               >
                 🔄 Thử lại
               </Button>
-              <Button 
+              <Button
                 onClick={() => router.push(`/chat?project=${projectId}`)}
                 variant="secondary"
                 className="w-full"
@@ -201,7 +234,7 @@ export default function ChatPage() {
         icon={<Share className="w-4 h-4" />}
         onClick={() => {
           // TODO: Implement share functionality
-          console.log('Share chat');
+          console.log("Share chat");
         }}
         variant="secondary"
         tooltip="Chia sẻ cuộc trò chuyện"
@@ -212,8 +245,8 @@ export default function ChatPage() {
         icon={<Trash2 className="w-4 h-4" />}
         onClick={() => {
           // TODO: Implement delete functionality
-          if (confirm('Bạn có chắc muốn xóa cuộc trò chuyện này?')) {
-            console.log('Delete chat');
+          if (confirm("Bạn có chắc muốn xóa cuộc trò chuyện này?")) {
+            console.log("Delete chat");
           }
         }}
         variant="danger"
@@ -226,8 +259,10 @@ export default function ChatPage() {
 
   return (
     <MainLayout
-      headerTitle={chat?.title || 'Đang tải...'}
-      headerSubtitle={`Chat AI • ${messages.length} tin nhắn • ID: ${chatId.substring(0, 8)}`}
+      headerTitle={chat?.title || "Đang tải..."}
+      headerSubtitle={`Chat AI • ${
+        messages.length
+      } tin nhắn • ID: ${chatId.substring(0, 8)}`}
       headerActions={headerActions}
     >
       <div className="h-full flex flex-col">
@@ -261,7 +296,7 @@ export default function ChatPage() {
           />
         </div>
       </div>
-      
+
       {/* Chat Rename Modal */}
       <ChatRenameModal
         isOpen={isRenameModalOpen}
@@ -272,4 +307,3 @@ export default function ChatPage() {
     </MainLayout>
   );
 }
-

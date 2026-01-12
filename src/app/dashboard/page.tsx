@@ -1,14 +1,38 @@
-'use client';
+"use client";
 
-import HeaderButton from '@/components/layout/HeaderButton';
-import MainLayout from '@/components/layout/MainLayout';
-import { useBreadcrumb } from '@/contexts/BreadcrumbContext';
-import { useProject } from '@/hooks/useProject';
-import { Clock, FileText, FolderOpen, MessageSquare, Upload } from 'lucide-react';
-import Link from 'next/link';
-import { useEffect } from 'react';
+import HeaderButton from "@/components/layout/HeaderButton";
+import MainLayout from "@/components/layout/MainLayout";
+import { Loading } from "@/components/ui";
+import { useBreadcrumb } from "@/contexts/BreadcrumbContext";
+import { useProject } from "@/hooks/useProject";
+import {
+  Clock,
+  FileText,
+  FolderOpen,
+  MessageSquare,
+  Upload,
+} from "lucide-react";
+import Link from "next/link";
+import { Suspense, useEffect } from "react";
 
+// Wrapper component with Suspense boundary for useSearchParams (via useProject hook)
 export default function DashboardPage() {
+  return (
+    <Suspense
+      fallback={
+        <MainLayout>
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <Loading size="lg" text="Đang tải..." />
+          </div>
+        </MainLayout>
+      }
+    >
+      <DashboardPageContent />
+    </Suspense>
+  );
+}
+
+function DashboardPageContent() {
   const { project, isLoading, error } = useProject();
   const { setProjectName } = useBreadcrumb();
 
@@ -44,7 +68,7 @@ export default function DashboardPage() {
               Lỗi Dự án
             </h3>
             <p className="text-red-600 dark:text-red-300 mb-4">
-              {error || 'Không thể tải dữ liệu dự án'}
+              {error || "Không thể tải dữ liệu dự án"}
             </p>
             <Link href="/">
               <button className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors">
@@ -60,10 +84,7 @@ export default function DashboardPage() {
   const headerActions = (
     <>
       <Link href={`/documents?project=${project.id}`}>
-        <HeaderButton
-          variant="primary"
-          icon={<Upload className="w-4 h-4" />}
-        >
+        <HeaderButton variant="primary" icon={<Upload className="w-4 h-4" />}>
           Upload tài liệu
         </HeaderButton>
       </Link>
@@ -97,78 +118,91 @@ export default function DashboardPage() {
               Chào mừng đến với {project.name}!
             </h2>
             <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              Bắt đầu bằng cách upload tài liệu hoặc tạo cuộc trò chuyện đầu tiên.
+              Bắt đầu bằng cách upload tài liệu hoặc tạo cuộc trò chuyện đầu
+              tiên.
             </p>
           </div>
 
-            {/* Quick Actions Grid */}
-            <div className="grid md:grid-cols-2 gap-6 mb-8">
-              <Link href={`/documents?project=${project.id}`}>
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 text-center hover:shadow-md transition-all hover:scale-[1.02] cursor-pointer">
-                  <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Upload className="w-6 h-6 text-green-600 dark:text-green-400" />
-                  </div>
-                  <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                    Upload Tài liệu
-                  </h4>
-                  <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm">
-                    Thêm PDF, Word, hoặc text files để AI phân tích.
-                  </p>
-                  <div className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors inline-block">
-                    Chọn Tài liệu
-                  </div>
+          {/* Quick Actions Grid */}
+          <div className="grid md:grid-cols-2 gap-6 mb-8">
+            <Link href={`/documents?project=${project.id}`}>
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 text-center hover:shadow-md transition-all hover:scale-[1.02] cursor-pointer">
+                <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Upload className="w-6 h-6 text-green-600 dark:text-green-400" />
                 </div>
-              </Link>
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                  Upload Tài liệu
+                </h4>
+                <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm">
+                  Thêm PDF, Word, hoặc text files để AI phân tích.
+                </p>
+                <div className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors inline-block">
+                  Chọn Tài liệu
+                </div>
+              </div>
+            </Link>
 
-              <Link href={`/chat?project=${project.id}`}>
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 text-center hover:shadow-md transition-all hover:scale-[1.02] cursor-pointer">
-                  <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <MessageSquare className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-                  </div>
-                  <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
-                    Bắt đầu Chat
-                  </h4>
-                  <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm">
-                    Tạo cuộc trò chuyện với AI về tài liệu.
-                  </p>
-                  <div className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors inline-block">
-                    Tạo Chat Mới
-                  </div>
+            <Link href={`/chat?project=${project.id}`}>
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 text-center hover:shadow-md transition-all hover:scale-[1.02] cursor-pointer">
+                <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <MessageSquare className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                 </div>
-              </Link>
-            </div>
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                  Bắt đầu Chat
+                </h4>
+                <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm">
+                  Tạo cuộc trò chuyện với AI về tài liệu.
+                </p>
+                <div className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors inline-block">
+                  Tạo Chat Mới
+                </div>
+              </div>
+            </Link>
+          </div>
 
-            {/* Features Section */}
-            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-6">
-              <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 text-center">
-                Tính năng nổi bật
-              </h4>
-              <div className="grid md:grid-cols-3 gap-4">
-                <div className="text-center">
-                  <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mx-auto mb-2">
-                    <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <h5 className="font-medium text-gray-900 dark:text-gray-100 mb-1 text-sm">Tài liệu thông minh</h5>
-                  <p className="text-xs text-gray-600 dark:text-gray-400">AI phân tích nội dung</p>
+          {/* Features Section */}
+          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-6">
+            <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 text-center">
+              Tính năng nổi bật
+            </h4>
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="text-center">
+                <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <FileText className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                 </div>
-                <div className="text-center">
-                  <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mx-auto mb-2">
-                    <MessageSquare className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <h5 className="font-medium text-gray-900 dark:text-gray-100 mb-1 text-sm">Chat có ngữ cảnh</h5>
-                  <p className="text-xs text-gray-600 dark:text-gray-400">Trả lời dựa trên tài liệu</p>
+                <h5 className="font-medium text-gray-900 dark:text-gray-100 mb-1 text-sm">
+                  Tài liệu thông minh
+                </h5>
+                <p className="text-xs text-gray-600 dark:text-gray-400">
+                  AI phân tích nội dung
+                </p>
+              </div>
+              <div className="text-center">
+                <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <MessageSquare className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                 </div>
-                <div className="text-center">
-                  <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mx-auto mb-2">
-                    <Clock className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <h5 className="font-medium text-gray-900 dark:text-gray-100 mb-1 text-sm">Lịch sử đầy đủ</h5>
-                  <p className="text-xs text-gray-600 dark:text-gray-400">Theo dõi hoạt động</p>
+                <h5 className="font-medium text-gray-900 dark:text-gray-100 mb-1 text-sm">
+                  Chat có ngữ cảnh
+                </h5>
+                <p className="text-xs text-gray-600 dark:text-gray-400">
+                  Trả lời dựa trên tài liệu
+                </p>
+              </div>
+              <div className="text-center">
+                <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mx-auto mb-2">
+                  <Clock className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                 </div>
+                <h5 className="font-medium text-gray-900 dark:text-gray-100 mb-1 text-sm">
+                  Lịch sử đầy đủ
+                </h5>
+                <p className="text-xs text-gray-600 dark:text-gray-400">
+                  Theo dõi hoạt động
+                </p>
               </div>
             </div>
           </div>
         </div>
+      </div>
     </MainLayout>
   );
 }

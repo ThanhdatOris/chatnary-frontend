@@ -31,19 +31,19 @@ export function useChat({ chatId, projectId, autoFetch = true }: UseChatOptions 
 
   const fetchChat = useCallback(async () => {
     if (!chatId) return;
-    
+
     try {
       setLoading(true);
       setError(null);
-      
+
       console.log('Fetching chat data for:', chatId);
       const response = await chatsApi.getChat(chatId);
-      
+
       if (response.error) {
         setError(response.error);
         return;
       }
-      
+
       setChat(response.data || null);
       console.log('Chat data loaded:', response.data);
     } catch (err) {
@@ -55,18 +55,18 @@ export function useChat({ chatId, projectId, autoFetch = true }: UseChatOptions 
 
   const fetchMessages = useCallback(async () => {
     if (!chatId) return;
-    
+
     try {
       setError(null);
-      
+
       console.log('Fetching messages for chat:', chatId);
       const response = await messagesApi.getMessages(chatId);
-      
+
       if (response.error) {
         setError(response.error);
         return;
       }
-      
+
       setMessages(response.data || []);
       console.log('Messages loaded:', response.data?.length || 0);
     } catch (err) {
@@ -79,36 +79,36 @@ export function useChat({ chatId, projectId, autoFetch = true }: UseChatOptions 
       throw new Error('Missing chatId or content');
     }
 
+    if (!projectId) {
+      throw new Error('Missing projectId for sending messages');
+    }
+
     try {
       setSending(true);
       setError(null);
-      
-      console.log('Sending message to chat:', chatId, 'Content:', content);
-      const response = await messagesApi.sendMessage(chatId, { content });
-      
-      console.log('Send message response:', response);
-      
+
+      // Use the new API that requires projectId
+      const response = await messagesApi.sendMessage(chatId, { content }, projectId);
+
       if (response.error) {
         setError(response.error);
         throw new Error(response.error);
       }
-      
+
       if (!response.success) {
         throw new Error('Gửi tin nhắn thất bại');
       }
-      
-      console.log('Message sent successfully');
+
       // Refresh messages after sending
       await fetchMessages();
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Có lỗi xảy ra khi gửi tin nhắn';
-      console.error('Send message error:', err);
       setError(errorMessage);
       throw err;
     } finally {
       setSending(false);
     }
-  }, [chatId, fetchMessages]);  const refreshChat = useCallback(() => fetchChat(), [fetchChat]);
+  }, [chatId, projectId, fetchMessages]); const refreshChat = useCallback(() => fetchChat(), [fetchChat]);
   const refreshMessages = useCallback(() => fetchMessages(), [fetchMessages]);
 
   const updateChatLocal = useCallback((updatedChat: ChatSession) => {
