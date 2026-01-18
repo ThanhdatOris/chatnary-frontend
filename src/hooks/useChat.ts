@@ -34,19 +34,19 @@ export function useChat({ chatId, projectId: initialProjectId, autoFetch = true 
 
   const fetchChat = useCallback(async () => {
     if (!chatId) return;
-    
+
     try {
       setLoading(true);
       setError(null);
-      
+
       console.log('Fetching chat data for:', chatId);
       const response = await chatsApi.getChat(chatId);
-      
+
       if (response.error) {
         setError(response.error);
         return;
       }
-      
+
       setChat(response.data || null);
       console.log('Chat data loaded:', response.data);
     } catch (err) {
@@ -69,7 +69,7 @@ export function useChat({ chatId, projectId: initialProjectId, autoFetch = true 
         setError(response.error);
         return;
       }
-      
+
       setMessages(response.data || []);
       console.log('Messages loaded:', response.data?.length || 0);
     } catch (err) {
@@ -86,6 +86,10 @@ export function useChat({ chatId, projectId: initialProjectId, autoFetch = true 
        throw new Error('Missing projectId');
     }
 
+    if (!projectId) {
+      throw new Error('Missing projectId for sending messages');
+    }
+
     try {
       setSending(true);
       setError(null);
@@ -100,17 +104,15 @@ export function useChat({ chatId, projectId: initialProjectId, autoFetch = true 
         setError(response.error);
         throw new Error(response.error);
       }
-      
+
       if (!response.success) {
         throw new Error('Gửi tin nhắn thất bại');
       }
-      
-      console.log('Message sent successfully');
+
       // Refresh messages after sending
       await fetchMessages();
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Có lỗi xảy ra khi gửi tin nhắn';
-      console.error('Send message error:', err);
       setError(errorMessage);
       throw err;
     } finally {

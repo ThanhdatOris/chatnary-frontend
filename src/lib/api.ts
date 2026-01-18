@@ -37,6 +37,31 @@ export interface SendMessageDto {
   chatId?: string;
 }
 
+// Backend chat response structure
+interface BackendChat {
+  id: string;
+  title: string;
+  createdAt: string;
+  updatedAt: string;
+  projectId: string | null;
+  userId?: string;
+  messages?: BackendMessage[];
+}
+
+interface BackendMessage {
+  role: 'user' | 'assistant';
+  content: string;
+  citation?: any[];
+}
+
+interface ChatMessageResponse {
+  answer: string;
+  citations: any[];
+  chatId: string;
+}
+
+// ==================== API CLIENT ====================
+
 class ApiClient {
   private baseUrl: string;
   private token: string | null = null;
@@ -73,7 +98,6 @@ class ApiClient {
     return !!this.getToken();
   }
 
-  // Helper methods to create standardized responses
   private createSuccessResponse<T>(data: T): ApiResponse<T> {
     return { success: true, data };
   }
@@ -255,10 +279,12 @@ class ApiClient {
     return this.request<Document[]>(`/api/v1/project/${projectId}/documents`);
   }
 
+  // GET /document/:documentId - Get document detail
   async getDocument(documentId: string): Promise<ApiResponse<Document>> {
     return this.request<Document>(`/api/v1/document/${documentId}`);
   }
 
+  // DELETE /document/:documentId - Delete document
   async deleteDocument(documentId: string): Promise<ApiResponse<void>> {
     return this.request<void>(`/api/v1/document/${documentId}`, {
       method: "DELETE",

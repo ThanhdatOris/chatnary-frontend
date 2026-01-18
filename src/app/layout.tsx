@@ -1,3 +1,4 @@
+import { AuthProvider } from "@/contexts/AuthContext";
 import { BreadcrumbProvider } from "@/contexts/BreadcrumbContext";
 import { ChatProvider } from "@/contexts/ChatContext";
 import { SidebarProvider } from "@/contexts/SidebarContext";
@@ -27,16 +28,15 @@ export default function RootLayout({
     <html lang="vi" suppressHydrationWarning>
       <body>
         <ThemeProvider>
-          <SidebarProvider>
-            <BreadcrumbProvider>
-              <ChatProvider>
-                {children}
-              </ChatProvider>
-            </BreadcrumbProvider>
-          </SidebarProvider>
+          <AuthProvider>
+            <SidebarProvider>
+              <BreadcrumbProvider>
+                <ChatProvider>{children}</ChatProvider>
+              </BreadcrumbProvider>
+            </SidebarProvider>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
   );
 }
-

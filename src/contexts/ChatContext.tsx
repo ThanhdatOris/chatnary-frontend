@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { chatsApi } from '@/lib/api';
 import { ChatSession } from '@/lib/types';
@@ -32,13 +32,15 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         setChats(response.data);
       }
     } catch (error) {
-      console.error('Failed to refresh chats:', error);
+      console.error("Failed to refresh chats:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const getChatsByProject = async (projectId: string): Promise<ChatSession[]> => {
+  const getChatsByProject = async (
+    projectId: string
+  ): Promise<ChatSession[]> => {
     try {
       const response = await chatsApi.getProjectChats(projectId);
       if (response.success && response.data) {
@@ -46,7 +48,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       }
       return [];
     } catch (error) {
-      console.error('Failed to get chats by project:', error);
+      console.error("Failed to get chats by project:", error);
       return [];
     }
   };
@@ -66,15 +68,17 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <ChatContext.Provider value={{ 
-      chats, 
-      loading, 
-      addChat, 
-      updateChat,
-      removeChat, 
-      refreshChats, 
-      getChatsByProject 
-    }}>
+    <ChatContext.Provider
+      value={{
+        chats,
+        loading,
+        addChat,
+        updateChat,
+        removeChat,
+        refreshChats,
+        getChatsByProject,
+      }}
+    >
       {children}
     </ChatContext.Provider>
   );
@@ -83,8 +87,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 export function useChats() {
   const context = useContext(ChatContext);
   if (context === undefined) {
-    throw new Error('useChats must be used within ChatProvider');
+    throw new Error("useChats must be used within ChatProvider");
   }
   return context;
 }
-
