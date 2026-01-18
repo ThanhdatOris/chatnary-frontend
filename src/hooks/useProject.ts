@@ -1,18 +1,7 @@
 import apiClient from '@/lib/api';
+import { Project } from '@/lib/types';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-
-export interface Project {
-  id: string;
-  name: string;
-  description?: string;
-  color: string;
-  isArchived?: boolean;
-  documentsCount?: number;
-  chatsCount?: number;
-  createdAt: string;
-  updatedAt: string;
-}
 
 export function useProject() {
   const searchParams = useSearchParams();
@@ -21,6 +10,15 @@ export function useProject() {
   const [project, setProject] = useState<Project | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Reset state immediately when projectId changes
+  useEffect(() => {
+    if (projectId) {
+      setIsLoading(true);
+      setProject(null);
+      setError(null);
+    }
+  }, [projectId]);
 
   useEffect(() => {
     if (!projectId) {

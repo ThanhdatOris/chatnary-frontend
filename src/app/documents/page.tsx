@@ -36,25 +36,28 @@ function DocumentsPageContent() {
   const searchParams = useSearchParams();
   const projectId = searchParams.get("project");
   const { project, isLoading: projectLoading } = useProject();
-  const { setProjectName } = useBreadcrumb();
-  const {
-    documents,
-    loading,
-    error,
-    uploading,
-    uploadDocument,
-    deleteDocument,
-    refreshDocuments,
+  const { setProjectName, setProjectColor } = useBreadcrumb();
+  const { 
+    documents, 
+    loading, 
+    error, 
+    uploading, 
+    uploadDocument, 
+    deleteDocument, 
+    refreshDocuments 
   } = useDocuments({ projectId: projectId || undefined });
 
-  // Set project name for breadcrumb when project loads
+  // Set project name and color for breadcrumb when project loads
   useEffect(() => {
     if (project?.name) {
       setProjectName(project.name);
     }
-  }, [project, setProjectName]);
-
-  const [searchTerm, setSearchTerm] = useState("");
+    if (project?.color) {
+      setProjectColor(project.color);
+    }
+  }, [project, setProjectName, setProjectColor]);
+  
+  const [searchTerm, setSearchTerm] = useState('');
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(
     null

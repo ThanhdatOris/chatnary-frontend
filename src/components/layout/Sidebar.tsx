@@ -1,16 +1,17 @@
 "use client";
 
-import { useChats } from "@/contexts/ChatContext";
-import { useSidebar } from "@/contexts/SidebarContext";
-import { chatsApi } from "@/lib/api";
-import { ChatSession } from "@/lib/types";
-import { cn } from "@/lib/utils";
-import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
-import ChatListItem from "../chat/ChatListItem";
-import { Button, Modal, ModalFooter, Toast } from "../ui";
-import ThemeToggle from "../ui/ThemeToggle";
+import { useChats } from '@/contexts/ChatContext';
+import { useSidebar } from '@/contexts/SidebarContext';
+import { chatsApi } from '@/lib/api';
+import { ChatSession } from '@/lib/types';
+import { cn } from '@/lib/utils';
+import { BarChart3, FileText, Settings } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import ChatListItem from '../chat/ChatListItem';
+import { Button, Modal, ModalFooter, Toast } from '../ui';
+import ThemeToggle from '../ui/ThemeToggle';
 
 interface NavItem {
   name: string;
@@ -29,42 +30,19 @@ const getNavSections = (projectId?: string): NavSection[] => [
     title: "",
     items: [
       {
-        name: "Dashboard",
-        href: projectId ? `/dashboard?project=${projectId}` : "/dashboard",
-        icon: (
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-            />
-          </svg>
-        ),
+        name: 'Dashboard',
+        href: projectId ? `/dashboard?project=${projectId}` : '/dashboard',
+        icon: <BarChart3 className="w-5 h-5" />,
       },
       {
-        name: "Tài liệu",
-        href: projectId ? `/documents?project=${projectId}` : "/documents",
-        icon: (
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-            />
-          </svg>
-        ),
+        name: 'Tài liệu',
+        href: projectId ? `/documents?project=${projectId}` : '/documents',
+        icon: <FileText className="w-5 h-5" />,
+      },
+      {
+        name: 'Cài đặt',
+        href: projectId ? `/settings?project=${projectId}` : '/settings',
+        icon: <Settings className="w-5 h-5" />,
       },
     ],
   },
@@ -329,8 +307,11 @@ function SidebarContent() {
                   )}
                   <div className="space-y-1">
                     {section.items.map((item) => {
-                      const isActive = pathname === item.href;
-
+                      // Extract path from href (remove query string)
+                      const itemPath = item.href.split('?')[0];
+                      // Check if current pathname matches the item path
+                      const isActive = pathname === itemPath || pathname?.startsWith(itemPath + '/');
+                      
                       return (
                         <Link
                           key={item.href}
@@ -338,8 +319,8 @@ function SidebarContent() {
                           className={cn(
                             "flex items-center gap-3 px-3 py-2 rounded-lg transition-colors text-sm",
                             isActive
-                              ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium"
-                              : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                              ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50'
                           )}
                         >
                           {item.icon}
@@ -355,28 +336,29 @@ function SidebarContent() {
             <>
               {/* Collapsed Navigation - Icons Only */}
               <div className="space-y-2">
-                {navSections
-                  .flatMap((section) => section.items)
-                  .map((item) => {
-                    const isActive = pathname === item.href;
-
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        className={cn(
-                          "flex items-center justify-center p-2.5 rounded-lg transition-colors",
-                          isActive
-                            ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
-                            : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
-                        )}
-                        title={item.name}
-                      >
-                        {item.icon}
-                      </Link>
-                    );
-                  })}
-
+                {navSections.flatMap(section => section.items).map((item) => {
+                  // Extract path from href (remove query string)
+                  const itemPath = item.href.split('?')[0];
+                  // Check if current pathname matches the item path
+                  const isActive = pathname === itemPath || pathname?.startsWith(itemPath + '/');
+                  
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      className={cn(
+                        'flex items-center justify-center p-2.5 rounded-lg transition-colors',
+                        isActive
+                          ? 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+                          : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800/50'
+                      )}
+                      title={item.name}
+                    >
+                      {item.icon}
+                    </Link>
+                  );
+                })}
+                
                 {/* New Chat Button - Consistent collapsed mode */}
                 <div className="mt-4 pt-2 border-t border-gray-200 dark:border-gray-700">
                   <Link
@@ -636,32 +618,6 @@ function SidebarContent() {
                 </div>
                 <div className="flex items-center gap-1">
                   <ThemeToggle />
-                  <Link href="/settings">
-                    <button
-                      className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                      aria-label="Cài đặt"
-                    >
-                      <svg
-                        className="w-4 h-4 text-gray-600 dark:text-gray-400"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                        />
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                        />
-                      </svg>
-                    </button>
-                  </Link>
                 </div>
               </div>
             </div>
@@ -671,36 +627,7 @@ function SidebarContent() {
             {/* Collapsed Footer - Icons Only */}
             <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex flex-col items-center gap-3">
               <ThemeToggle />
-              <Link href="/settings">
-                <button
-                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-                  title="Cài đặt"
-                >
-                  <svg
-                    className="w-5 h-5 text-gray-600 dark:text-gray-400"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                  </svg>
-                </button>
-              </Link>
-              <div
-                className="w-9 h-9 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center"
-                title="Người dùng Demo"
-              >
+              <div className="w-9 h-9 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center" title="Người dùng Demo">
                 <span className="text-white text-sm font-medium">N</span>
               </div>
             </div>

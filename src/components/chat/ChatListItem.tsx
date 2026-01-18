@@ -3,6 +3,7 @@
 import { ChatSession } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import React, { useState } from 'react';
 import ChatRenameModal from './ChatRenameModal';
 
@@ -15,6 +16,8 @@ interface ChatListItemProps {
 
 export default function ChatListItem({ chat, isActive, onUpdate, onDelete }: ChatListItemProps) {
   const [isRenameModalOpen, setIsRenameModalOpen] = useState(false);
+  const searchParams = useSearchParams();
+  const projectId = searchParams.get('project');
 
   const handleEditClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -74,7 +77,7 @@ export default function ChatListItem({ chat, isActive, onUpdate, onDelete }: Cha
 
   return (
     <>
-      <Link href={`/chat/${chat.id}`} className={className}>
+      <Link href={projectId ? `/chat/${chat.id}?project=${projectId}` : `/chat/${chat.id}`} className={className}>
         {content}
       </Link>
       

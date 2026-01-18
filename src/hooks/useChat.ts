@@ -22,12 +22,15 @@ interface UseChatReturn {
   refreshMessages: () => Promise<void>;
 }
 
-export function useChat({ chatId, projectId, autoFetch = true }: UseChatOptions = {}): UseChatReturn {
+export function useChat({ chatId, projectId: initialProjectId, autoFetch = true }: UseChatOptions = {}): UseChatReturn {
   const [chat, setChat] = useState<ChatSession | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Derived ProjectId: either passed explicitly or found in loaded chat
+  const projectId = initialProjectId || chat?.projectId;
 
   const fetchChat = useCallback(async () => {
     if (!chatId) return;
@@ -54,14 +57,14 @@ export function useChat({ chatId, projectId, autoFetch = true }: UseChatOptions 
   }, [chatId]);
 
   const fetchMessages = useCallback(async () => {
-    if (!chatId) return;
-
+    if (!chatId || !projectId) return;
+    
     try {
       setError(null);
-
-      console.log('Fetching messages for chat:', chatId);
-      const response = await messagesApi.getMessages(chatId);
-
+      
+      console.log('Fetching messages for chat:', chatId, 'Project:', projectId);
+      const response = await messagesApi.getMessages(projectId, chatId);
+      
       if (response.error) {
         setError(response.error);
         return;
@@ -72,11 +75,15 @@ export function useChat({ chatId, projectId, autoFetch = true }: UseChatOptions 
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Có lỗi xảy ra khi tải tin nhắn');
     }
-  }, [chatId]);
+  }, [chatId, projectId]);
 
   const sendMessage = useCallback(async (content: string) => {
     if (!chatId || !content.trim()) {
       throw new Error('Missing chatId or content');
+    }
+    
+    if (!projectId) {
+       throw new Error('Missing projectId');
     }
 
     if (!projectId) {
@@ -86,10 +93,13 @@ export function useChat({ chatId, projectId, autoFetch = true }: UseChatOptions 
     try {
       setSending(true);
       setError(null);
-
-      // Use the new API that requires projectId
-      const response = await messagesApi.sendMessage(chatId, { content }, projectId);
-
+      
+      console.log('Sending message to chat:', chatId, 'Project:', projectId, 'Content:', content);
+      // Pass chatId within the DTO if implied or required, plus content
+      const response = await messagesApi.sendMessage(projectId, { content, chatId });
+      
+      console.log('Send message response:', response);
+      
       if (response.error) {
         setError(response.error);
         throw new Error(response.error);
@@ -108,19 +118,39 @@ export function useChat({ chatId, projectId, autoFetch = true }: UseChatOptions 
     } finally {
       setSending(false);
     }
-  }, [chatId, projectId, fetchMessages]); const refreshChat = useCallback(() => fetchChat(), [fetchChat]);
+  }, [chatId, projectId, fetchMessages]);
+
+  const refreshChat = useCallback(() => fetchChat(), [fetchChat]);
   const refreshMessages = useCallback(() => fetchMessages(), [fetchMessages]);
 
   const updateChatLocal = useCallback((updatedChat: ChatSession) => {
     setChat(updatedChat);
   }, []);
 
+  // Reset state when chatId changes
+  useEffect(() => {
+    if (chatId) {
+      setLoading(true);
+      setChat(null);
+      setMessages([]);
+      setError(null);
+    }
+  }, [chatId]);
+
+  // Initial Fetch logic
   useEffect(() => {
     if (autoFetch && chatId) {
+      // Always fetch chat to ensure we have metadata (like projectId if missing)
       fetchChat();
+    }
+  }, [autoFetch, chatId, fetchChat]);
+
+  // Fetch messages once we have projectId (either from prop or fetched chat)
+  useEffect(() => {
+    if (autoFetch && chatId && projectId) {
       fetchMessages();
     }
-  }, [autoFetch, chatId, fetchChat, fetchMessages]);
+  }, [autoFetch, chatId, projectId, fetchMessages]);
 
   return {
     chat,

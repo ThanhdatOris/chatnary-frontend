@@ -34,15 +34,8 @@ export function useBreadcrumbNavigation() {
     const generateBreadcrumbs = (): BreadcrumbItem[] => {
       const breadcrumbs: BreadcrumbItem[] = [];
 
-      // Luôn bắt đầu với Home nếu không phải trang chủ
-      if (pathname !== '/') {
-        const HomeIcon = routeConfig['/'].icon;
-        breadcrumbs.push({
-          label: routeConfig['/'].label,
-          href: '/',
-          icon: HomeIcon ? <HomeIcon className="w-4 h-4" /> : undefined,
-        });
-      }
+      // Skip adding Home breadcrumb - we'll only show project name and current page
+      // (Removed automatic Home breadcrumb addition)
 
       // Split pathname thành segments
       const segments = pathname.split('/').filter(Boolean);

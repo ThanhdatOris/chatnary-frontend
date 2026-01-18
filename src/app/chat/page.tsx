@@ -1,14 +1,15 @@
 "use client";
 
-import HeaderButton from "@/components/layout/HeaderButton";
-import MainLayout from "@/components/layout/MainLayout";
-import { Button, Card, FileIcon, Loading } from "@/components/ui";
-import { useChats } from "@/contexts/ChatContext";
-import useProjectBreadcrumb from "@/hooks/useProjectBreadcrumb";
-import apiClient, { chatsApi, Document, documentsApi } from "@/lib/api";
-import { MessageSquare } from "lucide-react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import HeaderButton from '@/components/layout/HeaderButton';
+import MainLayout from '@/components/layout/MainLayout';
+import { Button, Card, FileIcon, Loading } from '@/components/ui';
+import { useBreadcrumb } from '@/contexts/BreadcrumbContext';
+import { useChats } from '@/contexts/ChatContext';
+import { useProject } from '@/hooks/useProject';
+import apiClient, { chatsApi, Document, documentsApi } from '@/lib/api';
+import { MessageSquare } from 'lucide-react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 // Wrapper component with Suspense boundary for useSearchParams
 export default function ChatPage() {
@@ -32,10 +33,11 @@ function ChatPageContent() {
   const searchParams = useSearchParams();
   const projectId = searchParams.get("project");
   const { addChat } = useChats();
-
-  // Set project name for breadcrumb
-  useProjectBreadcrumb();
-
+  
+  // Get project data and set breadcrumb context  
+  const { project } = useProject();
+  const { setProjectName, setProjectColor } = useBreadcrumb();
+  
   const [documents, setDocuments] = useState<Document[]>([]);
   const [selectedDocs, setSelectedDocs] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,6 +45,16 @@ function ChatPageContent() {
   const [creating, setCreating] = useState(false);
   const [availableProjects, setAvailableProjects] = useState<any[]>([]);
   const [loadingProjects, setLoadingProjects] = useState(false);
+
+  // Set project name and color for breadcrumb when project loads
+  useEffect(() => {
+    if (project?.name) {
+      setProjectName(project.name);
+    }
+    if (project?.color) {
+      setProjectColor(project.color);
+    }
+  }, [project, setProjectName, setProjectColor]);
 
   // Auto-select first project if no project is specified
   useEffect(() => {
@@ -197,14 +209,37 @@ function ChatPageContent() {
     >
       <div className="flex-1 p-6 overflow-auto">
         <div className="max-w-4xl mx-auto space-y-6">
-          {documents.length === 0 ? (
-            <Card variant="bordered" className="text-center py-16">
-              <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg
-                  className="w-8 h-8 text-gray-400"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+
+        {documents.length === 0 ? (
+          <Card variant="bordered" className="text-center py-16">
+            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
+              Chưa có tài liệu nào
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              Upload tài liệu để bắt đầu trò chuyện
+            </p>
+            <Button onClick={() => router.push(`/documents?project=${projectId}`)}>
+              Upload tài liệu
+            </Button>
+          </Card>
+        ) : (
+          <>
+            {/* Document Selection */}
+            <div className="grid md:grid-cols-2 gap-4">
+              {documents.map((doc) => (
+                <Card
+                  key={doc.id}
+                  variant="bordered"
+                  className={`cursor-pointer transition-all ${
+                    selectedDocs.includes(doc.id)
+                      ? 'ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                      : 'hover:shadow-md'
+                  }`}
                 >
                   <path
                     strokeLinecap="round"

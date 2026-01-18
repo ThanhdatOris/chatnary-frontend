@@ -212,7 +212,7 @@ export default function DocumentList({
       isPanelCollapsed ? "w-full" : "w-1/2"
     )}>
       {/* Header with controls */}
-      <div className="p-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+      <div className="p-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">

@@ -1,90 +1,40 @@
-// API client for Chatnary backend - Updated to match API_ENDPOINTS.md
-import { ChatSession, CreateChatRequest, Document, Message, SendMessageRequest, UpdateChatRequest } from '@/lib/types';
+// API client for Chatnary Backend matching https://chatnary.up.railway.app/api/v1/docs
+import {
+  AuthResponse,
+  ChatSession,
+  CreateChatRequest,
+  CreateProjectRequest,
+  Document,
+  LoginRequest,
+  Message,
+  Project,
+  RegisterRequest,
+  UpdateChatRequest,
+  UpdateProjectRequest,
+} from "@/lib/types";
+import Cookies from "js-cookie";
 
-// Use environment variable with fallback
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+const API_BASE_URL = "https://chatnary.up.railway.app";
+const COOKIE_NAME = "chatnary_token";
 
-// ==================== TYPE DEFINITIONS ====================
-
-interface Project {
-  id: string;
-  name: string;
-  description: string;
-  color: string;
-  isArchived: boolean;
-  createdAt: string;
-  updatedAt: string;
-  // Computed on frontend if needed
-  documentsCount?: number;
-  chatsCount?: number;
-}
-
-interface CreateProjectRequest {
-  name: string;
-  description?: string;
-  color?: string;
-  isArchived?: boolean;
-}
-
-interface UpdateProjectRequest {
-  name?: string;
-  description?: string;
-  color?: string;
-  isArchived?: boolean;
-}
-
-interface DocumentUploadMetadata {
-  projectId?: string;
-  title?: string;
-  description?: string;
-  authors?: string[];
-  tags?: string[];
-  subjects?: string[];
-  publishedYear?: number;
-  accessLevel?: 'PRIVATE' | 'PUBLIC' | 'RESTRICTED';
-}
-
-interface ApiResponse<T> {
+// Generic API Response wrapper
+export interface ApiResponse<T> {
   success: boolean;
   data?: T;
   error?: string;
 }
 
-interface BackendApiResponse<T> {
+// Internal Backend Response wrapper
+interface BackendErrorResponse {
   statusCode: number;
-  success: boolean;
-  data?: T;
-  message?: string;
+  message: string | string[];
+  error: string;
 }
 
-// Backend document response structure
-interface BackendDocument {
-  id: string;
-  title: string;
-  description: string;
-  authors: string[];
-  subjects: string[];
-  tags: string[];
-  documentType: string;
-  publishedYear: number | null;
-  accessLevel: string;
-  originalName: string;
-  filePath: string;
-  mimeType: string;
-  size: number;
-  pageCount: number;
-  status: string;
-  metadata: any;
-  viewCount: number;
-  createdAt: string;
-  updatedAt: string;
-  indexedAt: string | null;
-  userId: string;
-  // From project documents response
-  addedAt?: string;
-  isSelected?: boolean;
-  linkId?: string;
-  linkedProjects?: any[];
+// Extended Request types if needed
+export interface SendMessageDto {
+  content: string;
+  chatId?: string;
 }
 
 // Backend chat response structure
@@ -114,10 +64,38 @@ interface ChatMessageResponse {
 
 class ApiClient {
   private baseUrl: string;
+  private token: string | null = null;
 
   constructor(baseUrl: string = API_BASE_URL) {
-    // Remove trailing slash if present
-    this.baseUrl = baseUrl.replace(/\/$/, '');
+    this.baseUrl = baseUrl;
+    // Try to load token from cookie on initialization
+    this.token = Cookies.get(COOKIE_NAME) || null;
+    console.log('ApiClient: Initialized. Token from cookie:', this.token ? 'Found' : 'Missing');
+  }
+
+  // Auth Management
+  setToken(token: string) {
+    this.token = token;
+    // Important: Set path to '/' so cookie is accessible everywhere
+    Cookies.set(COOKIE_NAME, token, { expires: 7, path: '/' }); 
+    console.log('ApiClient: Token set manually');
+  }
+
+  clearToken() {
+    this.token = null;
+    Cookies.remove(COOKIE_NAME, { path: '/' });
+    console.log('ApiClient: Token cleared');
+  }
+
+  getToken(): string | null {
+    if (!this.token) {
+        this.token = Cookies.get(COOKIE_NAME) || null;
+    }
+    return this.token;
+  }
+
+  isAuthenticated(): boolean {
+    return !!this.getToken();
   }
 
   private createSuccessResponse<T>(data: T): ApiResponse<T> {
@@ -128,27 +106,20 @@ class ApiClient {
     return { success: false, error };
   }
 
-  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
+  private async request<T>(
+    endpoint: string,
+    options: RequestInit = {}
+  ): Promise<ApiResponse<T>> {
     try {
       const url = `${this.baseUrl}${endpoint}`;
 
-      // Get access token for authorization (import dynamically to avoid circular deps)
-      const { getAccessToken, getValidAccessToken } = await import('@/lib/auth');
-      let accessToken = getAccessToken();
-
-      // If no access token in memory, try to get a valid one (may refresh)
-      if (!accessToken) {
-        accessToken = await getValidAccessToken();
-      }
-
       const headers: HeadersInit = {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
         ...options.headers,
       };
 
-      // Add Authorization header if we have a token
-      if (accessToken) {
-        (headers as Record<string, string>)['Authorization'] = `Bearer ${accessToken}`;
+      if (this.token) {
+        (headers as any)["Authorization"] = `Bearer ${this.token}`;
       }
 
       const config: RequestInit = {
@@ -156,444 +127,298 @@ class ApiClient {
         headers,
       };
 
+      console.log(`API Request: ${options.method || "GET"} ${url}`);
+
       const response = await fetch(url, config);
+
+      console.log(`API Response Status: ${response.status}`);
 
       if (!response.ok) {
         const errorText = await response.text();
-        return this.createErrorResponse(`HTTP ${response.status}: ${errorText}`);
+        let errorMessage = `HTTP ${response.status}`;
+        try {
+          const errorJson = JSON.parse(errorText) as BackendErrorResponse;
+          errorMessage = Array.isArray(errorJson.message)
+            ? errorJson.message.join(", ")
+            : errorJson.message || errorJson.error || errorMessage;
+        } catch (e) {
+          errorMessage = errorText || errorMessage;
+        }
+        console.error("API Error:", errorMessage);
+        return this.createErrorResponse(errorMessage);
       }
 
-      const backendResponse: BackendApiResponse<T> = await response.json();
-
-      if (!backendResponse.success) {
-        return this.createErrorResponse(backendResponse.message || 'Unknown error');
+      if (response.status === 204) {
+        return this.createSuccessResponse({} as T);
       }
 
-      return this.createSuccessResponse(backendResponse.data as T);
+      const responseData = await response.json();
+      return this.createSuccessResponse(responseData);
     } catch (error) {
-      return this.createErrorResponse(error instanceof Error ? error.message : 'Unknown error');
+      console.error("Network Error:", error);
+      return this.createErrorResponse(
+        error instanceof Error ? error.message : "Unknown error"
+      );
     }
   }
 
-  // ==================== PROJECT ENDPOINTS ====================
-  // GET /project - List all projects for user
+  // ==================== AUTH ====================
+
+  async login(credentials: LoginRequest): Promise<ApiResponse<AuthResponse>> {
+    const response = await this.request<any>("/api/v1/auth/login", {
+      method: "POST",
+      body: JSON.stringify(credentials),
+    });
+
+    if (response.success && response.data) {
+      const token = response.data.accessToken || response.data.token;
+      if (token) {
+        this.setToken(token);
+        return this.createSuccessResponse({
+          token,
+          user: response.data.user || {
+            id: "me",
+            email: credentials.email,
+            name: "User",
+          },
+        });
+      }
+    }
+    return response;
+  }
+
+  async register(data: RegisterRequest): Promise<ApiResponse<void>> {
+    return this.request<void>("/api/v1/auth/register", {
+      method: "POST",
+      body: JSON.stringify({ email: data.email, password: data.password }),
+    });
+  }
+
+  async logout(): Promise<ApiResponse<void>> {
+    const res = await this.request<void>("/api/v1/auth/logout", {
+      method: "POST",
+    });
+    this.clearToken();
+    return res;
+  }
+
+  // ==================== PROJECTS ====================
+
   async getProjects(): Promise<ApiResponse<Project[]>> {
-    return this.request<Project[]>('/project');
+    return this.request<Project[]>("/api/v1/project");
   }
 
-  // POST /project - Create new project
-  async createProject(project: CreateProjectRequest): Promise<ApiResponse<Project>> {
-    return this.request<Project>('/project', {
-      method: 'POST',
+  async createProject(
+    project: CreateProjectRequest
+  ): Promise<ApiResponse<Project>> {
+    return this.request<Project>("/api/v1/project", {
+      method: "POST",
       body: JSON.stringify(project),
     });
   }
 
-  // PATCH /project/:projectId - Update project
-  async updateProject(id: string, project: UpdateProjectRequest): Promise<ApiResponse<Project>> {
-    return this.request<Project>(`/project/${id}`, {
-      method: 'PATCH',
+  async updateProject(
+    id: string,
+    project: Partial<UpdateProjectRequest>
+  ): Promise<ApiResponse<Project>> {
+    return this.request<Project>(`/api/v1/project/${id}`, {
+      method: "PATCH",
       body: JSON.stringify(project),
     });
   }
 
-  // DELETE /project/:projectId - Delete project
-  async deleteProject(id: string): Promise<ApiResponse<any>> {
-    return this.request<any>(`/project/${id}`, {
-      method: 'DELETE',
+  async deleteProject(id: string): Promise<ApiResponse<void>> {
+    return this.request<void>(`/api/v1/project/${id}`, {
+      method: "DELETE",
     });
   }
 
-  // GET /project/:projectId/documents - List documents in project
-  async getProjectDocuments(projectId: string): Promise<ApiResponse<Document[]>> {
-    const response = await this.request<BackendDocument[]>(`/project/${projectId}/documents`);
-    if (response.error) {
-      return this.createErrorResponse(response.error);
-    }
-    // Transform backend documents to frontend format
-    const documents = (response.data || []).map(this.transformDocument);
-    return this.createSuccessResponse(documents);
+  async getProject(id: string): Promise<ApiResponse<Project>> {
+    return this.request<Project>(`/api/v1/project/${id}`);
   }
 
-  // GET /project/:projectId/chats - List chats in project
-  async getProjectChats(projectId: string): Promise<ApiResponse<ChatSession[]>> {
-    const response = await this.request<BackendChat[]>(`/project/${projectId}/chats`);
-    if (response.error) {
-      return this.createErrorResponse(response.error);
-    }
-    const chats = (response.data || []).map(this.transformChat);
-    return this.createSuccessResponse(chats);
-  }
+  // ==================== DOCUMENTS ====================
 
-  // POST /project/:projectId/documents - Add documents to project
-  async addDocumentsToProject(projectId: string, documentIds: string[]): Promise<ApiResponse<{ count: number }>> {
-    return this.request<{ count: number }>(`/project/${projectId}/documents`, {
-      method: 'POST',
-      body: JSON.stringify({ documentIds }),
-    });
-  }
-
-  // DELETE /project/:projectId/documents/unlink - Remove documents from project
-  async removeDocumentsFromProject(projectId: string, documentIds: string[]): Promise<ApiResponse<{ count: number }>> {
-    return this.request<{ count: number }>(`/project/${projectId}/documents/unlink`, {
-      method: 'DELETE',
-      body: JSON.stringify({ documentIds }),
-    });
-  }
-
-  // ==================== DOCUMENT ENDPOINTS ====================
-  // POST /document/upload/files - Upload document(s)
-  async uploadDocument(projectId: string, file: File, metadata?: Partial<DocumentUploadMetadata>): Promise<ApiResponse<Document>> {
+  async uploadDocument(
+    projectId: string,
+    file: File
+  ): Promise<ApiResponse<Document>> {
     try {
-      // Get access token for authorization
-      const { getAccessToken, getValidAccessToken } = await import('@/lib/auth');
-      let accessToken = getAccessToken();
-
-      if (!accessToken) {
-        accessToken = await getValidAccessToken();
-      }
-
-      if (!accessToken) {
-        return this.createErrorResponse('Unauthorized - please login again');
-      }
-
       const formData = new FormData();
-      formData.append('files', file);
+      formData.append("file", file);
+      // Ensure projectId is handled if strictly required by backend, though path suggests separating details
+      // But usually uploads need linkage. We will send it.
+      formData.append("projectId", projectId);
 
-      // Prepare metadata with projectId
-      const uploadMetadata: DocumentUploadMetadata = {
-        projectId,
-        ...metadata,
-      };
-      formData.append('data', JSON.stringify(uploadMetadata));
-
-      const url = `${this.baseUrl}/document/upload/files`;
+      const url = `${this.baseUrl}/api/v1/document/upload/files`;
       const response = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          // Don't set Content-Type - browser sets it with boundary for multipart
-        },
+        method: "POST",
+        headers: this.token ? { Authorization: `Bearer ${this.token}` } : {},
         body: formData,
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        return this.createErrorResponse(`HTTP ${response.status}: ${errorText}`);
+        return this.createErrorResponse(
+          `HTTP ${response.status}: ${errorText}`
+        );
       }
 
-      const backendResponse: BackendApiResponse<{ url: string }[]> = await response.json();
-
-      if (!backendResponse.success) {
-        return this.createErrorResponse(backendResponse.message || 'Upload failed');
-      }
-
-      // Backend returns [{url: "..."}], we return a placeholder document
-      // The actual document will be fetched when listing documents
-      return this.createSuccessResponse({
-        id: 'pending',
-        name: file.name,
-        originalFilename: file.name,
-        projectId,
-        mimeType: file.type,
-        fileSize: file.size,
-        status: 'processing',
-        uploadedBy: '',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      } as Document);
+      const data = await response.json();
+      return this.createSuccessResponse(data);
     } catch (error) {
-      return this.createErrorResponse(error instanceof Error ? error.message : 'Upload failed');
+      return this.createErrorResponse(
+        error instanceof Error ? error.message : "Unknown error"
+      );
     }
   }
 
-  // GET /document - Get all documents for user
-  async getAllDocuments(): Promise<ApiResponse<Document[]>> {
-    const response = await this.request<BackendDocument[]>('/document');
-    if (response.error) {
-      return this.createErrorResponse(response.error);
-    }
-    const documents = (response.data || []).map(this.transformDocument);
-    return this.createSuccessResponse(documents);
+  async getProjectDocuments(
+    projectId: string
+  ): Promise<ApiResponse<Document[]>> {
+    return this.request<Document[]>(`/api/v1/project/${projectId}/documents`);
   }
 
   // GET /document/:documentId - Get document detail
   async getDocument(documentId: string): Promise<ApiResponse<Document>> {
-    const response = await this.request<BackendDocument>(`/document/${documentId}`);
-    if (response.error) {
-      return this.createErrorResponse(response.error);
-    }
-    return this.createSuccessResponse(this.transformDocument(response.data!));
+    return this.request<Document>(`/api/v1/document/${documentId}`);
   }
 
   // DELETE /document/:documentId - Delete document
   async deleteDocument(documentId: string): Promise<ApiResponse<void>> {
-    return this.request<void>(`/document/${documentId}`, {
-      method: 'DELETE',
+    return this.request<void>(`/api/v1/document/${documentId}`, {
+      method: "DELETE",
     });
   }
 
-  // Helper: Get static file URL from filePath
-  getDocumentFileUrl(filePath: string): string {
-    // Backend returns paths like "uploads\\documents\\filename.pdf"
-    // We need to construct full URL
-    const baseHost = this.baseUrl.replace('/api/v1', '');
-    const normalizedPath = filePath.replace(/\\/g, '/');
-    return `${baseHost}/${normalizedPath}`;
+  async searchDocuments(
+    query: string,
+    projectId?: string
+  ): Promise<ApiResponse<Document[]>> {
+    const params = new URLSearchParams();
+    params.append("query", query);
+    if (projectId) params.append("projectId", projectId);
+
+    // Fallback search, verify if backend handles it
+    return this.request<Document[]>(
+      `/api/v1/document/search?${params.toString()}`
+    );
   }
 
-  // Helper: Get document download URL by ID
-  // Note: This returns a URL that will trigger download when fetched
-  getDocumentDownloadUrl(documentId: string): string {
-    // The backend serves static files directly, so we construct the URL
-    // using the /document/:id endpoint which returns the file
-    const baseHost = this.baseUrl.replace('/api/v1', '');
-    return `${baseHost}/api/v1/document/${documentId}/download`;
-  }
+  // ==================== CHATS ====================
 
-  // Helper: Get document preview URL by ID
-  // Note: This returns a URL suitable for embedding (iframe, img src)
-  getDocumentPreviewUrl(documentId: string): string {
-    // Same as download, but for preview purposes (PDFs, images)
-    const baseHost = this.baseUrl.replace('/api/v1', '');
-    return `${baseHost}/api/v1/document/${documentId}/preview`;
-  }
-
-  // Helper: Transform backend document to frontend format
-  private transformDocument = (doc: BackendDocument): Document => ({
-    id: doc.id,
-    name: doc.title || doc.originalName,
-    originalFilename: doc.originalName,
-    projectId: '', // Will be set from context
-    mimeType: doc.mimeType,
-    fileSize: doc.size,
-    status: doc.status.toLowerCase() === 'done' ? 'processed' :
-      doc.status.toLowerCase() === 'processing' ? 'processing' :
-        doc.status.toLowerCase() === 'error' ? 'error' : 'uploading',
-    uploadedBy: doc.userId,
-    createdAt: doc.createdAt,
-    updatedAt: doc.updatedAt,
-    hasContent: doc.status.toLowerCase() === 'done',
-  });
-
-  // ==================== CHAT ENDPOINTS ====================
-  // POST /project/:projectId/chats/messages - Send message (creates chat if chatId not provided)
-  async sendMessage(projectId: string, message: string, chatId?: string): Promise<ApiResponse<{ answer: string; citations: any[]; chatId: string }>> {
-    const endpoint = chatId
-      ? `/project/${projectId}/chats/messages?chatId=${chatId}`
-      : `/project/${projectId}/chats/messages`;
-
-    const response = await this.request<ChatMessageResponse>(endpoint, {
-      method: 'POST',
-      body: JSON.stringify({ message }),
-    });
-
-    return response;
-  }
-
-  // POST /chat/global - Global chat (no project)
-  async sendGlobalMessage(message: string, chatId?: string): Promise<ApiResponse<{ answer: string; citations: any[]; chatId: string }>> {
-    const endpoint = chatId ? `/chat/global?chatId=${chatId}` : '/chat/global';
-
-    return this.request<ChatMessageResponse>(endpoint, {
-      method: 'POST',
-      body: JSON.stringify({ message }),
+  async createChat(
+    request: CreateChatRequest
+  ): Promise<ApiResponse<ChatSession>> {
+    return this.request<ChatSession>("/api/v1/chat", {
+      method: "POST",
+      body: JSON.stringify(request),
     });
   }
 
-  // GET /chat/:chatId/messages - Get chat with messages
-  async getChatMessages(chatId: string): Promise<ApiResponse<{ chat: ChatSession; messages: Message[] }>> {
-    const response = await this.request<BackendChat>(`/chat/${chatId}/messages`);
-    if (response.error) {
-      return this.createErrorResponse(response.error);
-    }
-
-    const backendChat = response.data!;
-    const chat = this.transformChat(backendChat);
-    const messages = (backendChat.messages || []).map((msg, index) => ({
-      id: `${chatId}-${index}`,
-      chatId,
-      role: msg.role,
-      content: msg.content,
-      sources: msg.citation,
-      createdAt: backendChat.createdAt,
-    })) as Message[];
-
-    return this.createSuccessResponse({ chat, messages });
-  }
-
-  // GET /chat/user/global - Get all global chats
-  async getGlobalChats(): Promise<ApiResponse<ChatSession[]>> {
-    const response = await this.request<BackendChat[]>('/chat/user/global');
-    if (response.error) {
-      return this.createErrorResponse(response.error);
-    }
-    const chats = (response.data || []).map(this.transformChat);
-    return this.createSuccessResponse(chats);
-  }
-
-  // PATCH /chat/user/:chatId - Update chat (title, projectId)
-  async updateChat(chatId: string, data: { title?: string; projectId?: string }): Promise<ApiResponse<ChatSession>> {
-    const response = await this.request<BackendChat>(`/chat/user/${chatId}`, {
-      method: 'PATCH',
-      body: JSON.stringify(data),
-    });
-    if (response.error) {
-      return this.createErrorResponse(response.error);
-    }
-    return this.createSuccessResponse(this.transformChat(response.data!));
-  }
-
-  // DELETE /chat/user/:chatId - Delete chat
-  async deleteChat(chatId: string): Promise<ApiResponse<void>> {
-    return this.request<void>(`/chat/user/${chatId}`, {
-      method: 'DELETE',
-    });
-  }
-
-  // Helper: Transform backend chat to frontend format
-  private transformChat = (chat: BackendChat): ChatSession => ({
-    id: chat.id,
-    title: chat.title,
-    projectId: chat.projectId || '',
-    createdBy: chat.userId || '',
-    messagesCount: chat.messages?.length || 0,
-    createdAt: chat.createdAt,
-    updatedAt: chat.updatedAt,
-  });
-
-  // ==================== LEGACY COMPATIBILITY ====================
-  // These methods maintain compatibility with existing code
-
-  async createChat(request: CreateChatRequest): Promise<ApiResponse<ChatSession>> {
-    // Create chat by sending initial empty request
-    // The backend creates a chat when first message is sent
-    // For now, we'll return a placeholder
-    const projectId = request.project_id;
-
-    // Send a system message to create the chat
-    const response = await this.sendMessage(projectId, 'Xin chào');
-    if (response.error) {
-      return this.createErrorResponse(response.error);
-    }
-
-    // Return the created chat info
-    return this.createSuccessResponse({
-      id: response.data!.chatId,
-      title: request.title || 'Chat mới',
-      projectId,
-      createdBy: '',
-      messagesCount: 1,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    });
+  async getProjectChats(
+    projectId: string
+  ): Promise<ApiResponse<ChatSession[]>> {
+    return this.request<ChatSession[]>(`/api/v1/project/${projectId}/chats`);
   }
 
   async getChat(chatId: string): Promise<ApiResponse<ChatSession>> {
-    const response = await this.getChatMessages(chatId);
-    if (response.error) {
-      return this.createErrorResponse(response.error);
-    }
-    return this.createSuccessResponse(response.data!.chat);
+    return this.request<ChatSession>(`/api/v1/chat/${chatId}`);
   }
 
-  async getMessages(chatId: string): Promise<ApiResponse<Message[]>> {
-    const response = await this.getChatMessages(chatId);
-    if (response.error) {
-      return this.createErrorResponse(response.error);
-    }
-    return this.createSuccessResponse(response.data!.messages);
+  async updateChat(
+    chatId: string,
+    request: UpdateChatRequest
+  ): Promise<ApiResponse<ChatSession>> {
+    return this.request<ChatSession>(`/api/v1/chat/user/${chatId}`, {
+      method: "PATCH",
+      body: JSON.stringify(request),
+    });
   }
 
-  // Legacy method - redirects to new signature
-  async sendMessageLegacy(chatId: string, request: SendMessageRequest, projectId: string): Promise<ApiResponse<Message>> {
-    const response = await this.sendMessage(projectId, request.content, chatId);
-    if (response.error) {
-      return this.createErrorResponse(response.error);
-    }
-
-    // Return the AI response as a message
-    return this.createSuccessResponse({
-      id: `${chatId}-${Date.now()}`,
-      chatId,
-      role: 'assistant',
-      content: response.data!.answer,
-      sources: response.data!.citations,
-      createdAt: new Date().toISOString(),
-    } as Message);
+  async deleteChat(chatId: string): Promise<ApiResponse<void>> {
+    return this.request<void>(`/api/v1/chat/user/${chatId}`, {
+      method: "DELETE",
+    });
   }
 
-  // Health check
-  async healthCheck(): Promise<ApiResponse<{ status: string }>> {
-    return this.request<{ status: string }>('/health');
+  // ==================== MESSAGES ====================
+
+  async getMessages(
+    projectId: string,
+    chatId: string
+  ): Promise<ApiResponse<Message[]>> {
+    return this.request<Message[]>(
+      `/api/v1/project/${projectId}/chats/${chatId}/messages`
+    );
+  }
+
+  async sendMessage(
+    projectId: string,
+    request: SendMessageDto
+  ): Promise<ApiResponse<Message>> {
+    return this.request<Message>(
+      `/api/v1/project/${projectId}/chats/messages`,
+      {
+        method: "POST",
+        body: JSON.stringify(request),
+      }
+    );
   }
 }
 
 const apiClient = new ApiClient();
 
-// ==================== EXPORTED API OBJECTS ====================
-
-export const chatsApi = {
-  createChat: (request: CreateChatRequest) => apiClient.createChat(request),
-  getChat: (chatId: string) => apiClient.getChat(chatId),
-  updateChat: (chatId: string, request: UpdateChatRequest) => apiClient.updateChat(chatId, { title: request.title }),
-  deleteChat: (chatId: string) => apiClient.deleteChat(chatId),
-  getProjectChats: (projectId: string) => apiClient.getProjectChats(projectId),
-  getGlobalChats: () => apiClient.getGlobalChats(),
-};
-
-export const messagesApi = {
-  getMessages: (chatId: string) => apiClient.getMessages(chatId),
-  sendMessage: (chatId: string, request: SendMessageRequest, projectId: string) =>
-    apiClient.sendMessageLegacy(chatId, request, projectId),
-  sendProjectMessage: (projectId: string, message: string, chatId?: string) =>
-    apiClient.sendMessage(projectId, message, chatId),
-  sendGlobalMessage: (message: string, chatId?: string) =>
-    apiClient.sendGlobalMessage(message, chatId),
-};
-
-export const documentsApi = {
-  uploadDocument: (projectId: string, file: File, metadata?: Partial<DocumentUploadMetadata>) =>
-    apiClient.uploadDocument(projectId, file, metadata),
-  getProjectDocuments: (projectId: string) => apiClient.getProjectDocuments(projectId),
-  getAllDocuments: () => apiClient.getAllDocuments(),
-  getDocument: (documentId: string) => apiClient.getDocument(documentId),
-  deleteDocument: (documentId: string) => apiClient.deleteDocument(documentId),
-  getDocumentFileUrl: (filePath: string) => apiClient.getDocumentFileUrl(filePath),
+export const authApi = {
+  login: (data: LoginRequest) => apiClient.login(data),
+  register: (data: RegisterRequest) => apiClient.register(data),
+  logout: () => apiClient.logout(),
+  getToken: () => apiClient.getToken(),
+  isAuthenticated: () => apiClient.isAuthenticated(),
+  setToken: (token: string) => apiClient.setToken(token),
 };
 
 export const projectsApi = {
   getProjects: () => apiClient.getProjects(),
-  createProject: (project: CreateProjectRequest) => apiClient.createProject(project),
-  updateProject: (id: string, project: UpdateProjectRequest) => apiClient.updateProject(id, project),
+  createProject: (data: CreateProjectRequest) => apiClient.createProject(data),
+  updateProject: (id: string, data: Partial<UpdateProjectRequest>) =>
+    apiClient.updateProject(id, data),
   deleteProject: (id: string) => apiClient.deleteProject(id),
-  getProjectDocuments: (projectId: string) => apiClient.getProjectDocuments(projectId),
-  getProjectChats: (projectId: string) => apiClient.getProjectChats(projectId),
-  addDocumentsToProject: (projectId: string, documentIds: string[]) =>
-    apiClient.addDocumentsToProject(projectId, documentIds),
-  removeDocumentsFromProject: (projectId: string, documentIds: string[]) =>
-    apiClient.removeDocumentsFromProject(projectId, documentIds),
+  getProject: (id: string) => apiClient.getProject(id),
 };
 
-// Suggestions placeholder
+export const documentsApi = {
+  uploadDocument: (projectId: string, file: File) =>
+    apiClient.uploadDocument(projectId, file),
+  getProjectDocuments: (projectId: string) =>
+    apiClient.getProjectDocuments(projectId),
+  getDocument: (id: string) => apiClient.getDocument(id),
+  deleteDocument: (id: string) => apiClient.deleteDocument(id),
+  searchDocuments: (query: string, projectId?: string) =>
+    apiClient.searchDocuments(query, projectId),
+};
+
+export const chatsApi = {
+  createChat: (request: CreateChatRequest) => apiClient.createChat(request),
+  getProjectChats: (projectId: string) => apiClient.getProjectChats(projectId),
+  getChat: (id: string) => apiClient.getChat(id),
+  updateChat: (id: string, request: UpdateChatRequest) =>
+    apiClient.updateChat(id, request),
+  deleteChat: (id: string) => apiClient.deleteChat(id),
+};
+
+export const messagesApi = {
+  getMessages: (projectId: string, chatId: string) =>
+    apiClient.getMessages(projectId, chatId),
+  sendMessage: (projectId: string, request: SendMessageDto) =>
+    apiClient.sendMessage(projectId, request),
+};
+
 export const suggestionsApi = {
-  getSuggestions: async (_chatId: string) => {
+  getSuggestions: async (chatId: string) => {
+    // Placeholder implementation as per original file
     return { success: true, data: [] as string[] };
   },
 };
 
 export default apiClient;
-export type {
-  ApiResponse,
-  BackendDocument,
-  ChatSession,
-  CreateChatRequest,
-  CreateProjectRequest,
-  Document,
-  DocumentUploadMetadata,
-  Message,
-  Project,
-  SendMessageRequest,
-  UpdateChatRequest,
-  UpdateProjectRequest,
-};
