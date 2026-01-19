@@ -1,24 +1,24 @@
 // API client for Chatnary Backend matching https://chatnary.up.railway.app/api/v1/docs
 import {
-  USE_MOCK_DATA,
-  createMockChat,
-  deleteMockChat,
-  getMockChatsByProject,
-  simulateDelay,
-  updateMockChat
+    USE_MOCK_DATA,
+    createMockChat,
+    deleteMockChat,
+    getMockChatsByProject,
+    simulateDelay,
+    updateMockChat
 } from "@/lib/mockData";
 import {
-  AuthResponse,
-  ChatSession,
-  CreateChatRequest,
-  CreateProjectRequest,
-  Document,
-  LoginRequest,
-  Message,
-  Project,
-  RegisterRequest,
-  UpdateChatRequest,
-  UpdateProjectRequest,
+    AuthResponse,
+    ChatSession,
+    CreateChatRequest,
+    CreateProjectRequest,
+    Document,
+    LoginRequest,
+    Message,
+    Project,
+    RegisterRequest,
+    UpdateChatRequest,
+    UpdateProjectRequest,
 } from "@/lib/types";
 import Cookies from "js-cookie";
 
@@ -222,12 +222,31 @@ class ApiClient {
   // ==================== PROJECTS ====================
 
   async getProjects(): Promise<ApiResponse<Project[]>> {
+    // ========================================
+    // 🔄 MOCK MODE - Return mock projects
+    // ========================================
+    if (USE_MOCK_DATA) {
+      const { getMockProjects } = await import("@/lib/mockData");
+      await simulateDelay(300);
+      return this.createSuccessResponse(getMockProjects());
+    }
+    
     return this.request<Project[]>("/api/v1/project");
   }
 
   async createProject(
     project: CreateProjectRequest
   ): Promise<ApiResponse<Project>> {
+    // ========================================
+    // 🔄 MOCK MODE - Create mock project
+    // ========================================
+    if (USE_MOCK_DATA) {
+      const { createMockProject } = await import("@/lib/mockData");
+      await simulateDelay(400);
+      const newProject = createMockProject(project);
+      return this.createSuccessResponse(newProject);
+    }
+    
     return this.request<Project>("/api/v1/project", {
       method: "POST",
       body: JSON.stringify(project),
@@ -238,6 +257,19 @@ class ApiClient {
     id: string,
     project: Partial<UpdateProjectRequest>
   ): Promise<ApiResponse<Project>> {
+    // ========================================
+    // 🔄 MOCK MODE - Update mock project
+    // ========================================
+    if (USE_MOCK_DATA) {
+      const { updateMockProject } = await import("@/lib/mockData");
+      await simulateDelay(300);
+      const updatedProject = updateMockProject(id, project);
+      if (updatedProject) {
+        return this.createSuccessResponse(updatedProject);
+      }
+      return this.createErrorResponse('Project not found');
+    }
+    
     return this.request<Project>(`/api/v1/project/${id}`, {
       method: "PATCH",
       body: JSON.stringify(project),
@@ -245,6 +277,19 @@ class ApiClient {
   }
 
   async deleteProject(id: string): Promise<ApiResponse<void>> {
+    // ========================================
+    // 🔄 MOCK MODE - Delete mock project
+    // ========================================
+    if (USE_MOCK_DATA) {
+      const { deleteMockProject } = await import("@/lib/mockData");
+      await simulateDelay(200);
+      const success = deleteMockProject(id);
+      if (success) {
+        return this.createSuccessResponse(undefined as any);
+      }
+      return this.createErrorResponse('Project not found');
+    }
+    
     return this.request<void>(`/api/v1/project/${id}`, {
       method: "DELETE",
     });
@@ -299,6 +344,14 @@ class ApiClient {
   // GET /document/:documentId - Get document detail
   async getDocument(documentId: string): Promise<ApiResponse<Document>> {
     return this.request<Document>(`/api/v1/document/${documentId}`);
+  }
+
+  getDocumentDownloadUrl(documentId: string): string {
+    return `${this.baseUrl}/api/v1/document/${documentId}/download`;
+  }
+
+  getDocumentPreviewUrl(documentId: string): string {
+    return `${this.baseUrl}/api/v1/document/${documentId}/preview`;
   }
 
   // DELETE /document/:documentId - Delete document
@@ -398,7 +451,7 @@ class ApiClient {
       await simulateDelay(200);
       const success = deleteMockChat(chatId);
       if (success) {
-        return this.createSuccessResponse({} as void);
+        return this.createSuccessResponse(undefined as any);
       }
       return this.createErrorResponse('Chat not found');
     }

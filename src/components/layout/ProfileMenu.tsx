@@ -1,14 +1,15 @@
 'use client';
 
-import { authApi } from '@/lib/api';
+import { useProject } from '@/hooks/useProject';
 import { LogOut, Settings, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 
 export default function ProfileMenu() {
+  const router = useRouter();
+  const { project } = useProject();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
 
   // Mock user data - replace with actual user context
   const user = {
@@ -34,10 +35,9 @@ export default function ProfileMenu() {
     };
   }, [isOpen]);
 
-  const handleLogout = async () => {
-    await authApi.logout();
+  const handleLogout = () => {
+    // TODO: Add actual logout logic (clear tokens, etc.)
     router.push('/');
-    window.location.reload();
   };
 
   const getInitials = (name: string) => {
@@ -54,7 +54,7 @@ export default function ProfileMenu() {
       {/* Avatar Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold hover:ring-2 ring-blue-400 transition-all duration-200"
+        className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold hover:ring-2 ring-blue-400 transition-all duration-200"
         title={user.name}
       >
         {user.avatar ? (
@@ -64,7 +64,7 @@ export default function ProfileMenu() {
             className="w-full h-full rounded-full object-cover"
           />
         ) : (
-          <span className="text-sm">{getInitials(user.name)}</span>
+          <span className="text-xs">{getInitials(user.name)}</span>
         )}
       </button>
 
@@ -103,7 +103,11 @@ export default function ProfileMenu() {
           <div className="py-2">
             <button
               onClick={() => {
-                router.push('/settings');
+                if (project) {
+                  router.push(`/settings?project=${project.id}`);
+                } else {
+                  router.push('/settings');
+                }
                 setIsOpen(false);
               }}
               className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
@@ -111,10 +115,10 @@ export default function ProfileMenu() {
               <Settings className="w-5 h-5 text-gray-600 dark:text-gray-400" />
               <div className="flex-1 text-left">
                 <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                  Cài đặt
+                  Tùy chỉnh tài khoản
                 </p>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Tùy chỉnh ứng dụng
+                  Quản lý cài đặt & quota
                 </p>
               </div>
             </button>

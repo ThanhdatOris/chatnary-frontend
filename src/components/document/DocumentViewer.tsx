@@ -1,7 +1,8 @@
 'use client';
 
 import { Button } from '@/components/ui';
-import apiClient, { Document } from '@/lib/api';
+import apiClient from '@/lib/api';
+import { Document } from '@/lib/types';
 import { formatDate, formatFileSize } from '@/lib/utils';
 import { useState } from 'react';
 

@@ -29,12 +29,12 @@ export default function LoginPage() {
       const response = await authApi.login({ email, password });
       
       if (response.success) {
-        // Redirect to dashboard or home
-        router.push('/');
+        // Redirect to global dashboard (no project required)
+        router.push('/dashboard');
       } else {
         setError(response.error || 'Đăng nhập thất bại');
       }
-    } catch (err) {
+    } catch {
       setError('Có lỗi xảy ra, vui lòng thử lại');
     } finally {
       setIsLoading(false);

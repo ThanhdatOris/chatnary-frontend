@@ -69,7 +69,7 @@ function SidebarSkeleton() {
   return (
     <aside className="flex flex-col fixed inset-y-0 left-0 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 w-64">
       {/* Logo skeleton */}
-      <div className="h-16 flex items-center px-4 border-b border-gray-200 dark:border-gray-700">
+      <div className="h-12 flex items-center px-4 border-b border-gray-200 dark:border-gray-700">
         <div className="w-8 h-8 rounded-lg bg-gray-200 dark:bg-gray-700 animate-pulse" />
         <div className="ml-2 w-24 h-6 rounded bg-gray-200 dark:bg-gray-700 animate-pulse" />
       </div>
@@ -99,11 +99,14 @@ export default function Sidebar() {
 
 function SidebarContent() {
   const pathname = usePathname();
-  const { sidebarWidth, setSidebarWidth, isCollapsed, setIsCollapsed } =
+  const { sidebarWidth, setSidebarWidth, isCollapsed } =
     useSidebar();
   const [isResizing, setIsResizing] = useState(false);
   const searchParams = useSearchParams();
   const currentProjectId = searchParams.get("project");
+  
+  // Get project for color sync
+
 
   // Get navigation sections with current project context
   const navSections = getNavSections(currentProjectId || undefined);
@@ -146,7 +149,7 @@ function SidebarContent() {
     <>
       <aside
         className={cn(
-          "flex flex-col fixed top-16 bottom-0 left-0 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900",
+          "flex flex-col fixed top-12 bottom-0 left-0 border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900",
           !isResizing && "transition-[width] duration-200"
         )}
         style={{ width: isCollapsed ? "64px" : `${sidebarWidth}px` }}

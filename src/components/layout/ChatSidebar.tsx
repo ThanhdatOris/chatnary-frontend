@@ -100,16 +100,6 @@ export default function ChatSidebar() {
   return (
     <>
       <div className="w-64 h-full border-r border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 flex flex-col">
-        {/* Header */}
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            Chat với AI
-          </h2>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-            Quản lý cuộc trò chuyện
-          </p>
-        </div>
-
         {/* New Chat Button */}
         <div className="p-3">
           <Link

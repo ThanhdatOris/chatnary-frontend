@@ -6,21 +6,21 @@ import ColorPicker from '@/components/ui/ColorPicker';
 import IconPicker from '@/components/ui/IconPicker';
 import apiClient from '@/lib/api';
 import { USE_MOCK_DATA, createMockProject, deleteMockProject, getMockProjects, simulateDelay, updateMockProject } from '@/lib/mockData';
-import { CreateProjectRequest } from '@/lib/types';
+import { CreateProjectRequest, Project } from '@/lib/types';
 import { BookOpen, Clock, Edit, FileText, MessageSquare, Plus, Trash2, Wifi, WifiOff } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useState } from 'react';
 
 interface CreateProjectModalProps {
   onClose: () => void;
-  onSubmit: (project: any) => void;
+  onSubmit: (project: Project) => void;
 }
 
 interface EditProjectModalProps {
-  project: any;
+  project: Project;
   onClose: () => void;
-  onSubmit: (project: any) => void;
+  onSubmit: (project: Project) => void;
 }
 
 function CreateProjectModal({ onClose, onSubmit }: CreateProjectModalProps) {
@@ -325,14 +325,13 @@ function EditProjectModal({ project, onClose, onSubmit }: EditProjectModalProps)
   );
 }
 
-export default function NotebookPage() {
-  const router = useRouter();
-  const searchParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
+function NotebookPageContent() {
+  const searchParams = useSearchParams();
   const currentProjectId = searchParams.get('project');
-  const [projects, setProjects] = useState<any[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [editingProject, setEditingProject] = useState<any>(null);
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [connectionError, setConnectionError] = useState(false);
 
@@ -364,19 +363,20 @@ export default function NotebookPage() {
         }
         setProjects(projects.filter(p => p.id !== id));
       }
-    } catch (error) {
+
+    } catch {
       alert('Lỗi khi xóa dự án');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleEditProject = (project: any) => {
+  const handleEditProject = (project: Project) => {
     setEditingProject(project);
     setShowEditModal(true);
   };
 
-  const handleUpdateProject = (updatedProject: any) => {
+  const handleUpdateProject = (updatedProject: Project) => {
     setProjects(projects.map(p => p.id === updatedProject.id ? updatedProject : p));
     setShowEditModal(false);
     setEditingProject(null);
@@ -396,7 +396,7 @@ export default function NotebookPage() {
         } else {
           const response = await apiClient.getProjects();
           if (response.data) {
-            const apiProjects = response.data.map((project: any) => ({
+            const apiProjects = response.data.map((project: Project) => ({
               ...project,
               updatedAt: project.updatedAt,
             }));
@@ -655,5 +655,17 @@ export default function NotebookPage() {
         </div>
       </div>
     </MainLayout>
+  );
+}
+
+export default function NotebookPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full"></div>
+      </div>
+    }>
+      <NotebookPageContent />
+    </Suspense>
   );
 }

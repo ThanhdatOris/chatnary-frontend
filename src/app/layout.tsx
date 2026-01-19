@@ -1,3 +1,4 @@
+import AppLayout from "@/components/layout/AppLayout";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { BreadcrumbProvider } from "@/contexts/BreadcrumbContext";
 import { ChatProvider } from "@/contexts/ChatContext";
@@ -31,7 +32,9 @@ export default function RootLayout({
           <AuthProvider>
             <SidebarProvider>
               <BreadcrumbProvider>
-                <ChatProvider>{children}</ChatProvider>
+                <ChatProvider>
+                  <AppLayout>{children}</AppLayout>
+                </ChatProvider>
               </BreadcrumbProvider>
             </SidebarProvider>
           </AuthProvider>

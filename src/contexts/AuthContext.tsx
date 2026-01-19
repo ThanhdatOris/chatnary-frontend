@@ -1,32 +1,24 @@
 "use client";
 
 import {
-  clearTokens,
-  getStoredUser,
-  getValidAccessToken,
-  isAuthenticated as checkIsAuthenticated,
-  login as authLogin,
-  logout as authLogout,
-  LoginRequest,
-  LoginResponse,
-  register as authRegister,
-  RegisterRequest,
-  setAccessToken,
-  setStoredUser,
-  setTokens,
-  silentRefresh,
-  startSilentRefresh,
-  stopSilentRefresh,
-  User,
+    login as authLogin,
+    logout as authLogout,
+    register as authRegister,
+    LoginRequest,
+    RegisterRequest,
+    silentRefresh,
+    startSilentRefresh,
+    stopSilentRefresh,
+    User
 } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import {
-  createContext,
-  ReactNode,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
+    createContext,
+    ReactNode,
+    useCallback,
+    useContext,
+    useEffect,
+    useState,
 } from "react";
 
 interface AuthContextType {
@@ -56,7 +48,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>({
     id: "test-user-id",
     email: "test@example.com",
-    name: "Test User"
+    name: "Test User",
+    role: "USER"
   });
   const [isLoading, setIsLoading] = useState(false); // Set to false to skip loading
   const router = useRouter();

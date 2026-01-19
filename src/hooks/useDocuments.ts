@@ -1,7 +1,8 @@
 'use client';
 
-import apiClient, { Document } from '@/lib/api';
-import { USE_MOCK_DATA, getMockDocumentsByProject, getMockDocument, simulateDelay } from '@/lib/mockData';
+import apiClient from '@/lib/api';
+import { USE_MOCK_DATA, getMockDocument, getMockDocumentsByProject, simulateDelay } from '@/lib/mockData';
+import { Document } from '@/lib/types';
 import { useCallback, useEffect, useState } from 'react';
 
 interface UseDocumentsOptions {

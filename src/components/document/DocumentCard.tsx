@@ -1,7 +1,7 @@
 'use client';
 
 import { Button, FileIcon, Modal, ModalFooter } from '@/components/ui';
-import { Document } from '@/lib/api';
+import { Document } from '@/lib/types';
 import { formatDate, formatFileSize } from '@/lib/utils';
 import { useState } from 'react';
 

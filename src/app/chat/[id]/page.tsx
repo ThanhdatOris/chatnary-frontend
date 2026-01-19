@@ -5,7 +5,6 @@ import ChatMessage from '@/components/chat/ChatMessage';
 import ChatNotFound from '@/components/chat/ChatNotFound';
 import ChatRenameModal from '@/components/chat/ChatRenameModal';
 import ChatSidebar from '@/components/layout/ChatSidebar';
-import HeaderButton from '@/components/layout/HeaderButton';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button, EmptyState, LoadingState } from '@/components/ui';
 import { useBreadcrumb } from '@/contexts/BreadcrumbContext';
@@ -22,15 +21,12 @@ export default function ChatPage() {
   return (
     <Suspense
       fallback={
-        <MainLayout
-          headerTitle="Đang tải..."
-          headerSubtitle="Đang lấy thông tin cuộc trò chuyện"
-        >
+        <div className="flex items-center justify-center h-full min-h-[60vh]">
           <LoadingState
             title="Đang tải cuộc trò chuyện"
             message="Đang lấy thông tin chat và tin nhắn..."
           />
-        </MainLayout>
+        </div>
       }
     >
       <ChatPageContent />
@@ -138,10 +134,7 @@ function ChatPageContent() {
 
   if (loading) {
     return (
-      <MainLayout
-        headerTitle="Đang tải..."
-        headerSubtitle="Đang lấy thông tin cuộc trò chuyện"
-      >
+      <MainLayout showHeaderBorder={false}>
         <LoadingState
           title="Đang tải cuộc trò chuyện"
           message="Đang lấy thông tin chat và tin nhắn..."
@@ -154,10 +147,7 @@ function ChatPageContent() {
     // Kiểm tra nếu là lỗi 404 (Chat not found)
     if (chatError.includes("Chat not found") || chatError.includes("404")) {
       return (
-        <MainLayout
-          headerTitle="Chat không tìm thấy"
-          headerSubtitle="Cuộc trò chuyện này có thể đã bị xóa"
-        >
+        <MainLayout showHeaderBorder={false}>
           <ChatNotFound />
         </MainLayout>
       );
@@ -165,18 +155,7 @@ function ChatPageContent() {
 
     // Lỗi khác
     return (
-      <MainLayout
-        headerTitle="Có lỗi xảy ra"
-        headerSubtitle="Không thể tải cuộc trò chuyện"
-        headerActions={
-          <HeaderButton
-            onClick={() => window.location.reload()}
-            variant="primary"
-          >
-            🔄 Thử lại
-          </HeaderButton>
-        }
-      >
+      <MainLayout showHeaderBorder={false}>
         <div className="min-h-[60vh] flex items-center justify-center px-4">
           <div className="max-w-md w-full text-center">
             <div className="mx-auto w-16 h-16 mb-6">
@@ -224,68 +203,70 @@ function ChatPageContent() {
 
   if (!chat) {
     return (
-      <MainLayout
-        headerTitle="Chat không tìm thấy"
-        headerSubtitle="Cuộc trò chuyện này có thể đã bị xóa hoặc bạn không có quyền truy cập"
-      >
+      <MainLayout showHeaderBorder={false}>
         <ChatNotFound />
       </MainLayout>
     );
   }
 
-  // Prepare header actions
-  const headerActions = (
-    <>
-      <HeaderButton
-        icon={<Edit2 className="w-4 h-4" />}
-        onClick={() => setIsRenameModalOpen(true)}
-        tooltip="Đổi tên cuộc trò chuyện"
-      >
-        Đổi tên
-      </HeaderButton>
-      <HeaderButton
-        icon={<Share className="w-4 h-4" />}
-        onClick={() => {
-          // TODO: Implement share functionality
-          console.log("Share chat");
-        }}
-        variant="secondary"
-        tooltip="Chia sẻ cuộc trò chuyện"
-      >
-        Chia sẻ
-      </HeaderButton>
-      <HeaderButton
-        icon={<Trash2 className="w-4 h-4" />}
-        onClick={() => {
-          // TODO: Implement delete functionality
-          if (confirm("Bạn có chắc muốn xóa cuộc trò chuyện này?")) {
-            console.log("Delete chat");
-          }
-        }}
-        variant="danger"
-        tooltip="Xóa cuộc trò chuyện"
-      >
-        Xóa
-      </HeaderButton>
-    </>
-  );
+
 
   return (
-    <MainLayout
-      headerTitle={chat?.title || "Đang tải..."}
-      headerSubtitle={`Chat AI • ${
-        messages.length
-      } tin nhắn • ID: ${chatId.substring(0, 8)}`}
-      headerActions={headerActions}
-    >
+    <MainLayout showHeaderBorder={false}>
       <div className="flex h-full">
-        {/* Chat Sidebar */}
+        {/* Chat Sidebar - Full Height */}
         <ChatSidebar />
         
         {/* Chat Content */}
-        <div className="flex-1 h-full flex flex-col">
+        <div className="flex-1 h-full flex flex-col bg-white dark:bg-gray-900">
+          {/* Custom Chat Header */}
+          <div className="flex items-center justify-between px-6 py-3 border-b border-gray-100 dark:border-gray-800 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm z-10">
+             <div className="flex-1 min-w-0">
+                <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate">
+                  {chat?.title || "Đang tải..."}
+                </h1>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  {messages.length} tin nhắn • ID: {chatId.substring(0, 8)}
+                </p>
+             </div>
+             
+             <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsRenameModalOpen(true)}
+                  title="Đổi tên"
+                  className="h-8 w-8 p-0"
+                >
+                  <Edit2 className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => console.log("Share chat")}
+                  title="Chia sẻ"
+                  className="h-8 w-8 p-0"
+                >
+                  <Share className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    if (confirm("Bạn có chắc muốn xóa cuộc trò chuyện này?")) {
+                       console.log("Delete chat");
+                    }
+                  }}
+                  title="Xóa"
+                  className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+             </div>
+          </div>
+
           {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto bg-white dark:bg-gray-900">
+          <div className="flex-1 overflow-y-auto">
             <div className="max-w-4xl mx-auto h-full">
               {messages.length === 0 ? (
                 <EmptyState
@@ -306,12 +287,14 @@ function ChatPageContent() {
           </div>
 
           {/* Input Area */}
-          <div className="flex-shrink-0 relative bg-white dark:bg-gray-900 shadow-[0_-15px_30px_2px_rgba(255,255,255,1),0_-30px_60px_0px_rgba(255,255,255,0.8),0_-45px_90px_-10px_rgba(255,255,255,0.6)] dark:shadow-[0_-15px_30px_2px_rgba(17,24,39,1),0_-30px_60px_0px_rgba(17,24,39,0.8),0_-45px_90px_-10px_rgba(17,24,39,0.6)]">
-            <ChatInput
-              onSend={handleSendMessage}
-              disabled={sending}
-              placeholder="Hỏi gì về tài liệu này..."
-            />
+          <div className="flex-shrink-0 relative bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 p-4">
+             <div className="max-w-4xl mx-auto">
+                <ChatInput
+                  onSend={handleSendMessage}
+                  disabled={sending}
+                  placeholder="Hỏi gì về tài liệu này..."
+                />
+             </div>
           </div>
         </div>
       </div>

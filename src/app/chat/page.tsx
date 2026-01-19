@@ -1,27 +1,25 @@
 "use client";
 
 import ChatSidebar from '@/components/layout/ChatSidebar';
-import HeaderButton from '@/components/layout/HeaderButton';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button, Card, FileIcon, Loading } from '@/components/ui';
 import { useBreadcrumb } from '@/contexts/BreadcrumbContext';
 import { useChats } from '@/contexts/ChatContext';
 import { useProject } from '@/hooks/useProject';
-import apiClient, { chatsApi, Document, documentsApi } from '@/lib/api';
+import apiClient, { chatsApi, documentsApi } from '@/lib/api';
+import { type Document } from "@/lib/types";
 import { MessageSquare } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useCallback, useEffect, useState } from 'react';
 
 // Wrapper component with Suspense boundary for useSearchParams
 export default function ChatPage() {
   return (
     <Suspense
       fallback={
-        <MainLayout>
-          <div className="flex items-center justify-center min-h-[60vh]">
-            <Loading size="lg" text="Đang tải..." />
-          </div>
-        </MainLayout>
+        <div className="flex items-center justify-center h-full min-h-[60vh]">
+          <Loading size="lg" text="Đang tải..." />
+        </div>
       }
     >
       <ChatPageContent />
@@ -42,9 +40,7 @@ function ChatPageContent() {
   const [documents, setDocuments] = useState<Document[]>([]);
   const [selectedDocs, setSelectedDocs] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showModal, setShowModal] = useState(false);
   const [creating, setCreating] = useState(false);
-  const [availableProjects, setAvailableProjects] = useState<any[]>([]);
   const [loadingProjects, setLoadingProjects] = useState(false);
 
   // Set project name and color for breadcrumb when project loads
@@ -66,7 +62,6 @@ function ChatPageContent() {
           const response = await apiClient.getProjects();
 
           if (response.success && response.data && response.data.length > 0) {
-            setAvailableProjects(response.data);
             // Auto-redirect to first project
             const firstProject = response.data[0];
             router.push(`/chat?project=${firstProject.id}`);
@@ -86,13 +81,7 @@ function ChatPageContent() {
     loadProjects();
   }, [projectId, router]);
 
-  useEffect(() => {
-    if (projectId) {
-      fetchDocuments();
-    }
-  }, [projectId]);
-
-  const fetchDocuments = async () => {
+  const fetchDocuments = useCallback(async () => {
     if (!projectId) return;
 
     setLoading(true);
@@ -112,7 +101,13 @@ function ChatPageContent() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [projectId]);
+
+  useEffect(() => {
+    if (projectId) {
+      fetchDocuments();
+    }
+  }, [projectId, fetchDocuments]);
 
   const handleToggleDoc = (docId: string) => {
     setSelectedDocs((prev) =>
@@ -194,33 +189,33 @@ function ChatPageContent() {
     );
   }
 
-  const actionButton = (
-    <HeaderButton
-      variant="primary"
-      icon={<MessageSquare className="w-4 h-4" />}
-      onClick={handleCreateChat}
-      disabled={selectedDocs.length === 0 || creating}
-      isLoading={creating}
-    >
-      {selectedDocs.length === 0
-        ? "Chọn tài liệu"
-        : `Bắt đầu chat với ${selectedDocs.length} tài liệu`}
-    </HeaderButton>
-  );
-
   return (
-    <MainLayout
-      headerTitle="Tạo cuộc trò chuyện mới"
-      headerSubtitle="Chọn tài liệu bạn muốn trò chuyện"
-      headerActions={selectedDocs.length > 0 ? actionButton : undefined}
-    >
+    <MainLayout showHeaderBorder={false}>
       <div className="flex h-full">
         {/* Chat Sidebar */}
         <ChatSidebar />
         
         {/* Main Content */}
-        <div className="flex-1 p-6 overflow-auto">
+        <div className="flex-1 p-6 overflow-auto bg-white dark:bg-gray-900 border-l border-gray-100 dark:border-gray-800">
           <div className="max-w-4xl mx-auto space-y-6">
+            <div className="flex items-center justify-between mb-8">
+               <div>
+                  <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Tạo cuộc trò chuyện mới</h1>
+                  <p className="text-gray-500 dark:text-gray-400 mt-1">Chọn tài liệu bạn muốn trò chuyện</p>
+               </div>
+               
+               {/* Action Button moved here if needed, or keep logic */}
+               {selectedDocs.length > 0 && (
+                  <Button
+                    onClick={handleCreateChat}
+                    disabled={creating}
+                    className="shadow-sm"
+                  >
+                    <MessageSquare className="w-4 h-4 mr-2" />
+                    {creating ? "Đang tạo..." : `Bắt đầu chat (${selectedDocs.length})`}
+                  </Button>
+               )}
+            </div>
 
           {documents.length === 0 ? (
             <Card variant="bordered" className="text-center py-16">
