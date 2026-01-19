@@ -1,6 +1,7 @@
 'use client';
 
 import apiClient, { Document } from '@/lib/api';
+import { USE_MOCK_DATA, getMockDocumentsByProject, getMockDocument, simulateDelay } from '@/lib/mockData';
 import { useCallback, useEffect, useState } from 'react';
 
 interface UseDocumentsOptions {
@@ -33,14 +34,24 @@ export function useDocuments({ projectId, autoFetch = true }: UseDocumentsOption
       setLoading(true);
       setError(null);
 
-      const response = await apiClient.getProjectDocuments(projectId);
+      // ========================================
+      // 🔄 MOCK MODE - Sử dụng mock data
+      // ========================================
+      if (USE_MOCK_DATA) {
+        await simulateDelay(300); // Simulate network delay
+        const mockDocs = getMockDocumentsByProject(projectId);
+        setDocuments(mockDocs);
+      } else {
+        // Original API call
+        const response = await apiClient.getProjectDocuments(projectId);
 
-      if (response.error) {
-        setError(response.error);
-        return;
+        if (response.error) {
+          setError(response.error);
+          return;
+        }
+
+        setDocuments(response.data || []);
       }
-
-      setDocuments(response.data || []);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Có lỗi xảy ra khi tải documents');
     } finally {
@@ -62,26 +73,60 @@ export function useDocuments({ projectId, autoFetch = true }: UseDocumentsOption
       setUploading(true);
       setError(null);
 
-      console.log('Calling API uploadDocument...');
-      const response = await apiClient.uploadDocument(projectId, file);
-      console.log('API response:', response);
+      // ========================================
+      // 🔄 MOCK MODE - Simulate upload
+      // ========================================
+      if (USE_MOCK_DATA) {
+        await simulateDelay(800); // Simulate upload time
+        const newDocument: Document = {
+          id: `doc-${Date.now()}`,
+          name: file.name,
+          originalFilename: file.name,
+          projectId: projectId,
+          fileSize: file.size,
+          mimeType: file.type,
+          status: 'processing',
+          uploadedBy: 'test-user-id',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          hasContent: false,
+        };
+        console.log('Mock upload successful:', newDocument);
+        setDocuments(prev => [newDocument, ...prev]);
+        
+        // Simulate processing completion after 2 seconds
+        setTimeout(() => {
+          setDocuments(prev => 
+            prev.map(doc => 
+              doc.id === newDocument.id 
+                ? { ...doc, status: 'processed' as const, hasContent: true }
+                : doc
+            )
+          );
+        }, 2000);
+      } else {
+        // Original API call
+        console.log('Calling API uploadDocument...');
+        const response = await apiClient.uploadDocument(projectId, file);
+        console.log('API response:', response);
 
-      if (response.error) {
-        console.error('API error:', response.error);
-        setError(response.error);
-        throw new Error(response.error);
+        if (response.error) {
+          console.error('API error:', response.error);
+          setError(response.error);
+          throw new Error(response.error);
+        }
+
+        // Add new document to list
+        if (response.data) {
+          console.log('Upload successful, updating documents list');
+          setDocuments(prev => [response.data!, ...prev]);
+        }
+
+        // Refresh to get updated list
+        console.log('Refreshing documents list...');
+        await fetchDocuments();
+        console.log('Upload process completed successfully');
       }
-
-      // Add new document to list
-      if (response.data) {
-        console.log('Upload successful, updating documents list');
-        setDocuments(prev => [response.data!, ...prev]);
-      }
-
-      // Refresh to get updated list
-      console.log('Refreshing documents list...');
-      await fetchDocuments();
-      console.log('Upload process completed successfully');
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Có lỗi xảy ra khi upload document';
       console.error('Upload error:', err);
@@ -96,15 +141,24 @@ export function useDocuments({ projectId, autoFetch = true }: UseDocumentsOption
     try {
       setError(null);
 
-      const response = await apiClient.deleteDocument(documentId);
+      // ========================================
+      // 🔄 MOCK MODE - Simulate delete
+      // ========================================
+      if (USE_MOCK_DATA) {
+        await simulateDelay(200);
+        setDocuments(prev => prev.filter(doc => doc.id !== documentId));
+      } else {
+        // Original API call
+        const response = await apiClient.deleteDocument(documentId);
 
-      if (response.error) {
-        setError(response.error);
-        return;
+        if (response.error) {
+          setError(response.error);
+          return;
+        }
+
+        // Remove document from list
+        setDocuments(prev => prev.filter(doc => doc.id !== documentId));
       }
-
-      // Remove document from list
-      setDocuments(prev => prev.filter(doc => doc.id !== documentId));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Có lỗi xảy ra khi xóa document');
     }
@@ -114,14 +168,23 @@ export function useDocuments({ projectId, autoFetch = true }: UseDocumentsOption
     try {
       setError(null);
 
-      const response = await apiClient.getDocument(documentId);
+      // ========================================
+      // 🔄 MOCK MODE - Get mock document
+      // ========================================
+      if (USE_MOCK_DATA) {
+        await simulateDelay(200);
+        return getMockDocument(documentId) || null;
+      } else {
+        // Original API call
+        const response = await apiClient.getDocument(documentId);
 
-      if (response.error) {
-        setError(response.error);
-        return null;
+        if (response.error) {
+          setError(response.error);
+          return null;
+        }
+
+        return response.data || null;
       }
-
-      return response.data || null;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Có lỗi xảy ra khi tải document');
       return null;

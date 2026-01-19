@@ -23,27 +23,33 @@ export function AuthGuard({
   fallback,
   redirectTo = "/login",
 }: AuthGuardProps) {
-  const { isAuthenticated, isLoading } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.push(redirectTo);
-    }
-  }, [isAuthenticated, isLoading, router, redirectTo]);
-
-  // Show loading state
-  if (isLoading) {
-    return fallback || <AuthLoadingFallback />;
-  }
-
-  // Not authenticated - redirect is happening
-  if (!isAuthenticated) {
-    return fallback || <AuthLoadingFallback />;
-  }
-
-  // Authenticated - render children
+  // ========================================
+  // 🔓 BYPASS LOGIN - TẠM THỜI DISABLE AUTH
+  // TODO: Uncomment code bên dưới để bật lại authentication
+  // ========================================
   return <>{children}</>;
+
+  // const { isAuthenticated, isLoading } = useAuth();
+  // const router = useRouter();
+
+  // useEffect(() => {
+  //   if (!isLoading && !isAuthenticated) {
+  //     router.push(redirectTo);
+  //   }
+  // }, [isAuthenticated, isLoading, router, redirectTo]);
+
+  // // Show loading state
+  // if (isLoading) {
+  //   return fallback || <AuthLoadingFallback />;
+  // }
+
+  // // Not authenticated - redirect is happening
+  // if (!isAuthenticated) {
+  //   return fallback || <AuthLoadingFallback />;
+  // }
+
+  // // Authenticated - render children
+  // return <>{children}</>;
 }
 
 /**
@@ -74,27 +80,33 @@ export function GuestGuard({
   children,
   redirectTo = "/dashboard",
 }: Omit<AuthGuardProps, "fallback">) {
-  const { isAuthenticated, isLoading } = useAuth();
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!isLoading && isAuthenticated) {
-      router.push(redirectTo);
-    }
-  }, [isAuthenticated, isLoading, router, redirectTo]);
-
-  // Show loading state
-  if (isLoading) {
-    return <AuthLoadingFallback />;
-  }
-
-  // Authenticated - redirect is happening
-  if (isAuthenticated) {
-    return <AuthLoadingFallback />;
-  }
-
-  // Not authenticated - render children
+  // ========================================
+  // 🔓 BYPASS LOGIN - TẠM THỜI DISABLE AUTH
+  // TODO: Uncomment code bên dưới để bật lại authentication
+  // ========================================
   return <>{children}</>;
+
+  // const { isAuthenticated, isLoading } = useAuth();
+  // const router = useRouter();
+
+  // useEffect(() => {
+  //   if (!isLoading && isAuthenticated) {
+  //     router.push(redirectTo);
+  //   }
+  // }, [isAuthenticated, isLoading, router, redirectTo]);
+
+  // // Show loading state
+  // if (isLoading) {
+  //   return <AuthLoadingFallback />;
+  // }
+
+  // // Authenticated - redirect is happening
+  // if (isAuthenticated) {
+  //   return <AuthLoadingFallback />;
+  // }
+
+  // // Not authenticated - render children
+  // return <>{children}</>;
 }
 
 export default AuthGuard;

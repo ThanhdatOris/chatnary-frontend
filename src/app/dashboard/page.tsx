@@ -6,11 +6,11 @@ import { Loading } from "@/components/ui";
 import { useBreadcrumb } from "@/contexts/BreadcrumbContext";
 import { useProject } from "@/hooks/useProject";
 import {
-  Clock,
-  FileText,
-  FolderOpen,
-  MessageSquare,
-  Upload,
+    Clock,
+    FileText,
+    FolderOpen,
+    MessageSquare,
+    Upload,
 } from "lucide-react";
 import Link from "next/link";
 import { Suspense, useEffect } from "react";
@@ -73,9 +73,9 @@ function DashboardPageContent() {
             <p className="text-red-600 dark:text-red-300 mb-4">
               {error || "Không thể tải dữ liệu dự án"}
             </p>
-            <Link href="/">
+            <Link href="/notebook">
               <button className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors">
-                Quay về Trang chính
+                Quay về Sổ tay
               </button>
             </Link>
           </div>

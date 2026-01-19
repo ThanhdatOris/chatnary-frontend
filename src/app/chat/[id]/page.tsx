@@ -4,6 +4,7 @@ import ChatInput from '@/components/chat/ChatInput';
 import ChatMessage from '@/components/chat/ChatMessage';
 import ChatNotFound from '@/components/chat/ChatNotFound';
 import ChatRenameModal from '@/components/chat/ChatRenameModal';
+import ChatSidebar from '@/components/layout/ChatSidebar';
 import HeaderButton from '@/components/layout/HeaderButton';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button, EmptyState, LoadingState } from '@/components/ui';
@@ -14,7 +15,7 @@ import { useProject } from '@/hooks/useProject';
 import { suggestionsApi } from '@/lib/api';
 import { Edit2, Share, Trash2 } from 'lucide-react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 
 // Wrapper component with Suspense boundary for useSearchParams
 export default function ChatPage() {
@@ -277,35 +278,41 @@ function ChatPageContent() {
       } tin nhắn • ID: ${chatId.substring(0, 8)}`}
       headerActions={headerActions}
     >
-      <div className="h-full flex flex-col">
-        {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto bg-white dark:bg-gray-900">
-          <div className="max-w-4xl mx-auto h-full">
-            {messages.length === 0 ? (
-              <EmptyState
-                title="Bắt đầu cuộc trò chuyện"
-                description="Đặt câu hỏi về tài liệu trong dự án này. AI sẽ phân tích và trả lời dựa trên nội dung tài liệu."
-                suggestions={suggestions}
-                onSuggestionClick={handleSuggestionSelect}
-              />
-            ) : (
-              <div className="px-4 py-6 space-y-6">
-                {messages.map((message) => (
-                  <ChatMessage key={message.id} message={message} />
-                ))}
-                <div ref={messagesEndRef} />
-              </div>
-            )}
+      <div className="flex h-full">
+        {/* Chat Sidebar */}
+        <ChatSidebar />
+        
+        {/* Chat Content */}
+        <div className="flex-1 h-full flex flex-col">
+          {/* Messages Area */}
+          <div className="flex-1 overflow-y-auto bg-white dark:bg-gray-900">
+            <div className="max-w-4xl mx-auto h-full">
+              {messages.length === 0 ? (
+                <EmptyState
+                  title="Bắt đầu cuộc trò chuyện"
+                  description="Đặt câu hỏi về tài liệu trong dự án này. AI sẽ phân tích và trả lời dựa trên nội dung tài liệu."
+                  suggestions={suggestions}
+                  onSuggestionClick={handleSuggestionSelect}
+                />
+              ) : (
+                <div className="px-4 py-6 space-y-6">
+                  {messages.map((message) => (
+                    <ChatMessage key={message.id} message={message} />
+                  ))}
+                  <div ref={messagesEndRef} />
+                </div>
+              )}
+            </div>
           </div>
-        </div>
 
-        {/* Input Area */}
-        <div className="flex-shrink-0 relative bg-white dark:bg-gray-900 shadow-[0_-15px_30px_2px_rgba(255,255,255,1),0_-30px_60px_0px_rgba(255,255,255,0.8),0_-45px_90px_-10px_rgba(255,255,255,0.6)] dark:shadow-[0_-15px_30px_2px_rgba(17,24,39,1),0_-30px_60px_0px_rgba(17,24,39,0.8),0_-45px_90px_-10px_rgba(17,24,39,0.6)]">
-          <ChatInput
-            onSend={handleSendMessage}
-            disabled={sending}
-            placeholder="Hỏi gì về tài liệu này..."
-          />
+          {/* Input Area */}
+          <div className="flex-shrink-0 relative bg-white dark:bg-gray-900 shadow-[0_-15px_30px_2px_rgba(255,255,255,1),0_-30px_60px_0px_rgba(255,255,255,0.8),0_-45px_90px_-10px_rgba(255,255,255,0.6)] dark:shadow-[0_-15px_30px_2px_rgba(17,24,39,1),0_-30px_60px_0px_rgba(17,24,39,0.8),0_-45px_90px_-10px_rgba(17,24,39,0.6)]">
+            <ChatInput
+              onSend={handleSendMessage}
+              disabled={sending}
+              placeholder="Hỏi gì về tài liệu này..."
+            />
+          </div>
         </div>
       </div>
 

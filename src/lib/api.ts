@@ -1,5 +1,13 @@
 // API client for Chatnary Backend matching https://chatnary.up.railway.app/api/v1/docs
 import {
+  USE_MOCK_DATA,
+  createMockChat,
+  deleteMockChat,
+  getMockChatsByProject,
+  simulateDelay,
+  updateMockChat
+} from "@/lib/mockData";
+import {
   AuthResponse,
   ChatSession,
   CreateChatRequest,
@@ -68,8 +76,12 @@ class ApiClient {
 
   constructor(baseUrl: string = API_BASE_URL) {
     this.baseUrl = baseUrl;
-    // Try to load token from cookie on initialization
-    this.token = Cookies.get(COOKIE_NAME) || null;
+    // ========================================
+    // 🔓 BYPASS LOGIN - SET FAKE TOKEN
+    // TODO: Uncomment dòng bên dưới và comment dòng fake token để bật lại authentication
+    // ========================================
+    // this.token = Cookies.get(COOKIE_NAME) || null;
+    this.token = "fake-token-for-testing"; // Fake token for testing
     console.log('ApiClient: Initialized. Token from cookie:', this.token ? 'Found' : 'Missing');
   }
 
@@ -95,7 +107,12 @@ class ApiClient {
   }
 
   isAuthenticated(): boolean {
-    return !!this.getToken();
+    // ========================================
+    // 🔓 BYPASS LOGIN - ALWAYS RETURN TRUE
+    // TODO: Uncomment dòng bên dưới để bật lại authentication
+    // ========================================
+    return true;
+    // return !!this.getToken();
   }
 
   private createSuccessResponse<T>(data: T): ApiResponse<T> {
@@ -310,6 +327,19 @@ class ApiClient {
   async createChat(
     request: CreateChatRequest
   ): Promise<ApiResponse<ChatSession>> {
+    // ========================================
+    // 🔄 MOCK MODE - Create mock chat
+    // ========================================
+    if (USE_MOCK_DATA) {
+      await simulateDelay(400);
+      const newChat = createMockChat({
+        projectId: request.project_id,
+        title: request.title,
+      });
+      return this.createSuccessResponse(newChat);
+    }
+    
+    // Original API call
     return this.request<ChatSession>("/api/v1/chat", {
       method: "POST",
       body: JSON.stringify(request),
@@ -319,10 +349,21 @@ class ApiClient {
   async getProjectChats(
     projectId: string
   ): Promise<ApiResponse<ChatSession[]>> {
+    // ========================================
+    // 🔄 MOCK MODE - Get mock chats by project
+    // ========================================
+    if (USE_MOCK_DATA) {
+      await simulateDelay(300);
+      const mockChats = getMockChatsByProject(projectId);
+      return this.createSuccessResponse(mockChats);
+    }
+    
+    // Original API call
     return this.request<ChatSession[]>(`/api/v1/project/${projectId}/chats`);
   }
 
   async getChat(chatId: string): Promise<ApiResponse<ChatSession>> {
+    // Already mocked in useChat hook
     return this.request<ChatSession>(`/api/v1/chat/${chatId}`);
   }
 
@@ -330,6 +371,19 @@ class ApiClient {
     chatId: string,
     request: UpdateChatRequest
   ): Promise<ApiResponse<ChatSession>> {
+    // ========================================
+    // 🔄 MOCK MODE - Update mock chat
+    // ========================================
+    if (USE_MOCK_DATA) {
+      await simulateDelay(300);
+      const updatedChat = updateMockChat(chatId, request);
+      if (updatedChat) {
+        return this.createSuccessResponse(updatedChat);
+      }
+      return this.createErrorResponse('Chat not found');
+    }
+    
+    // Original API call
     return this.request<ChatSession>(`/api/v1/chat/user/${chatId}`, {
       method: "PATCH",
       body: JSON.stringify(request),
@@ -337,6 +391,19 @@ class ApiClient {
   }
 
   async deleteChat(chatId: string): Promise<ApiResponse<void>> {
+    // ========================================
+    // 🔄 MOCK MODE - Delete mock chat
+    // ========================================
+    if (USE_MOCK_DATA) {
+      await simulateDelay(200);
+      const success = deleteMockChat(chatId);
+      if (success) {
+        return this.createSuccessResponse({} as void);
+      }
+      return this.createErrorResponse('Chat not found');
+    }
+    
+    // Original API call
     return this.request<void>(`/api/v1/chat/user/${chatId}`, {
       method: "DELETE",
     });

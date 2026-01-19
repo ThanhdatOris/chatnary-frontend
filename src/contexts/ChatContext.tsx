@@ -2,7 +2,7 @@
 
 import { chatsApi } from '@/lib/api';
 import { ChatSession } from '@/lib/types';
-import { createContext, ReactNode, useContext, useState } from 'react';
+import { createContext, ReactNode, useCallback, useContext, useState } from 'react';
 
 interface ChatContextType {
   chats: ChatSession[];
@@ -23,7 +23,7 @@ export function ChatProvider({ children }: { children: ReactNode }) {
   // Removed global fetchChats on mount as it depends on project context which is not available here
   // and the API requires projectId.
 
-  const refreshChats = async (projectId?: string) => {
+  const refreshChats = useCallback(async (projectId?: string) => {
     if (!projectId) return;
     setLoading(true);
     try {
@@ -36,9 +36,9 @@ export function ChatProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, []); // No dependencies - function is stable
 
-  const getChatsByProject = async (
+  const getChatsByProject = useCallback(async (
     projectId: string
   ): Promise<ChatSession[]> => {
     try {
@@ -51,21 +51,21 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       console.error("Failed to get chats by project:", error);
       return [];
     }
-  };
+  }, []);
 
-  const addChat = (chat: ChatSession) => {
+  const addChat = useCallback((chat: ChatSession) => {
     setChats(prev => [chat, ...prev]);
-  };
+  }, []);
 
-  const updateChat = (updatedChat: ChatSession) => {
+  const updateChat = useCallback((updatedChat: ChatSession) => {
     setChats(prev => prev.map(chat => 
       chat.id === updatedChat.id ? updatedChat : chat
     ));
-  };
+  }, []);
 
-  const removeChat = (chatId: string) => {
+  const removeChat = useCallback((chatId: string) => {
     setChats(prev => prev.filter(c => c.id !== chatId));
-  };
+  }, []);
 
   return (
     <ChatContext.Provider

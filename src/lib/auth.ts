@@ -285,7 +285,7 @@ export async function silentRefresh(): Promise<{ success: boolean; accessToken?:
 
 // Get valid access token (refresh if expired)
 export async function getValidAccessToken(): Promise<string | null> {
-    let accessToken = getAccessToken();
+    const accessToken = getAccessToken();
 
     // If no access token or expired, try to refresh
     if (!accessToken || isTokenExpired(accessToken)) {

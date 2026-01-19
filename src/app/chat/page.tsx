@@ -1,5 +1,6 @@
 "use client";
 
+import ChatSidebar from '@/components/layout/ChatSidebar';
 import HeaderButton from '@/components/layout/HeaderButton';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button, Card, FileIcon, Loading } from '@/components/ui';
@@ -9,7 +10,7 @@ import { useProject } from '@/hooks/useProject';
 import apiClient, { chatsApi, Document, documentsApi } from '@/lib/api';
 import { MessageSquare } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 
 // Wrapper component with Suspense boundary for useSearchParams
 export default function ChatPage() {
@@ -180,8 +181,14 @@ function ChatPageContent() {
         headerTitle="Tạo cuộc trò chuyện mới"
         headerSubtitle="Chọn tài liệu bạn muốn trò chuyện"
       >
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <Loading size="lg" text="Đang tải tài liệu..." />
+        <div className="flex h-full">
+          {/* Chat Sidebar */}
+          <ChatSidebar />
+          
+          {/* Main Content */}
+          <div className="flex-1 flex items-center justify-center">
+            <Loading size="lg" text="Đang tải tài liệu..." />
+          </div>
         </div>
       </MainLayout>
     );
@@ -207,46 +214,19 @@ function ChatPageContent() {
       headerSubtitle="Chọn tài liệu bạn muốn trò chuyện"
       headerActions={selectedDocs.length > 0 ? actionButton : undefined}
     >
-      <div className="flex-1 p-6 overflow-auto">
-        <div className="max-w-4xl mx-auto space-y-6">
+      <div className="flex h-full">
+        {/* Chat Sidebar */}
+        <ChatSidebar />
+        
+        {/* Main Content */}
+        <div className="flex-1 p-6 overflow-auto">
+          <div className="max-w-4xl mx-auto space-y-6">
 
-        {documents.length === 0 ? (
-          <Card variant="bordered" className="text-center py-16">
-            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-            </div>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
-              Chưa có tài liệu nào
-            </h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              Upload tài liệu để bắt đầu trò chuyện
-            </p>
-            <Button onClick={() => router.push(`/documents?project=${projectId}`)}>
-              Upload tài liệu
-            </Button>
-          </Card>
-        ) : (
-          <>
-            {/* Document Selection */}
-            <div className="grid md:grid-cols-2 gap-4">
-              {documents.map((doc) => (
-                <Card
-                  key={doc.id}
-                  variant="bordered"
-                  className={`cursor-pointer transition-all ${
-                    selectedDocs.includes(doc.id)
-                      ? 'ring-2 ring-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                      : 'hover:shadow-md'
-                  }`}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                  />
+          {documents.length === 0 ? (
+            <Card variant="bordered" className="text-center py-16">
+              <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
               <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
@@ -255,7 +235,7 @@ function ChatPageContent() {
               <p className="text-gray-600 dark:text-gray-400 mb-6">
                 Upload tài liệu để bắt đầu trò chuyện
               </p>
-              <Button onClick={() => router.push("/documents")}>
+              <Button onClick={() => router.push(`/documents?project=${projectId}`)}>
                 Upload tài liệu
               </Button>
             </Card>
@@ -273,39 +253,40 @@ function ChatPageContent() {
                         : "hover:shadow-md"
                     }`}
                   >
-                    <label
-                      className="flex items-start gap-3 p-4 cursor-pointer w-full"
-                      htmlFor={`doc-${doc.id}`}
-                    >
-                      <div className="flex-shrink-0 mt-1">
-                        <input
-                          id={`doc-${doc.id}`}
-                          type="checkbox"
-                          checked={selectedDocs.includes(doc.id)}
-                          onChange={() => handleToggleDoc(doc.id)}
-                          className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 focus:ring-2"
-                          aria-label={`Chọn tài liệu ${doc.name}`}
+                      <label
+                        className="flex items-start gap-3 p-4 cursor-pointer w-full"
+                        htmlFor={`doc-${doc.id}`}
+                      >
+                        <div className="flex-shrink-0 mt-1">
+                          <input
+                            id={`doc-${doc.id}`}
+                            type="checkbox"
+                            checked={selectedDocs.includes(doc.id)}
+                            onChange={() => handleToggleDoc(doc.id)}
+                            className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 focus:ring-2"
+                            aria-label={`Chọn tài liệu ${doc.name}`}
+                          />
+                        </div>
+                        <FileIcon
+                          fileType={doc.mimeType || "unknown"}
+                          size="md"
+                          className="flex-shrink-0"
                         />
-                      </div>
-                      <FileIcon
-                        fileType={doc.mimeType || "unknown"}
-                        size="md"
-                        className="flex-shrink-0"
-                      />
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-medium text-gray-900 dark:text-gray-100 truncate">
-                          {doc.name}
-                        </h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">
-                          Tài liệu
-                        </p>
-                      </div>
-                    </label>
-                  </Card>
-                ))}
-              </div>
-            </>
-          )}
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-medium text-gray-900 dark:text-gray-100 truncate">
+                            {doc.name}
+                          </h3>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            Tài liệu
+                          </p>
+                        </div>
+                      </label>
+                    </Card>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </MainLayout>

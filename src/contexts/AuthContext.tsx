@@ -50,38 +50,51 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  // ========================================
+  // 🔓 BYPASS LOGIN - TẠM THỜI FAKE USER
+  // ========================================
+  const [user, setUser] = useState<User | null>({
+    id: "test-user-id",
+    email: "test@example.com",
+    name: "Test User"
+  });
+  const [isLoading, setIsLoading] = useState(false); // Set to false to skip loading
   const router = useRouter();
 
   // Initialize auth state on mount
   useEffect(() => {
-    const initAuth = async () => {
-      setIsLoading(true);
+    // ========================================
+    // 🔓 BYPASS LOGIN - DISABLE AUTH CHECK
+    // TODO: Uncomment code bên dưới để bật lại authentication
+    // ========================================
+    setIsLoading(false);
+    
+    // const initAuth = async () => {
+    //   setIsLoading(true);
 
-      // Check if we have stored user and try to get valid access token
-      const storedUser = getStoredUser();
+    //   // Check if we have stored user and try to get valid access token
+    //   const storedUser = getStoredUser();
 
-      if (storedUser && checkIsAuthenticated()) {
-        // Try to get a valid access token (will refresh if needed)
-        const accessToken = await getValidAccessToken();
+    //   if (storedUser && checkIsAuthenticated()) {
+    //     // Try to get a valid access token (will refresh if needed)
+    //     const accessToken = await getValidAccessToken();
 
-        if (accessToken) {
-          setUser(storedUser);
-          startSilentRefresh();
-        } else {
-          // Token refresh failed, clear everything
-          clearTokens();
-          setUser(null);
-        }
-      } else {
-        setUser(null);
-      }
+    //     if (accessToken) {
+    //       setUser(storedUser);
+    //       startSilentRefresh();
+    //     } else {
+    //       // Token refresh failed, clear everything
+    //       clearTokens();
+    //       setUser(null);
+    //     }
+    //   } else {
+    //     setUser(null);
+    //   }
 
-      setIsLoading(false);
-    };
+    //   setIsLoading(false);
+    // };
 
-    initAuth();
+    // initAuth();
 
     // Cleanup on unmount
     return () => {
