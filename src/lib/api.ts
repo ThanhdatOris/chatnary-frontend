@@ -1,16 +1,24 @@
 // API client for Chatnary Backend matching https://chatnary.up.railway.app/api/v1/docs
 import {
-  AuthResponse,
-  ChatSession,
-  CreateChatRequest,
-  CreateProjectRequest,
-  Document,
-  LoginRequest,
-  Message,
-  Project,
-  RegisterRequest,
-  UpdateChatRequest,
-  UpdateProjectRequest,
+    USE_MOCK_DATA,
+    createMockChat,
+    deleteMockChat,
+    getMockChatsByProject,
+    simulateDelay,
+    updateMockChat
+} from "@/lib/mockData";
+import {
+    AuthResponse,
+    ChatSession,
+    CreateChatRequest,
+    CreateProjectRequest,
+    Document,
+    LoginRequest,
+    Message,
+    Project,
+    RegisterRequest,
+    UpdateChatRequest,
+    UpdateProjectRequest,
 } from "@/lib/types";
 import Cookies from "js-cookie";
 
@@ -68,8 +76,12 @@ class ApiClient {
 
   constructor(baseUrl: string = API_BASE_URL) {
     this.baseUrl = baseUrl;
-    // Try to load token from cookie on initialization
-    this.token = Cookies.get(COOKIE_NAME) || null;
+    // ========================================
+    // 🔓 BYPASS LOGIN - SET FAKE TOKEN
+    // TODO: Uncomment dòng bên dưới và comment dòng fake token để bật lại authentication
+    // ========================================
+    // this.token = Cookies.get(COOKIE_NAME) || null;
+    this.token = "fake-token-for-testing"; // Fake token for testing
     console.log('ApiClient: Initialized. Token from cookie:', this.token ? 'Found' : 'Missing');
   }
 
@@ -95,7 +107,12 @@ class ApiClient {
   }
 
   isAuthenticated(): boolean {
-    return !!this.getToken();
+    // ========================================
+    // 🔓 BYPASS LOGIN - ALWAYS RETURN TRUE
+    // TODO: Uncomment dòng bên dưới để bật lại authentication
+    // ========================================
+    return true;
+    // return !!this.getToken();
   }
 
   private createSuccessResponse<T>(data: T): ApiResponse<T> {
@@ -205,12 +222,31 @@ class ApiClient {
   // ==================== PROJECTS ====================
 
   async getProjects(): Promise<ApiResponse<Project[]>> {
+    // ========================================
+    // 🔄 MOCK MODE - Return mock projects
+    // ========================================
+    if (USE_MOCK_DATA) {
+      const { getMockProjects } = await import("@/lib/mockData");
+      await simulateDelay(300);
+      return this.createSuccessResponse(getMockProjects());
+    }
+    
     return this.request<Project[]>("/api/v1/project");
   }
 
   async createProject(
     project: CreateProjectRequest
   ): Promise<ApiResponse<Project>> {
+    // ========================================
+    // 🔄 MOCK MODE - Create mock project
+    // ========================================
+    if (USE_MOCK_DATA) {
+      const { createMockProject } = await import("@/lib/mockData");
+      await simulateDelay(400);
+      const newProject = createMockProject(project);
+      return this.createSuccessResponse(newProject);
+    }
+    
     return this.request<Project>("/api/v1/project", {
       method: "POST",
       body: JSON.stringify(project),
@@ -221,6 +257,19 @@ class ApiClient {
     id: string,
     project: Partial<UpdateProjectRequest>
   ): Promise<ApiResponse<Project>> {
+    // ========================================
+    // 🔄 MOCK MODE - Update mock project
+    // ========================================
+    if (USE_MOCK_DATA) {
+      const { updateMockProject } = await import("@/lib/mockData");
+      await simulateDelay(300);
+      const updatedProject = updateMockProject(id, project);
+      if (updatedProject) {
+        return this.createSuccessResponse(updatedProject);
+      }
+      return this.createErrorResponse('Project not found');
+    }
+    
     return this.request<Project>(`/api/v1/project/${id}`, {
       method: "PATCH",
       body: JSON.stringify(project),
@@ -228,6 +277,19 @@ class ApiClient {
   }
 
   async deleteProject(id: string): Promise<ApiResponse<void>> {
+    // ========================================
+    // 🔄 MOCK MODE - Delete mock project
+    // ========================================
+    if (USE_MOCK_DATA) {
+      const { deleteMockProject } = await import("@/lib/mockData");
+      await simulateDelay(200);
+      const success = deleteMockProject(id);
+      if (success) {
+        return this.createSuccessResponse(undefined as any);
+      }
+      return this.createErrorResponse('Project not found');
+    }
+    
     return this.request<void>(`/api/v1/project/${id}`, {
       method: "DELETE",
     });
@@ -284,6 +346,14 @@ class ApiClient {
     return this.request<Document>(`/api/v1/document/${documentId}`);
   }
 
+  getDocumentDownloadUrl(documentId: string): string {
+    return `${this.baseUrl}/api/v1/document/${documentId}/download`;
+  }
+
+  getDocumentPreviewUrl(documentId: string): string {
+    return `${this.baseUrl}/api/v1/document/${documentId}/preview`;
+  }
+
   // DELETE /document/:documentId - Delete document
   async deleteDocument(documentId: string): Promise<ApiResponse<void>> {
     return this.request<void>(`/api/v1/document/${documentId}`, {
@@ -310,6 +380,19 @@ class ApiClient {
   async createChat(
     request: CreateChatRequest
   ): Promise<ApiResponse<ChatSession>> {
+    // ========================================
+    // 🔄 MOCK MODE - Create mock chat
+    // ========================================
+    if (USE_MOCK_DATA) {
+      await simulateDelay(400);
+      const newChat = createMockChat({
+        projectId: request.project_id,
+        title: request.title,
+      });
+      return this.createSuccessResponse(newChat);
+    }
+    
+    // Original API call
     return this.request<ChatSession>("/api/v1/chat", {
       method: "POST",
       body: JSON.stringify(request),
@@ -319,10 +402,21 @@ class ApiClient {
   async getProjectChats(
     projectId: string
   ): Promise<ApiResponse<ChatSession[]>> {
+    // ========================================
+    // 🔄 MOCK MODE - Get mock chats by project
+    // ========================================
+    if (USE_MOCK_DATA) {
+      await simulateDelay(300);
+      const mockChats = getMockChatsByProject(projectId);
+      return this.createSuccessResponse(mockChats);
+    }
+    
+    // Original API call
     return this.request<ChatSession[]>(`/api/v1/project/${projectId}/chats`);
   }
 
   async getChat(chatId: string): Promise<ApiResponse<ChatSession>> {
+    // Already mocked in useChat hook
     return this.request<ChatSession>(`/api/v1/chat/${chatId}`);
   }
 
@@ -330,6 +424,19 @@ class ApiClient {
     chatId: string,
     request: UpdateChatRequest
   ): Promise<ApiResponse<ChatSession>> {
+    // ========================================
+    // 🔄 MOCK MODE - Update mock chat
+    // ========================================
+    if (USE_MOCK_DATA) {
+      await simulateDelay(300);
+      const updatedChat = updateMockChat(chatId, request);
+      if (updatedChat) {
+        return this.createSuccessResponse(updatedChat);
+      }
+      return this.createErrorResponse('Chat not found');
+    }
+    
+    // Original API call
     return this.request<ChatSession>(`/api/v1/chat/user/${chatId}`, {
       method: "PATCH",
       body: JSON.stringify(request),
@@ -337,6 +444,19 @@ class ApiClient {
   }
 
   async deleteChat(chatId: string): Promise<ApiResponse<void>> {
+    // ========================================
+    // 🔄 MOCK MODE - Delete mock chat
+    // ========================================
+    if (USE_MOCK_DATA) {
+      await simulateDelay(200);
+      const success = deleteMockChat(chatId);
+      if (success) {
+        return this.createSuccessResponse(undefined as any);
+      }
+      return this.createErrorResponse('Chat not found');
+    }
+    
+    // Original API call
     return this.request<void>(`/api/v1/chat/user/${chatId}`, {
       method: "DELETE",
     });

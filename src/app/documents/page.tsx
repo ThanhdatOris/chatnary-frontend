@@ -1,16 +1,19 @@
 "use client";
 
+import DocumentControls from "@/components/document/DocumentControls";
 import DocumentList from "@/components/document/DocumentList";
 import DocumentViewer from "@/components/document/DocumentViewer";
 import FileUploadZone from "@/components/document/FileUploadZone";
-import HeaderButton from "@/components/layout/HeaderButton";
 import MainLayout from "@/components/layout/MainLayout";
 import { Button, FileIcon, Loading, Modal } from "@/components/ui";
 import { useBreadcrumb } from "@/contexts/BreadcrumbContext";
+import { useDocumentFilters } from "@/hooks/useDocumentFilters";
 import useDocuments from "@/hooks/useDocuments";
 import { useProject } from "@/hooks/useProject";
-import apiClient, { Document } from "@/lib/api";
-import { Search, Upload } from "lucide-react";
+import apiClient from "@/lib/api";
+import { type Document } from "@/lib/types";
+import { cn } from "@/lib/utils";
+import { PanelRightClose, PanelRightOpen, Search, Upload } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 
@@ -19,11 +22,9 @@ export default function DocumentsPage() {
   return (
     <Suspense
       fallback={
-        <MainLayout>
-          <div className="flex items-center justify-center h-full">
-            <Loading size="lg" />
-          </div>
-        </MainLayout>
+        <div className="flex items-center justify-center h-full">
+          <Loading size="lg" />
+        </div>
       }
     >
       <DocumentsPageContent />
@@ -37,6 +38,10 @@ function DocumentsPageContent() {
   const projectId = searchParams.get("project");
   const { project, isLoading: projectLoading } = useProject();
   const { setProjectName, setProjectColor } = useBreadcrumb();
+  
+  // View Scope State
+  const [viewScope, setViewScope] = useState<'project' | 'all'>('project');
+  
   const { 
     documents, 
     loading, 
@@ -46,6 +51,20 @@ function DocumentsPageContent() {
     deleteDocument, 
     refreshDocuments 
   } = useDocuments({ projectId: projectId || undefined });
+
+  // Use the new hook for filtering/sorting/pagination
+  const [searchTerm, setSearchTerm] = useState('');
+  const {
+    paginatedResult,
+    filters,
+    currentPage,
+    itemsPerPage, 
+    handlePageChange,
+    handleFilterChange,
+    clearFilters,
+    hasActiveFilters,
+    setItemsPerPage
+  } = useDocumentFilters(documents, searchTerm);
 
   // Set project name and color for breadcrumb when project loads
   useEffect(() => {
@@ -57,14 +76,12 @@ function DocumentsPageContent() {
     }
   }, [project, setProjectName, setProjectColor]);
   
-  const [searchTerm, setSearchTerm] = useState('');
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(
     null
   );
   const [isPanelCollapsed, setIsPanelCollapsed] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const [availableProjects, setAvailableProjects] = useState<any[]>([]);
   const [loadingProjects, setLoadingProjects] = useState(false);
 
   // Auto-select first project if no project is specified
@@ -76,7 +93,6 @@ function DocumentsPageContent() {
           const response = await apiClient.getProjects();
 
           if (response.success && response.data && response.data.length > 0) {
-            setAvailableProjects(response.data);
             // Auto-redirect to first project
             const firstProject = response.data[0];
             router.push(`/documents?project=${firstProject.id}`);
@@ -98,10 +114,8 @@ function DocumentsPageContent() {
 
   const handleUpload = async (file: File) => {
     try {
-      setUploadError(null); // Clear previous errors
-      console.log("DocumentsPage: Calling uploadDocument...");
+      setUploadError(null);
       await uploadDocument(file);
-      console.log("DocumentsPage: Upload successful, closing modal");
       setShowUploadModal(false);
     } catch (err) {
       console.error("DocumentsPage: Upload failed:", err);
@@ -114,11 +128,6 @@ function DocumentsPageContent() {
   const handleMultipleUpload = async (files: File[]) => {
     try {
       setUploadError(null);
-      console.log(
-        "DocumentsPage: Calling uploadDocument for multiple files...",
-        files.length
-      );
-
       const results = await Promise.allSettled(
         files.map((file) => uploadDocument(file))
       );
@@ -127,7 +136,6 @@ function DocumentsPageContent() {
       if (failed.length > 0) {
         setUploadError(`${failed.length}/${files.length} file upload thất bại`);
       } else {
-        console.log("DocumentsPage: All uploads successful, closing modal");
         setShowUploadModal(false);
       }
     } catch (err) {
@@ -141,7 +149,6 @@ function DocumentsPageContent() {
   const handleDeleteDocument = async (id: string) => {
     try {
       await deleteDocument(id);
-      // Clear selection if deleted document was selected
       if (selectedDocument?.id === id) {
         setSelectedDocument(null);
       }
@@ -150,24 +157,7 @@ function DocumentsPageContent() {
     }
   };
 
-  // Filter documents based on search term
-  const filteredDocuments = documents.filter((doc) =>
-    (doc.originalFilename || doc.name)
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase())
-  );
-
-  if (!projectId || loadingProjects) {
-    return (
-      <MainLayout>
-        <div className="flex items-center justify-center h-full">
-          <Loading size="lg" />
-        </div>
-      </MainLayout>
-    );
-  }
-
-  if (projectLoading) {
+  if (!projectId || loadingProjects || projectLoading) {
     return (
       <MainLayout>
         <div className="flex items-center justify-center h-full">
@@ -185,9 +175,6 @@ function DocumentsPageContent() {
             <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-2">
               Project không tìm thấy
             </h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-4">
-              Project bạn đang tìm kiếm không tồn tại hoặc đã bị xóa.
-            </p>
             <Button onClick={() => router.push("/")}>Quay về trang chủ</Button>
           </div>
         </div>
@@ -195,36 +182,118 @@ function DocumentsPageContent() {
     );
   }
 
-  const headerActions = (
-    <div className="flex items-center gap-2">
-      <HeaderButton
-        variant="search"
-        isSearchButton={true}
-        icon={<Search className="w-4 h-4" />}
-        searchValue={searchTerm}
-        onSearchChange={setSearchTerm}
-        searchPlaceholder="Tìm kiếm tài liệu..."
-        onClick={() => {}}
-      >
-        Tìm kiếm
-      </HeaderButton>
+  // Custom Unified Header
+  const customHeader = (
+    <div className="px-6 py-4 flex flex-col gap-4 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950">
+       <div className="flex items-center justify-between gap-4">
+          {/* Left: Title & Count & Scope Toggle */}
+          <div className="flex items-center gap-4">
+             <div className="flex items-center gap-3">
+                <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100 tracking-tight">
+                  Tài liệu
+                </h1>
+                <span className="px-2.5 py-0.5 rounded-full bg-gray-100 dark:bg-gray-800 text-sm font-medium text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700">
+                  {paginatedResult.pagination.total}
+                </span>
+             </div>
+             
+             {/* Scope Toggle */}
+             <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-lg h-9">
+                <button 
+                  onClick={() => setViewScope('all')} 
+                  className={cn(
+                    "px-3 text-xs font-medium rounded-md transition-all", 
+                    viewScope === 'all' 
+                      ? "bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-gray-100" 
+                      : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                  )}
+                >
+                  Tất cả
+                </button>
+                <div className="w-px bg-gray-200 dark:bg-gray-700 my-1 mx-0.5"></div>
+                <button 
+                  onClick={() => setViewScope('project')} 
+                  className={cn(
+                    "px-3 text-xs font-medium rounded-md transition-all", 
+                    viewScope === 'project' 
+                      ? "bg-white dark:bg-gray-700 shadow-sm text-gray-900 dark:text-gray-100" 
+                      : "text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+                  )}
+                >
+                  Dự án
+                </button>
+             </div>
+          </div>
 
-      <HeaderButton
-        variant="primary"
-        icon={<Upload className="w-4 h-4" />}
-        onClick={() => setShowUploadModal(true)}
-        disabled={uploading}
-      >
-        {uploading ? "Đang upload..." : "Upload tài liệu"}
-      </HeaderButton>
+          {/* Right: Actions Toolbar */}
+          <div className="flex items-center gap-3">
+             {/* Search */}
+             <div className="relative group">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                <input 
+                   type="text"
+                   placeholder="Tìm kiếm..."
+                   value={searchTerm}
+                   onChange={(e) => setSearchTerm(e.target.value)}
+                   className="w-64 pl-9 pr-4 py-2 text-sm bg-gray-100 dark:bg-gray-800 border-transparent focus:bg-white dark:focus:bg-gray-900 border focus:border-blue-500 rounded-lg transition-all outline-none"
+                />
+             </div>
+             
+             {/* Divider */}
+             <div className="h-6 w-px bg-gray-200 dark:bg-gray-700 mx-1" />
+
+             {/* Controls (Pagination, Filter) */}
+             <DocumentControls 
+                filters={filters}
+                onFilterChange={handleFilterChange}
+                onClearFilters={clearFilters}
+                hasActiveFilters={hasActiveFilters}
+                currentPage={currentPage}
+                totalPages={paginatedResult.pagination.totalPages}
+                totalDocuments={paginatedResult.pagination.total}
+                itemsPerPage={itemsPerPage}
+                onPageChange={handlePageChange}
+                onItemsPerPageChange={setItemsPerPage}
+             />
+
+             {/* Upload Button */}
+             <Button 
+                onClick={() => setShowUploadModal(true)}
+                disabled={uploading}
+                className="ml-2 gap-2 shadow-sm"
+             >
+                <Upload className="w-4 h-4" />
+                {uploading ? "Đang upload..." : "Upload"}
+             </Button>
+
+             {/* View Toggle (Expand/Collapse Panel) */}
+             <div className="border-l border-gray-200 dark:border-gray-700 pl-2 ml-1">
+               <button
+                  onClick={() => setIsPanelCollapsed(!isPanelCollapsed)}
+                  className={cn(
+                    "p-2 rounded-lg transition-colors",
+                    isPanelCollapsed 
+                      ? "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800"
+                      : "text-blue-600 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30" 
+                  )}
+                  title={isPanelCollapsed ? "Hiển thị chi tiết" : "Ẩn chi tiết"}
+                >
+                  {isPanelCollapsed ? (
+                    <PanelRightOpen className="w-5 h-5" />
+                  ) : (
+                    <PanelRightClose className="w-5 h-5" />
+                  )}
+               </button>
+             </div>
+          </div>
+       </div>
     </div>
   );
 
   return (
     <MainLayout
-      headerTitle="Tài liệu"
-      headerSubtitle={`Quản lý tài liệu trong project "${project.name}"`}
-      headerActions={headerActions}
+      showHeaderBorder={false} // Disable default border
+      headerExtras={customHeader} // Inject custom header
     >
       {/* Error Display */}
       {error && (
@@ -243,120 +312,62 @@ function DocumentsPageContent() {
 
       {/* Content */}
       <div className="flex-1 flex min-h-0 h-full">
-        {/* Added h-full for proper height */}
         {loading ? (
           <div className="flex-1 flex items-center justify-center">
             <Loading size="lg" text="Đang tải tài liệu..." />
           </div>
-        ) : filteredDocuments.length === 0 ? (
-          <div className="flex-1 flex items-center justify-center">
-            <div className="text-center">
-              <svg
-                className="w-16 h-16 text-gray-300 dark:text-gray-600 mx-auto mb-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1}
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
-              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-                {searchTerm ? "Không tìm thấy tài liệu" : "Chưa có tài liệu"}
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400 mb-4">
-                {searchTerm
-                  ? `Không có tài liệu nào khớp với "${searchTerm}"`
-                  : "Hãy upload tài liệu đầu tiên của bạn"}
-              </p>
-              {!searchTerm && (
-                <Button onClick={() => setShowUploadModal(true)}>
-                  Upload tài liệu
-                </Button>
-              )}
-            </div>
-          </div>
         ) : (
           <>
-            {/* Document List */}
-            <DocumentList
-              documents={filteredDocuments}
-              selectedDocument={selectedDocument}
-              onSelectDocument={setSelectedDocument}
-              onDeleteDocument={handleDeleteDocument}
-              searchTerm={searchTerm}
-              totalDocuments={documents.length}
-              isPanelCollapsed={isPanelCollapsed}
-              onPanelToggle={setIsPanelCollapsed}
-            />
-
-            {/* Document Viewer */}
-            {selectedDocument && !isPanelCollapsed && (
-              <DocumentViewer
-                document={selectedDocument}
-                onClose={() => setSelectedDocument(null)}
-              />
-            )}
-
-            {/* Preview khi chưa chọn tài liệu */}
-            {!selectedDocument && !isPanelCollapsed && (
-              <div className="w-1/2 bg-gray-50 dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 flex items-center justify-center h-full min-h-full">
-                <div className="text-center max-w-lg px-6 py-8 flex-shrink-0">
-                  {/* Instructions */}
-                  <div className="w-20 h-20 mx-auto mb-6 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center border border-gray-200 dark:border-gray-700 shadow-sm">
-                    <FileIcon fileType="txt" size="xl" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
-                    Chọn tài liệu để xem trước
-                  </h3>
-                  <p className="text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">
-                    Click vào một tài liệu bên trái để xem nội dung chi tiết.
-                  </p>
-                  <div className="space-y-3 text-sm text-gray-500 dark:text-gray-400">
-                    <div className="flex items-center justify-center gap-2">
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                        />
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                        />
-                      </svg>
-                      <span>Xem trước nội dung tài liệu</span>
+            {viewScope === 'all' ? (
+                <div className="flex-1 flex flex-col items-center justify-center p-8 bg-gray-50/50 dark:bg-gray-900/50"> 
+                    <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4 shadow-sm">
+                        <Search className="w-8 h-8 text-gray-400 dark:text-gray-500" />
                     </div>
-                    <div className="flex items-center justify-center gap-2">
-                      <svg
-                        className="w-4 h-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                        />
-                      </svg>
-                      <span>Download tài liệu gốc</span>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Xem tất cả tài liệu</h3>
+                    <p className="text-gray-500 dark:text-gray-400 max-w-md text-center mt-2">
+                        Tính năng xem tổng hợp tất cả tài liệu từ mọi dự án đang được phát triển. <br/>
+                        Vui lòng chọn chế độ <b>&quot;Dự án&quot;</b> để quản lý tài liệu của dự án hiện tại.
+                    </p>
+                    <Button onClick={() => setViewScope('project')} variant="outline" className="mt-6">
+                        Quay lại chế độ Dự án
+                    </Button>
+                 </div>
+            ) : (
+             <>
+                {/* Document List */}
+                <DocumentList
+                  documents={paginatedResult.data}
+                  selectedDocument={selectedDocument}
+                  onSelectDocument={setSelectedDocument}
+                  onDeleteDocument={handleDeleteDocument}
+                  isPanelCollapsed={isPanelCollapsed}
+                />
+    
+                {/* Document Viewer */}
+                {selectedDocument && !isPanelCollapsed && (
+                  <DocumentViewer
+                    document={selectedDocument}
+                    onClose={() => setSelectedDocument(null)}
+                  />
+                )}
+    
+                {/* Preview Placeholder */}
+                {!selectedDocument && !isPanelCollapsed && (
+                  <div className="w-1/2 bg-gray-50 dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700 flex items-center justify-center h-full min-h-full">
+                    <div className="text-center max-w-lg px-6 py-8 flex-shrink-0">
+                      <div className="w-20 h-20 mx-auto mb-6 bg-white dark:bg-gray-800 rounded-full flex items-center justify-center border border-gray-200 dark:border-gray-700 shadow-sm">
+                        <FileIcon fileType="txt" size="xl" />
+                      </div>
+                      <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3">
+                        Chọn tài liệu để xem trước
+                      </h3>
+                      <p className="text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">
+                        Click vào một tài liệu bên trái để xem nội dung chi tiết.
+                      </p>
                     </div>
                   </div>
-                </div>
-              </div>
+                )}
+             </>
             )}
           </>
         )}
@@ -369,7 +380,7 @@ function DocumentsPageContent() {
         onClose={() => {
           if (!uploading) {
             setShowUploadModal(false);
-            setUploadError(null); // Clear error when closing
+            setUploadError(null);
           }
         }}
       >
@@ -380,20 +391,9 @@ function DocumentsPageContent() {
             isUploading={uploading}
             allowMultiple={true}
           />
-
-          {/* Display upload error */}
           {uploadError && (
             <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-              <p className="text-sm text-red-600 dark:text-red-400">
-                {uploadError}
-              </p>
-            </div>
-          )}
-
-          {/* Display general documents error */}
-          {error && (
-            <div className="mt-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+              <p className="text-sm text-red-600 dark:text-red-400">{uploadError}</p>
             </div>
           )}
         </div>
